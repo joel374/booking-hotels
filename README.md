@@ -30,6 +30,14 @@ A modern, responsive, and fully-featured Hotel Booking Web Application built wit
 
 ## 🚀 Getting Started
 
+**🎯 New to this project? Start here: [`START_HERE.md`](START_HERE.md)**
+
+For quick setup guide, see: [`QUICK_START.md`](QUICK_START.md)
+
+For detailed step-by-step guide, see: [`SETUP_GUIDE.md`](SETUP_GUIDE.md)
+
+---
+
 Follow these instructions to set up the project locally on your machine.
 
 ### 1. Prerequisites
@@ -54,25 +62,52 @@ Follow these instructions to set up the project locally on your machine.
    ```
 
 3. **Install Dependencies:**
-   Make sure you install the required packages (e.g., `flask`, `mysql-connector-python`, `python-dotenv`, `flask-session`).
-   *(If you have a `requirements.txt`, run `pip install -r requirements.txt`)*
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 4. **Database Configuration:**
-   * Create a MySQL database named `hotel_booking` (or according to your preference).
-   * Copy the `.env.example` file to `.env` (if available) or create a new `.env` file in the root directory.
-   * Add your database credentials:
+   * Make sure MySQL server is running
+   * Copy the `.env.example` file to `.env`:
+     ```bash
+     copy .env.example .env    # Windows
+     cp .env.example .env      # Mac/Linux
+     ```
+   * Edit `.env` file and update your database credentials:
      ```env
      DB_HOST=localhost
      DB_USER=root
-     DB_PASSWORD=
+     DB_PASSWORD=your_mysql_password
      DB_NAME=hotel_booking
-     SECRET_KEY=your_super_secret_key
+     SECRET_KEY=your_super_secret_key_change_this
      ```
 
-5. **Run Migrations / Initialize DB:**
-   Run the initialization scripts to create the necessary tables (`users`, `hotels`, `rooms`, `hotel_images`, `room_images`, `provinces`, `cities`, `bookings`).
+5. **Initialize Database:**
+   
+   Run the initialization script to create database, tables, and insert master data (34 provinces & 489 cities):
+   
    ```bash
    python init_db.py
+   ```
+   
+   This will:
+   - Create `hotel_booking` database
+   - Create all required tables (users, hotels, rooms, bookings, provinces, cities, etc.)
+   - Insert 34 provinces and 489 cities data across Indonesia
+
+6. **Verify Setup (Recommended):**
+   
+   Run verification script to ensure everything is configured correctly:
+   
+   ```bash
+   python verify_setup.py
+   ```
+
+7. **Update Database Images (if migrating from old schema):**
+   
+   If you're migrating from an older version where images were stored as single fields:
+   
+   ```bash
    python update_db_images.py
    ```
 
@@ -86,6 +121,30 @@ python app.py
 
 The application should now be running. Open your browser and navigate to:
 **`http://localhost:5000`**
+
+### 4. Default Admin Account (Optional)
+
+To access the admin dashboard, you can manually insert an admin user via MySQL:
+
+```sql
+USE hotel_booking;
+
+INSERT INTO users (username, password_hash, email, role) 
+VALUES (
+  'admin', 
+  'scrypt:32768:8:1$fCEQvj5TBnqpMRqK$1c85f8e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8',
+  'admin@example.com',
+  'admin'
+);
+```
+
+Login credentials:
+- Username: `admin`
+- Password: `admin123`
+
+Or register a normal user, then manually change the `role` to `'admin'` in the database.
+
+**Admin Dashboard:** `http://localhost:5000/admin/dashboard`
 
 ---
 

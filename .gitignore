@@ -1,0 +1,68 @@
+# Environment
+.env
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Database
+*.sql.bak
+data_export.json
+*.db
+*.sqlite
+
+# Uploads (keep directory structure but not files)
+static/uploads/hotels/*
+static/uploads/rooms/*
+!static/uploads/hotels/.gitkeep
+!static/uploads/rooms/.gitkeep
+
+# Session
+flask_session/
+*.session
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Backup files
+*~
+*.bak
+*.backup
