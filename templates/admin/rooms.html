@@ -1,0 +1,133 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Manage Rooms{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+    <!-- Add Room Form -->
+    <div class="admin-card" style="align-self: start;">
+        <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">Add New Room</h3>
+        <form method="POST" enctype="multipart/form-data">
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Select Hotel</label>
+                <select name="hotel_id" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box; background: white;">
+                    <option value="">-- Choose Hotel --</option>
+                    {% for hotel in hotels %}
+                    <option value="{{ hotel.id }}">{{ hotel.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Room Type</label>
+                <input type="text" name="room_type" placeholder="e.g. Deluxe Room" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+            </div>
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Room Number / Name</label>
+                <input type="text" name="room_number" placeholder="e.g. 101 or Presidential Suite" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+            </div>
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Price per Night (Rp)</label>
+                <input type="number" name="price" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+            </div>
+            <div style="margin-bottom: 1.8rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Room Images (Multiple)</label>
+                <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp" required style="width: 100%; padding: 0.5rem; border: 1px dashed #cbd5e1; border-radius: 8px; box-sizing: border-box; background: #f8fafc;">
+                <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 5px;">Max 16MB. Formats: JPG, PNG, WEBP.</small>
+            </div>
+            <button type="submit" style="width: 100%; padding: 1rem; background-color: #0f172a; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.3s;">Add Room</button>
+        </form>
+    </div>
+
+    <!-- Room List -->
+    <div class="admin-card">
+        <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">Room Inventory</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">ID</th>
+                    <th style="width: 100px;">Cover</th>
+                    <th>Hotel & Specs</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for room in rooms %}
+                <tr>
+                    <td>{{ room.id }}</td>
+                    <td>
+                        {% if room.images and room.images|length > 0 %}
+                        <img src="{{ room.images[0] }}" alt="{{ room.room_type }}" style="width: 80px; height: 50px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <br><small style="color: #64748b; font-size: 0.7rem;">+{{ room.images|length - 1 }} more</small>
+                        {% else %}
+                        <div style="width: 80px; height: 50px; background: #e2e8f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.8rem;">No Img</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong style="color: #0f172a;">{{ room.hotel_name }}</strong><br>
+                        <span style="color: #3b82f6; font-weight: 500;">{{ room.room_type }}</span><br>
+                        <span style="color: #64748b; font-size: 0.85rem;">No: {{ room.room_number }}</span>
+                    </td>
+                    <td style="font-weight: 600; color: #10b981;">Rp {{ "{:,.0f}".format(room.price) }}</td>
+                    <td>
+                        <button onclick="openEditRoomModal({{ room.id }}, '{{ room.hotel_name | escape }}', '{{ room.room_type | escape }}', '{{ room.room_number | escape }}', '{{ room.price }}')" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Edit</button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 2rem;">No rooms in database.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Edit Room Modal -->
+<div id="editRoomModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+    <div class="admin-card" style="width: 100%; max-width: 500px; position: relative;">
+        <button type="button" onclick="closeEditRoomModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+        <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">Edit Room</h3>
+        
+        <p style="background: #f1f5f9; padding: 10px; border-radius: 6px; font-size: 0.9rem; color: #475569; margin-bottom: 1.5rem;">
+            <strong>Hotel:</strong> <span id="display_hotel_name"></span><br>
+            <em style="font-size: 0.8rem;">(Hotel cannot be changed)</em>
+        </p>
+
+        <form id="editRoomForm" method="POST" enctype="multipart/form-data">
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Room Type</label>
+                <input type="text" name="room_type" id="edit_room_type" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+            </div>
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Room Number / Name</label>
+                <input type="text" name="room_number" id="edit_room_number" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+            </div>
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Price per Night (Rp)</label>
+                <input type="number" name="price" id="edit_price" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+            </div>
+            <div style="margin-bottom: 1.8rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Update Images (Leave empty to keep current)</label>
+                <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp" style="width: 100%; padding: 0.5rem; border: 1px dashed #cbd5e1; border-radius: 8px; box-sizing: border-box; background: #f8fafc;">
+                <small style="color: #ef4444; font-size: 0.8rem; display: block; margin-top: 5px;">Warning: Uploading new images will delete all previous images for this room.</small>
+            </div>
+            <button type="submit" style="width: 100%; padding: 1rem; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.3s;">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditRoomModal(id, hotel_name, room_type, room_number, price) {
+    document.getElementById('editRoomForm').action = `/admin/room/edit/${id}`;
+    document.getElementById('display_hotel_name').textContent = hotel_name;
+    document.getElementById('edit_room_type').value = room_type;
+    document.getElementById('edit_room_number').value = room_number;
+    document.getElementById('edit_price').value = price;
+    
+    document.getElementById('editRoomModal').style.display = 'flex';
+}
+
+function closeEditRoomModal() {
+    document.getElementById('editRoomModal').style.display = 'none';
+}
+</script>
+{% endblock %}

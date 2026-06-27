@@ -1,0 +1,54 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+    <div class="admin-card" style="border-left: 4px solid #10b981;">
+        <h3 style="color: #64748b; margin-top: 0; font-size: 0.95rem; font-weight: 500;">Total Revenue (Success)</h3>
+        <p style="font-size: 2.2rem; color: #0f172a; font-weight: 600; margin: 0.5rem 0 0 0;">Rp {{ "{:,.0f}".format(revenue) }}</p>
+    </div>
+    <div class="admin-card" style="border-left: 4px solid #3b82f6;">
+        <h3 style="color: #64748b; margin-top: 0; font-size: 0.95rem; font-weight: 500;">Active Bookings</h3>
+        <p style="font-size: 2.2rem; color: #0f172a; font-weight: 600; margin: 0.5rem 0 0 0;">{{ total_bookings }}</p>
+    </div>
+    <div class="admin-card" style="border-left: 4px solid #f59e0b;">
+        <h3 style="color: #64748b; margin-top: 0; font-size: 0.95rem; font-weight: 500;">Registered Customers</h3>
+        <p style="font-size: 2.2rem; color: #0f172a; font-weight: 600; margin: 0.5rem 0 0 0;">{{ customers }}</p>
+    </div>
+</div>
+
+<div class="admin-card">
+    <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">Recent Bookings</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Guest Information</th>
+                <th>Hotel & Room</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in recent_bookings %}
+            <tr>
+                <td><strong>#{{ booking.id }}</strong></td>
+                <td>{{ booking.guest_name }} <br><small style="color: #64748b;">User: {{ booking.username }}</small></td>
+                <td>{{ booking.hotel_name }}<br><small style="color: #64748b;">Room {{ booking.room_number }}</small></td>
+                <td>
+                    <span style="padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;
+                        background-color: {% if booking.status == 'Booked' %}#ecfdf5{% elif booking.status == 'Pending' %}#fffbeb{% else %}#fef2f2{% endif %};
+                        color: {% if booking.status == 'Booked' %}#059669{% elif booking.status == 'Pending' %}#d97706{% else %}#dc2626{% endif %};">
+                        {{ booking.status }}
+                    </span>
+                </td>
+                <td style="color: #475569; font-size: 0.95rem;">{{ booking.created_at.strftime('%Y-%m-%d') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 2rem;">No recent bookings found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
