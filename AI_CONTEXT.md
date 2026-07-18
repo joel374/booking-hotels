@@ -548,6 +548,7 @@ def delete_hotel(hotel_id):
 - ✅ Keep CSS in `static/css/style.css` (no inline styles)
 - ✅ Use `login_required` and `admin_required` decorators
 - ✅ Follow existing template structure (extend base.html)
+- ✅ **ALWAYS update this AI_CONTEXT.md file** after completing a task or preparing a commit, so the context is always fresh.
 
 ### **DON'T:**
 - ❌ Don't introduce frontend frameworks (React, Vue, Angular)
@@ -673,7 +674,7 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
     *   `routes/booking.py`
     *   `templates/index.html`, `templates/rooms.html`, `templates/booking_form.html`, dll.
 *   **Tabel Database:** `bookings`, `waiting_lists`.
-*   **Next Enhancements:** Integrasi Payment Gateway (Midtrans), Filter Harga/Urutan (Advanced Search), Sistem Ulasan (Reviews), Kirim Invoice PDF via Email.
+*   **Next Enhancements:** Integrasi Payment Gateway (Midtrans), Sistem Ulasan (Reviews), Kirim Invoice PDF via Email.
 
 ---
 

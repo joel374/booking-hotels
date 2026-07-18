@@ -4,7 +4,7 @@ from db import get_db_connection, cleanup_expired_bookings
 
 main_bp = Blueprint('main', __name__)
 
-def get_available_rooms(hotel_id, check_in, check_out):
+def get_available_rooms(hotel_id, check_in, check_out, min_price=None, max_price=None, sort_by=None):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cleanup_expired_bookings(cursor)
@@ -21,8 +21,45 @@ def get_available_rooms(hotel_id, check_in, check_out):
             )
         )
     """
+    params = [hotel_id, check_out, check_in, check_in, check_out]
+    
+    if min_price:
+        query += " AND r.price >= %s"
+        params.append(min_price)
+    if max_price:
+        query += " AND r.price <= %s"
+        params.append(max_price)
+        
+    if sort_by == 'cheapest':
+        query += " ORDER BY r.price ASC"
+    elif sort_by == 'expensive':
+        query += " ORDER BY r.price DESC"
+        
+    cursor.execute(query, tuple(params))
+    rooms = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    return rooms
+
+def get_booked_rooms(hotel_id, check_in, check_out):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    query = """
+        SELECT r.* FROM rooms r
+        WHERE r.hotel_id = %s AND r.id IN (
+            SELECT b.room_id FROM bookings b
+            WHERE b.status IN ('Booked', 'Pending') 
+            AND (
+                (b.check_in <= %s AND b.check_out >= %s) OR
+                (b.check_in >= %s AND b.check_in < %s)
+            )
+        )
+    """
     cursor.execute(query, (hotel_id, check_out, check_in, check_in, check_out))
     rooms = cursor.fetchall()
+    
     cursor.close()
     conn.close()
     return rooms
@@ -74,6 +111,11 @@ def contact_submit():
 def hotel_rooms(hotel_id):
     check_in = request.args.get('check_in')
     check_out = request.args.get('check_out')
+    
+    # Filter parameters
+    min_price = request.args.get('min_price', type=int)
+    max_price = request.args.get('max_price', type=int)
+    sort_by = request.args.get('sort_by')
 
     if not check_in or not check_out:
         flash("Please select check-in and check-out dates.", "warning")
@@ -92,7 +134,9 @@ def hotel_rooms(hotel_id):
         flash("Invalid date format.", "danger")
         return redirect(url_for('main.index'))
 
-    rooms = get_available_rooms(hotel_id, check_in, check_out)
+    # Get available and booked rooms separately to prevent price-filtered rooms from showing as booked
+    available_rooms_raw = get_available_rooms(hotel_id, check_in, check_out, min_price, max_price, sort_by)
+    booked_rooms_raw = get_booked_rooms(hotel_id, check_in, check_out)
     
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -103,19 +147,21 @@ def hotel_rooms(hotel_id):
         cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel_id,))
         hotel['images'] = [img['image_url'] for img in cursor.fetchall()]
     
-    cursor.execute("SELECT * FROM rooms WHERE hotel_id = %s", (hotel_id,))
-    all_rooms = cursor.fetchall()
-    
-    for r in all_rooms:
-        cursor.execute("SELECT image_url FROM room_images WHERE room_id = %s", (r['id'],))
-        r['images'] = [img['image_url'] for img in cursor.fetchall()]
+    # Function to attach images to room list
+    def attach_images(room_list):
+        for r in room_list:
+            cursor.execute("SELECT image_url FROM room_images WHERE room_id = %s", (r['id'],))
+            r['images'] = [img['image_url'] for img in cursor.fetchall()]
+        return room_list
+
+    rooms = attach_images(available_rooms_raw)
+    booked_rooms = attach_images(booked_rooms_raw)
         
     cursor.close()
     conn.close()
 
-    available_room_ids = [r['id'] for r in rooms]
-    # Update rooms list with the image data from all_rooms
-    rooms = [r for r in all_rooms if r['id'] in available_room_ids]
-    booked_rooms = [r for r in all_rooms if r['id'] not in available_room_ids]
-
-    return render_template('rooms.html', hotel=hotel, available_rooms=rooms, booked_rooms=booked_rooms, check_in=check_in, check_out=check_out)
+    return render_template('rooms.html', hotel=hotel, available_rooms=rooms, booked_rooms=booked_rooms, 
+                           check_in=check_in, check_out=check_out, 
+                           min_price=min_price if min_price else '', 
+                           max_price=max_price if max_price else '', 
+                           sort_by=sort_by)
