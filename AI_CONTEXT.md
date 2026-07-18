@@ -645,6 +645,38 @@ GROUP BY r.id;
 
 ---
 
-**Last Updated:** June 27, 2026  
-**Version:** 1.0  
-**Status:** Active Development
+## 👥 Team Modules & Ownership (Pembagian Tim)
+
+Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa menimbulkan *merge conflict* pada Git. Berikut adalah pembagian modul dan kepemilikannya:
+
+### **Modul 1: Akun & Keamanan (Modul Auth)**
+*   **Fokus:** Autentikasi, Profil Pengguna, dan Keamanan.
+*   **Wilayah Kode (Ownership):**
+    *   `routes/auth.py`
+    *   `templates/auth/` (atau file-file login/register)
+*   **Tabel Database:** `users`
+*   **Next Enhancements:** Halaman Profil Pengguna (`/profile`), Fitur Lupa Password, Verifikasi Email pendaftaran.
+
+### **Modul 2: Katalog & Admin (Modul Inventory)**
+*   **Fokus:** Dasbor Admin, Manajemen Hotel/Kamar, dan *File System* (Upload/Hapus Gambar).
+*   **Wilayah Kode (Ownership):**
+    *   `routes/admin.py`
+    *   `utils.py` (Fungsi unggah & hapus gambar fisik, Decorators)
+    *   `templates/admin/`
+*   **Tabel Database:** `hotels`, `rooms`, `hotel_images`, `room_images`, `provinces`, `cities`.
+*   **Next Enhancements:** Grafik/Statistik di Dasbor, *Soft Delete* untuk hotel, Fitur Pencarian/Pagination di tabel admin, Kompresi gambar dengan library Pillow.
+
+### **Modul 3: Pencarian & Transaksi (Modul Booking)**
+*   **Fokus:** Tampilan pelanggan, Filter Ketersediaan, dan Proses Pemesanan (Checkout).
+*   **Wilayah Kode (Ownership):**
+    *   `routes/main.py`
+    *   `routes/booking.py`
+    *   `templates/index.html`, `templates/rooms.html`, `templates/booking_form.html`, dll.
+*   **Tabel Database:** `bookings`, `waiting_lists`.
+*   **Next Enhancements:** Integrasi Payment Gateway (Midtrans), Filter Harga/Urutan (Advanced Search), Sistem Ulasan (Reviews), Kirim Invoice PDF via Email.
+
+---
+
+**Last Updated:** July 18, 2026  
+**Version:** 1.1  
+**Status:** Active Development (Distributed to 3 Team Members)
