@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block hero %}
+<section class="hero" style="height: 50vh; min-height: 300px; background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1>Hubungi Kami</h1>
+        <p style="font-size: 1.2rem; font-weight: 300;">Kami siap membantu Anda kapan pun Anda butuhkan.</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 3rem; margin-bottom: 3rem; align-items: start;">
+    <!-- Contact Info -->
+    <div>
+        <h2 style="color: var(--primary-color); margin-bottom: 1.5rem; font-size: 2.2rem;">Get in Touch</h2>
+        <p style="color: var(--text-muted); line-height: 1.8; margin-bottom: 2.5rem; font-size: 1.05rem;">
+            Punya pertanyaan mengenai reservasi, kemitraan, atau layanan kami? Tim dukungan pelanggan kami selalu siap sedia membantu memberikan solusi dan pengalaman terbaik untuk Anda.
+        </p>
+        
+        <div style="margin-bottom: 2rem; display: flex; gap: 1rem;">
+            <div style="color: var(--accent-color); font-size: 1.5rem;">📍</div>
+            <div>
+                <strong style="color: var(--primary-color); display: block; margin-bottom: 0.3rem; font-size: 1.1rem;">Alamat Kantor Pusat:</strong>
+                <span style="color: var(--text-muted); line-height: 1.6;">Gedung Antigravity Lt. 42<br>Jl. Jend. Sudirman Kav 1, Jakarta 10220</span>
+            </div>
+        </div>
+        <div style="margin-bottom: 2rem; display: flex; gap: 1rem;">
+            <div style="color: var(--accent-color); font-size: 1.5rem;">✉️</div>
+            <div>
+                <strong style="color: var(--primary-color); display: block; margin-bottom: 0.3rem; font-size: 1.1rem;">Email Support:</strong>
+                <span style="color: var(--text-muted);">support@antigravity.com</span>
+            </div>
+        </div>
+        <div style="margin-bottom: 2rem; display: flex; gap: 1rem;">
+            <div style="color: var(--accent-color); font-size: 1.5rem;">📞</div>
+            <div>
+                <strong style="color: var(--primary-color); display: block; margin-bottom: 0.3rem; font-size: 1.1rem;">Hotline 24/7:</strong>
+                <span style="color: var(--text-muted);">+62 800 123 4567</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div style="background: var(--card-bg); padding: 3rem; border-radius: var(--radius); box-shadow: var(--shadow-hover);">
+        <h3 style="margin-top: 0; color: var(--primary-color); margin-bottom: 2rem; font-size: 1.8rem;">Kirim Pesan</h3>
+        <form action="{{ url_for('main.contact_submit') }}" method="POST">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-main);">Nama Lengkap</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-main);">Alamat Email</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-main);">Pesan Anda</label>
+                <textarea name="message" rows="5" class="form-control" style="resize: vertical;" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.05rem;">Kirim Pesan Sekarang</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

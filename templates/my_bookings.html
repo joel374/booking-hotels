@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="padding-top: 2rem;">
+    <h1 style="margin-bottom: 2rem; border-bottom: 2px solid var(--border-color); padding-bottom: 1rem;">My Dashboard</h1>
+
+    <div style="margin-bottom: 4rem;">
+        <h2 style="color: var(--primary-color); margin-bottom: 1.5rem; font-family: 'Playfair Display', serif;">My Bookings</h2>
+        
+        {% if bookings %}
+        <div class="grid">
+            {% for booking in bookings %}
+            <div class="room-card" style="padding: 1.5rem; position: relative; overflow: hidden; border: 1px solid #e2e8f0;">
+                {% if booking.status == 'Booked' %}
+                    <div style="position: absolute; top: 0; right: 0; background: var(--success); color: white; padding: 0.35rem 1rem; border-bottom-left-radius: 12px; font-weight: 600; font-size: 0.8rem; box-shadow: -2px 2px 10px rgba(0,0,0,0.1);">BOOKED</div>
+                {% elif booking.status == 'Pending' %}
+                    <div style="position: absolute; top: 0; right: 0; background: var(--warning); color: white; padding: 0.35rem 1rem; border-bottom-left-radius: 12px; font-weight: 600; font-size: 0.8rem; box-shadow: -2px 2px 10px rgba(0,0,0,0.1);">PENDING (Awaiting Payment)</div>
+                {% else %}
+                    <div style="position: absolute; top: 0; right: 0; background: var(--danger); color: white; padding: 0.35rem 1rem; border-bottom-left-radius: 12px; font-weight: 600; font-size: 0.8rem; box-shadow: -2px 2px 10px rgba(0,0,0,0.1);">CANCELLED</div>
+                {% endif %}
+
+                <h3 style="margin-top: 1rem; color: var(--primary-color);">{{ booking.hotel_name }}</h3>
+                <p class="text-muted" style="margin-bottom: 1rem;">{{ booking.room_type }} (Room {{ booking.room_number }})</p>
+                
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-in:</strong> {{ booking.check_in }}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-out:</strong> {{ booking.check_out }}</p>
+                    <p style="margin-top: 0.75rem; font-weight: 700; color: var(--accent-color); font-size: 1.1rem;">Rp {{ "{:,.0f}".format(booking.price) }}</p>
+                </div>
+
+                <div style="margin-top: auto; display: flex; gap: 0.5rem; flex-direction: column;">
+                    {% if booking.status == 'Cancelled' and booking.cancel_reason %}
+                        <div style="margin-bottom: 10px; padding: 8px; background: #fff5f5; border: 1px dashed #fc8181; border-radius: 6px;">
+                            <p style="color: #c53030; font-size: 0.85rem; margin: 0;"><strong>Reason:</strong> {{ booking.cancel_reason }}</p>
+                        </div>
+                    {% endif %}
+
+                    <div style="display: flex; gap: 0.5rem;">
+                        {% if booking.status == 'Pending' %}
+                            <a href="{{ url_for('booking.pay', booking_id=booking.id) }}" class="btn btn-warning" style="flex: 1; padding: 0.6rem; font-size: 0.85rem;">Pay Now</a>
+                        {% endif %}
+                        
+                        {% if booking.status == 'Booked' %}
+                            <a href="{{ url_for('booking.invoice', booking_id=booking.id) }}" class="btn btn-primary" style="flex: 1; padding: 0.6rem; font-size: 0.85rem;">View Invoice</a>
+                        {% endif %}
+
+                        {% if booking.status != 'Cancelled' %}
+                            <form action="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" method="POST" style="flex: 1;" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                <button type="submit" class="btn btn-danger" style="width: 100%; padding: 0.6rem; font-size: 0.85rem;">Cancel</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="background: var(--card-bg); padding: 3rem; text-align: center; border-radius: var(--radius); box-shadow: var(--shadow-soft);">
+            <p class="text-muted" style="font-size: 1.1rem;">You have no bookings yet.</p>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary" style="margin-top: 1rem;">Explore Hotels</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div>
+        <h2 style="color: var(--accent-color); margin-bottom: 1.5rem; font-family: 'Playfair Display', serif;">My Waiting Lists</h2>
+        
+        {% if waiting_lists %}
+        <div class="grid">
+            {% for wl in waiting_lists %}
+            <div class="room-card" style="padding: 1.5rem; border: 1px solid var(--accent-color); background: rgba(230, 126, 34, 0.02);">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                    <div style="background: var(--accent-color); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">WAITING</div>
+                    <h3 style="margin: 0; color: var(--primary-color);">{{ wl.hotel_name }}</h3>
+                </div>
+                <p class="text-muted">{{ wl.room_type }} (Room {{ wl.room_number }})</p>
+                <div style="margin-top: 1rem; border-top: 1px dashed #cbd5e1; padding-top: 1rem;">
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Desired Check-in:</strong> {{ wl.check_in }}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Desired Check-out:</strong> {{ wl.check_out }}</p>
+                </div>
+                <p style="margin-top: 1.5rem; color: var(--accent-color); font-size: 0.85rem; font-style: italic; text-align: center;">
+                    You will be notified if this room becomes available.
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">You are not on any waiting lists.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
