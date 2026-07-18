@@ -1,8 +1,7 @@
 import os
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
-from werkzeug.utils import secure_filename
 from db import get_db_connection
-from utils import admin_required, allowed_file, delete_image_file
+from utils import admin_required, delete_image_file, save_file
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -50,14 +49,22 @@ def hotels():
         hotel_id = cursor.lastrowid
         
         files = request.files.getlist('images')
-        for file in files:
-            if file and file.filename != '' and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                image_url = url_for('static', filename=f"uploads/hotels/{filename}")
-                cursor.execute("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", (hotel_id, image_url))
-        
+        saved_image_urls = []
+        try:
+            for file in files:
+                if file and file.filename != '':
+                    image_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
+                    saved_image_urls.append(image_url)
+                    cursor.execute("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", (hotel_id, image_url))
+        except ValueError as e:
+            for image_url in saved_image_urls:
+                delete_image_file(image_url, current_app.root_path)
+            conn.rollback()
+            cursor.close()
+            conn.close()
+            flash(str(e), 'danger')
+            return redirect(url_for('admin.hotels'))
+
         conn.commit()
         flash("Hotel added successfully!", "success")
         return redirect(url_for('admin.hotels'))
@@ -100,14 +107,22 @@ def edit_hotel(id):
             delete_image_file(old['image_url'], current_app.root_path)
             
         cursor.execute("DELETE FROM hotel_images WHERE hotel_id = %s", (id,))
-        
-        for file in files:
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                image_url = url_for('static', filename=f"uploads/hotels/{filename}")
-                cursor.execute("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", (id, image_url))
+
+        saved_image_urls = []
+        try:
+            for file in files:
+                if file and file.filename != '':
+                    image_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
+                    saved_image_urls.append(image_url)
+                    cursor.execute("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", (id, image_url))
+        except ValueError as e:
+            for image_url in saved_image_urls:
+                delete_image_file(image_url, current_app.root_path)
+            conn.rollback()
+            cursor.close()
+            conn.close()
+            flash(str(e), 'danger')
+            return redirect(url_for('admin.hotels'))
                 
     conn.commit()
     cursor.close()
@@ -141,14 +156,22 @@ def rooms():
                       (hotel_id, room_number, room_type, price))
         room_id = cursor.lastrowid
         
-        files = request.files.getlist('images')
-        for file in files:
-            if file and file.filename != '' and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                image_url = url_for('static', filename=f"uploads/hotels/{filename}")
-                cursor.execute("INSERT INTO room_images (room_id, image_url) VALUES (%s, %s)", (room_id, image_url))
+        saved_image_urls = []
+        try:
+            files = request.files.getlist('images')
+            for file in files:
+                if file and file.filename != '':
+                    image_url = save_file(file, current_app.config['ROOM_UPLOAD_FOLDER'], 'uploads/rooms')
+                    saved_image_urls.append(image_url)
+                    cursor.execute("INSERT INTO room_images (room_id, image_url) VALUES (%s, %s)", (room_id, image_url))
+        except ValueError as e:
+            for image_url in saved_image_urls:
+                delete_image_file(image_url, current_app.root_path)
+            conn.rollback()
+            cursor.close()
+            conn.close()
+            flash(str(e), 'danger')
+            return redirect(url_for('admin.rooms'))
         
         conn.commit()
         flash("Room added successfully!", "success")
@@ -190,14 +213,22 @@ def edit_room(id):
             delete_image_file(old['image_url'], current_app.root_path)
             
         cursor.execute("DELETE FROM room_images WHERE room_id = %s", (id,))
-        
-        for file in files:
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                image_url = url_for('static', filename=f"uploads/hotels/{filename}")
-                cursor.execute("INSERT INTO room_images (room_id, image_url) VALUES (%s, %s)", (id, image_url))
+
+        saved_image_urls = []
+        try:
+            for file in files:
+                if file and file.filename != '':
+                    image_url = save_file(file, current_app.config['ROOM_UPLOAD_FOLDER'], 'uploads/rooms')
+                    saved_image_urls.append(image_url)
+                    cursor.execute("INSERT INTO room_images (room_id, image_url) VALUES (%s, %s)", (id, image_url))
+        except ValueError as e:
+            for image_url in saved_image_urls:
+                delete_image_file(image_url, current_app.root_path)
+            conn.rollback()
+            cursor.close()
+            conn.close()
+            flash(str(e), 'danger')
+            return redirect(url_for('admin.rooms'))
                 
     conn.commit()
     cursor.close()

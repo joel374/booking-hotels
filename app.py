@@ -17,9 +17,13 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 
 # Setup File Uploads
-UPLOAD_FOLDER = os.path.join('static', 'uploads', 'hotels')
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+HOTEL_UPLOAD_FOLDER = os.path.join('static', 'uploads', 'hotels')
+ROOM_UPLOAD_FOLDER = os.path.join('static', 'uploads', 'rooms')
+os.makedirs(HOTEL_UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(ROOM_UPLOAD_FOLDER, exist_ok=True)
+app.config['HOTEL_UPLOAD_FOLDER'] = HOTEL_UPLOAD_FOLDER
+app.config['ROOM_UPLOAD_FOLDER'] = ROOM_UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = HOTEL_UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 # Session Setup

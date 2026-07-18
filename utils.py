@@ -1,11 +1,39 @@
+import os
+import uuid
 from functools import wraps
 from flask import session, flash, redirect, url_for
+from werkzeug.utils import secure_filename
 from db import get_db_connection
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
+MAX_FILE_SIZE = 16 * 1024 * 1024
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def save_file(file, upload_folder, relative_upload_folder):
+    if not file or file.filename == '':
+        raise ValueError('No file selected for upload.')
+
+    if not allowed_file(file.filename):
+        raise ValueError('Invalid file type. Only PNG, JPG, JPEG, and WEBP are allowed.')
+
+    stream = getattr(file, 'stream', file)
+    stream.seek(0, os.SEEK_END)
+    file_size = stream.tell()
+    stream.seek(0)
+
+    if file_size > MAX_FILE_SIZE:
+        raise ValueError('File is too large. Maximum size is 16 MB.')
+
+    filename = secure_filename(file.filename)
+    unique_filename = f"{uuid.uuid4().hex}_{filename}"
+    os.makedirs(upload_folder, exist_ok=True)
+    filepath = os.path.join(upload_folder, unique_filename)
+    file.save(filepath)
+
+    return f"/static/{relative_upload_folder}/{unique_filename}"
 
 def delete_image_file(image_url, app_root):
     if not image_url: return
