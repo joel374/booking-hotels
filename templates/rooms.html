@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block hero %}
+<style>
+.hero-slider {
+    position: relative;
+    height: 50vh;
+    min-height: 300px;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Firefox */
+    margin: 0;
+    padding: 0;
+}
+.hero-slider::-webkit-scrollbar { display: none; } /* Chrome */
+.hero-slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+.hero-static-content {
+    position: absolute;
+    top: 50%;
+    left: 5%;
+    transform: translateY(-50%);
+    z-index: 20;
+    color: white;
+}
+.slide-nav {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 20;
+}
+.dot {
+    width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: 0.3s;
+}
+.dot.active { background: white; transform: scale(1.2); }
+</style>
+
+<div style="position: relative;">
+    <div class="hero-slider" id="hotelSlider">
+        {% for img in hotel.images %}
+        <div class="hero-slide" style="background-image: url('{{ img }}');">
+            <div class="hero-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to right, rgba(10,25,47,0.8), rgba(10,25,47,0.2));"></div>
+        </div>
+        {% else %}
+        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');">
+            <div class="hero-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to right, rgba(10,25,47,0.8), rgba(10,25,47,0.2));"></div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="hero-static-content">
+        <h1 style="font-size: 3rem; margin-bottom: 0.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">{{ hotel.name }}</h1>
+        <p style="font-size: 1.2rem; font-weight: 300; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>{{ hotel.location }}</p>
+    </div>
+    
+    {% if hotel.images and hotel.images|length > 1 %}
+    <div class="slide-nav" id="sliderDots">
+        {% for img in hotel.images %}
+        <div class="dot {% if loop.first %}active{% endif %}" onclick="scrollToSlide({{ loop.index0 }})"></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function scrollToSlide(index) {
+    const slider = document.getElementById('hotelSlider');
+    const width = slider.clientWidth;
+    slider.scrollTo({ left: width * index, behavior: 'smooth' });
+    
+    const dots = document.getElementById('sliderDots').children;
+    for(let i=0; i<dots.length; i++) {
+        dots[i].classList.remove('active');
+    }
+    dots[index].classList.add('active');
+}
+
+// Update dots on scroll
+document.getElementById('hotelSlider').addEventListener('scroll', function() {
+    const slider = this;
+    const width = slider.clientWidth;
+    const index = Math.round(slider.scrollLeft / width);
+    
+    const dots = document.getElementById('sliderDots');
+    if(dots) {
+        for(let i=0; i<dots.children.length; i++) {
+            dots.children[i].classList.remove('active');
+        }
+        if(dots.children[index]) dots.children[index].classList.add('active');
+    }
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 2rem; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow-soft); margin-top: -60px; position: relative; z-index: 10; margin-bottom: 3rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <a href="{{ url_for('main.index') }}" style="color: var(--accent-color); text-decoration: none; font-weight: 600; font-size: 0.95rem;">&larr; Kembali ke Pencarian</a>
+            <p class="text-muted" style="margin-top: 10px; margin-bottom: 0;">Ketersediaan untuk: <strong style="color: var(--primary-color);">{{ check_in }}</strong> hingga <strong style="color: var(--primary-color);">{{ check_out }}</strong></p>
+        </div>
+        <div style="text-align: right;">
+            <p style="margin: 0; color: var(--text-main); font-size: 0.9rem; font-weight: 600;">Deskripsi Hotel:</p>
+            <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.85rem; max-width: 400px; line-height: 1.5;">{{ hotel.description[:150] }}...</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.room-carousel {
+    width: 100%; 
+    height: 220px; 
+    display: flex; 
+    overflow-x: auto; 
+    scroll-snap-type: x mandatory; 
+    scrollbar-width: none;
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+.room-carousel::-webkit-scrollbar { display: none; }
+.room-carousel img {
+    flex: 0 0 100%; 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    scroll-snap-align: start;
+}
+.room-card { overflow: hidden; } /* Ensure radius is respected */
+</style>
+
+<h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">Kamar Tersedia</h2>
+{% if available_rooms %}
+<div class="grid">
+    {% for room in available_rooms %}
+    <div class="room-card">
+        <div class="room-carousel">
+            {% for img in room.images %}
+            <img src="{{ img }}" alt="{{ room.room_type }}">
+            {% else %}
+            <div style="flex: 0 0 100%; width: 100%; height: 100%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #94a3b8;">Tidak ada foto</div>
+            {% endfor %}
+        </div>
+        
+        <div class="room-card-content">
+            <h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 0.5rem;">{{ room.room_type }}</h3>
+            <p class="text-muted" style="font-size: 0.9rem; margin-top: 0;">Nomor Kamar: {{ room.room_number }}</p>
+            
+            <div style="margin: 1.5rem 0; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Harga per malam</span>
+                <p style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin: 0.2rem 0 0 0;">Rp {{ "{:,.0f}".format(room.price) }}</p>
+            </div>
+            
+            <a href="{{ url_for('booking.book_room', room_id=room.id, check_in=check_in, check_out=check_out) }}" class="btn btn-primary" style="width: 100%; box-sizing: border-box; text-align: center;">Pesan Sekarang</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style="padding: 3rem; text-align: center; background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
+    <p class="text-muted" style="font-size: 1.1rem;">Maaf, tidak ada kamar yang tersedia untuk tanggal tersebut.</p>
+</div>
+{% endif %}
+
+<h2 style="margin-top: 4rem; margin-bottom: 1.5rem; color: var(--primary-color);">Kamar Penuh (Waiting List)</h2>
+{% if booked_rooms %}
+<div class="grid">
+    {% for room in booked_rooms %}
+    <div class="room-card" style="opacity: 0.7; background: #f8fafc;">
+        <div class="room-carousel">
+            {% for img in room.images %}
+            <img src="{{ img }}" alt="{{ room.room_type }}">
+            {% else %}
+            <div style="flex: 0 0 100%; width: 100%; height: 100%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #94a3b8;">Tidak ada foto</div>
+            {% endfor %}
+        </div>
+        
+        <div class="room-card-content">
+            <h3 style="color: var(--text-muted); margin-top: 0; margin-bottom: 0.5rem;">{{ room.room_type }}</h3>
+            <p class="text-muted" style="font-size: 0.9rem; margin-top: 0;">Nomor Kamar: {{ room.room_number }}</p>
+            
+            <div style="margin: 1.5rem 0; padding-top: 1rem; border-top: 1px dashed #e2e8f0;">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Status</span>
+                <p style="color: var(--danger); font-weight: 600; margin: 0.2rem 0 0 0;">Tidak Tersedia</p>
+            </div>
+            
+            <form action="{{ url_for('booking.join_waitlist', room_id=room.id) }}" method="POST" style="margin: 0;">
+                <input type="hidden" name="check_in" value="{{ check_in }}">
+                <input type="hidden" name="check_out" value="{{ check_out }}">
+                <button type="submit" class="btn" style="width: 100%; box-sizing: border-box; background: #cbd5e1; color: #475569;">Gabung Waiting List</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted" style="margin-bottom: 4rem;">Tidak ada kamar yang sedang dipesan.</p>
+{% endif %}
+{% endblock %}
