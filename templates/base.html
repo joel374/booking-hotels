@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Hotels</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar {% if request.endpoint != 'main.index' %}scrolled{% endif %}" id="navbar">
+        <a href="{{ url_for('main.index') }}" class="navbar-brand">Antigravity Hotels</a>
+        
+        <div class="nav-links center-nav" id="navLinks">
+            <a href="{{ url_for('main.index') }}">Home</a>
+            <a href="{{ url_for('main.about') }}">About Us</a>
+            <a href="{{ url_for('main.contact') }}">Contact</a>
+        </div>
+
+        <div class="nav-actions">
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('booking.my_bookings') }}" class="login-btn">My Bookings</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">Logout</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="login-btn">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">Register</a>
+            {% endif %}
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    {% block hero %}{% endblock %}
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+        // SweetAlert2 for Flash Messages
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    let iconType = 'info';
+                    if ('{{ category }}' === 'success') iconType = 'success';
+                    else if ('{{ category }}' === 'danger') iconType = 'error';
+                    else if ('{{ category }}' === 'warning') iconType = 'warning';
+
+                    const Toast = Swal.mixin({
+                      toast: true,
+                      position: 'top-end',
+                      showConfirmButton: false,
+                      timer: 5000,
+                      timerProgressBar: true,
+                      background: '#111827',
+                      color: '#f8fafc',
+                      iconColor: '#D4AF37',
+                      didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                      }
+                    });
+
+                    Toast.fire({
+                      icon: iconType,
+                      title: '{{ message }}'
+                    });
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        // Mobile Menu
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            document.getElementById('navLinks').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
