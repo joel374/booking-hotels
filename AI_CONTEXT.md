@@ -9,6 +9,7 @@
 ## 🎯 Project Overview
 
 Aplikasi booking hotel dengan fitur:
+
 - Customer: Browse hotels, search by location, book rooms
 - Admin: Manage hotels/rooms, view bookings, upload images
 - Auth: Local login/register + Google OAuth ready
@@ -95,36 +96,45 @@ booking-hotels/
 ### **Key Tables:**
 
 **1. users**
+
 - `id`, `username`, `password_hash`, `email`, `role` (customer/admin)
 - `google_id`, `auth_provider` (local/google)
 
 **2. provinces** (Master data)
+
 - `province_id`, `province` (34 provinces)
 
 **3. cities** (Master data)
+
 - `city_id`, `province_id`, `city_name` (489 cities)
 
 **4. hotels**
+
 - `id`, `name`, `location`, `description`, `province_id`, `city_id`
 - NO `image_url` (migrated to separate table)
 
 **5. hotel_images** (One-to-Many)
+
 - `id`, `hotel_id`, `image_url`
 - **CASCADE DELETE**: Deleting hotel deletes images
 
 **6. rooms**
+
 - `id`, `hotel_id`, `room_number`, `room_type`, `price`
 
 **7. room_images** (One-to-Many)
+
 - `id`, `room_id`, `image_url`
 - **CASCADE DELETE**: Deleting room deletes images
 
 **8. bookings**
+
 - `id`, `user_id`, `room_id`, `guest_name`, `contact_number`
 - `check_in`, `check_out`, `payment_method`
 - `status` (Pending/Booked/Cancelled), `created_at`
 
 **9. waiting_lists**
+
 - `id`, `user_id`, `room_id`, `check_in`, `check_out`
 
 ---
@@ -136,6 +146,7 @@ booking-hotels/
 **Route:** `GET /rooms?province_id=X&city_id=Y&check_in=...&check_out=...`
 
 **Logic:**
+
 ```python
 # routes/main.py::rooms()
 
@@ -163,6 +174,7 @@ query = """
 ```
 
 **⚠️ Known Issues:**
+
 - Availability logic might have edge cases (overlapping dates)
 
 ---
@@ -172,6 +184,7 @@ query = """
 **Route:** `GET /api/hotels?city_id=X&page=Y`
 
 **Logic:**
+
 ```python
 # routes/main.py::api_hotels()
 # 1. Base query for hotels in a city
@@ -181,6 +194,7 @@ query = """
 ```
 
 **Frontend Interaction (`city_hotels.html`):**
+
 - Uses `IntersectionObserver` to detect when the user scrolls near the bottom of the page.
 - Injects a Skeleton Loader animation while fetching data.
 - Fetches the next page of hotels via `/api/hotels` and appends them to the DOM without refreshing the page.
@@ -190,6 +204,7 @@ query = """
 ### **2. Dynamic Location Filter (AJAX)**
 
 **User Flow:**
+
 ```
 1. User selects province dropdown
 2. JavaScript triggers onChange event
@@ -198,40 +213,42 @@ query = """
 ```
 
 **Frontend (templates/rooms.html):**
+
 ```javascript
-document.getElementById('province_id').addEventListener('change', function() {
-    const provinceId = this.value;
-    
-    // Fetch cities via AJAX
-    fetch(`/get_cities/${provinceId}`)
-        .then(response => response.json())
-        .then(cities => {
-            const citySelect = document.getElementById('city_id');
-            citySelect.innerHTML = '<option value="">All Cities</option>';
-            
-            cities.forEach(city => {
-                citySelect.innerHTML += `<option value="${city.city_id}">${city.city_name}</option>`;
-            });
-        });
+document.getElementById("province_id").addEventListener("change", function () {
+  const provinceId = this.value;
+
+  // Fetch cities via AJAX
+  fetch(`/get_cities/${provinceId}`)
+    .then((response) => response.json())
+    .then((cities) => {
+      const citySelect = document.getElementById("city_id");
+      citySelect.innerHTML = '<option value="">All Cities</option>';
+
+      cities.forEach((city) => {
+        citySelect.innerHTML += `<option value="${city.city_id}">${city.city_name}</option>`;
+      });
+    });
 });
 ```
 
 **Backend (routes/main.py):**
+
 ```python
 @main_bp.route('/get_cities/<province_id>')
 def get_cities(province_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
+
     cursor.execute(
         "SELECT city_id, city_name FROM cities WHERE province_id = %s ORDER BY city_name",
         (province_id,)
     )
     cities = cursor.fetchall()
-    
+
     cursor.close()
     conn.close()
-    
+
     return jsonify(cities)  # Return JSON
 ```
 
@@ -240,6 +257,7 @@ def get_cities(province_id):
 ### **3. Image Upload & Storage**
 
 **Upload Flow:**
+
 ```
 Admin uploads hotel image
     ↓
@@ -257,6 +275,7 @@ Physical file stored, DB record created
 ```
 
 **Delete Flow:**
+
 ```
 Admin deletes hotel
     ↓
@@ -270,6 +289,7 @@ utils.py::cleanup_unused_images('hotels')
 ```
 
 **⚠️ Known Issues:**
+
 - `cleanup_unused_images()` might NOT be called automatically
 - Potential orphaned files if delete fails midway
 - No file size validation (could upload huge images)
@@ -279,6 +299,7 @@ utils.py::cleanup_unused_images('hotels')
 ### **4. Booking Flow**
 
 **Complete Flow:**
+
 ```
 1. User clicks "Book Room" on /rooms page
    → GET /booking/<room_id>
@@ -310,6 +331,7 @@ utils.py::cleanup_unused_images('hotels')
 ```
 
 **⚠️ Known Issues:**
+
 - Pending bookings expire after 15 minutes (db.py::cleanup_expired_bookings)
 - BUT cleanup function might NOT run automatically
 - Race condition: Multiple users booking same room at same time
@@ -321,6 +343,7 @@ utils.py::cleanup_unused_images('hotels')
 **Route:** `GET /admin/dashboard`
 
 **Logic:**
+
 ```python
 # routes/admin.py::dashboard()
 
@@ -358,7 +381,7 @@ cursor.execute("""
 recent_bookings = cursor.fetchall()
 
 # 6. Render dashboard
-return render_template('admin/dashboard.html', 
+return render_template('admin/dashboard.html',
     total_hotels=total_hotels,
     total_rooms=total_rooms,
     total_bookings=total_bookings,
@@ -374,6 +397,7 @@ return render_template('admin/dashboard.html',
 ### **Issue 1: Booking Availability Race Condition**
 
 **Problem:**
+
 ```python
 # User A checks availability → Room available
 # User B checks availability → Room available (same time)
@@ -390,12 +414,13 @@ return render_template('admin/dashboard.html',
 ### **Issue 2: Expired Bookings Not Auto-Cleaned**
 
 **Problem:**
+
 ```python
 # db.py::cleanup_expired_bookings() exists but NOT called automatically
 def cleanup_expired_bookings(cursor):
     query = """
-        UPDATE bookings 
-        SET status = 'Cancelled' 
+        UPDATE bookings
+        SET status = 'Cancelled'
         WHERE status = 'Pending' AND created_at < NOW() - INTERVAL 15 MINUTE
     """
     cursor.execute(query)
@@ -410,6 +435,7 @@ def cleanup_expired_bookings(cursor):
 ### **Issue 3: Orphaned Image Files**
 
 **Problem:**
+
 - Admin deletes hotel → DB records deleted (CASCADE)
 - Physical files in `static/uploads/hotels/` NOT deleted automatically
 - `cleanup_unused_images()` exists but might not be called
@@ -423,6 +449,7 @@ def cleanup_expired_bookings(cursor):
 ### **Issue 4: No File Upload Validation**
 
 **Problem:**
+
 - No max file size check
 - No file type validation (could upload .exe, .php)
 - Could fill up disk space
@@ -436,6 +463,7 @@ def cleanup_expired_bookings(cursor):
 ### **Issue 5: Session Expiry Not Handled**
 
 **Problem:**
+
 - Flask session might expire
 - User not redirected to login properly
 - No refresh token mechanism
@@ -453,11 +481,12 @@ def cleanup_expired_bookings(cursor):
 **File:** `routes/booking.py`
 
 **Current Logic:**
+
 ```python
 # Check if room already booked
 cursor.execute("""
-    SELECT * FROM bookings 
-    WHERE room_id = %s 
+    SELECT * FROM bookings
+    WHERE room_id = %s
     AND status != 'Cancelled'
     AND NOT (check_out <= %s OR check_in >= %s)
 """, (room_id, check_in, check_out))
@@ -476,15 +505,16 @@ if cursor.fetchone():
 **File:** `routes/booking.py` (or create middleware)
 
 **Add this before booking queries:**
+
 ```python
 def booking_form(room_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
+
     # CALL CLEANUP HERE
     cleanup_expired_bookings(cursor)
     conn.commit()
-    
+
     # Rest of code...
 ```
 
@@ -495,6 +525,7 @@ def booking_form(room_id):
 **File:** `utils.py`
 
 **Current:**
+
 ```python
 def save_file(file, folder):
     filename = secure_filename(file.filename)
@@ -505,6 +536,7 @@ def save_file(file, folder):
 ```
 
 **Fix:**
+
 ```python
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
@@ -513,14 +545,14 @@ def save_file(file, folder):
     # Validate file type
     if not allowed_file(file.filename):
         raise ValueError('Invalid file type')
-    
+
     # Validate file size
     file.seek(0, os.SEEK_END)
     file_size = file.tell()
     if file_size > MAX_FILE_SIZE:
         raise ValueError('File too large')
     file.seek(0)
-    
+
     # Save file
     filename = secure_filename(file.filename)
     filepath = os.path.join('static', 'uploads', folder, filename)
@@ -535,22 +567,23 @@ def save_file(file, folder):
 **File:** `routes/admin.py`
 
 **After deleting hotel:**
+
 ```python
 @admin_bp.route('/admin/delete_hotel/<int:hotel_id>', methods=['POST'])
 def delete_hotel(hotel_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute("DELETE FROM hotels WHERE id = %s", (hotel_id,))
     conn.commit()
-    
+
     # ADD THIS
     cleanup_unused_images('hotels')
     cleanup_unused_images('rooms')  # In case rooms deleted too (CASCADE)
-    
+
     cursor.close()
     conn.close()
-    
+
     flash('Hotel deleted successfully')
     return redirect('/admin/hotels')
 ```
@@ -560,6 +593,7 @@ def delete_hotel(hotel_id):
 ## 🎯 Guidelines for AI Assistant
 
 ### **DO:**
+
 - ✅ Maintain Flask + Jinja2 structure (no React, Vue, etc.)
 - ✅ Use existing `db.py::get_db_connection()` for DB access
 - ✅ Follow existing route patterns (Blueprints)
@@ -570,6 +604,7 @@ def delete_hotel(hotel_id):
 - ✅ **ALWAYS update this AI_CONTEXT.md file** after completing a task or preparing a commit, so the context is always fresh.
 
 ### **DON'T:**
+
 - ❌ Don't introduce frontend frameworks (React, Vue, Angular)
 - ❌ Don't change database schema without migration plan
 - ❌ Don't remove existing functionality
@@ -578,6 +613,7 @@ def delete_hotel(hotel_id):
 - ❌ Don't hardcode credentials or secrets
 
 ### **When Fixing Bugs:**
+
 1. Identify root cause
 2. Propose minimal fix (follow existing patterns)
 3. Consider side effects (CASCADE deletes, etc.)
@@ -585,9 +621,10 @@ def delete_hotel(hotel_id):
 5. Update comments in code
 
 ### **When Adding Features:**
+
 1. Check if functionality already exists
 2. Follow existing code style and structure
-3. Add to appropriate Blueprint (routes/*.py)
+3. Add to appropriate Blueprint (routes/\*.py)
 4. Create/update templates in templates/
 5. Update CSS in static/css/style.css if needed
 6. Consider security (SQL injection, XSS, file upload)
@@ -599,6 +636,7 @@ def delete_hotel(hotel_id):
 Before marking task complete:
 
 **Frontend:**
+
 - [ ] Page loads without errors (check browser console)
 - [ ] Forms submit correctly
 - [ ] Flash messages display properly
@@ -606,6 +644,7 @@ Before marking task complete:
 - [ ] Responsive on mobile (basic check)
 
 **Backend:**
+
 - [ ] Database queries execute (no SQL errors)
 - [ ] Data saved correctly to database
 - [ ] Redirects work after POST requests
@@ -613,6 +652,7 @@ Before marking task complete:
 - [ ] Session/auth checks work
 
 **Security:**
+
 - [ ] SQL queries use parameterized statements (no string concat)
 - [ ] File uploads validated (type, size)
 - [ ] Auth decorators applied to protected routes
@@ -622,8 +662,7 @@ Before marking task complete:
 
 ## 📞 Help Resources
 
-- **Setup issues:** See `SETUP_GUIDE.md`
-- **File reference:** See `PROJECT_FILES.md`
+- **Setup issues:** See `SETUP_GUIDE.md` - **File reference:** See `PROJECT_FILES.md`
 - **Code explanation:** See `penjelasan_kode.md`
 - **Database schema:** See `schema.sql`
 - **Migration notes:** See `MIGRATION_NOTES.md`
@@ -633,12 +672,14 @@ Before marking task complete:
 ## ✅ Quick Reference
 
 ### **Run Application:**
+
 ```bash
 source venv/Scripts/activate  # Git Bash
 python app.py
 ```
 
 ### **Database Operations:**
+
 ```bash
 python init_db.py           # Initialize DB
 python verify_setup.py      # Verify setup
@@ -646,6 +687,7 @@ mysql -u root -p hotel_booking  # Access DB
 ```
 
 ### **Common Queries:**
+
 ```sql
 -- Check bookings
 SELECT * FROM bookings WHERE status = 'Pending';
@@ -667,37 +709,41 @@ GROUP BY r.id;
 
 ## 👥 Team Modules & Ownership (Pembagian Tim)
 
-Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa menimbulkan *merge conflict* pada Git. Berikut adalah pembagian modul dan kepemilikannya:
+Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa menimbulkan _merge conflict_ pada Git. Berikut adalah pembagian modul dan kepemilikannya:
 
 ### **Modul 1: Akun & Keamanan (Modul Auth)**
-*   **Fokus:** Autentikasi, Profil Pengguna, dan Keamanan.
-*   **Wilayah Kode (Ownership):**
-    *   `routes/auth.py`
-    *   `templates/auth/` (atau file-file login/register)
-*   **Tabel Database:** `users`
-*   **Next Enhancements:** Halaman Profil Pengguna (`/profile`), Fitur Lupa Password, Verifikasi Email pendaftaran.
+
+- **Fokus:** Autentikasi, Profil Pengguna, dan Keamanan.
+- **Wilayah Kode (Ownership):**
+  - `routes/auth.py`
+  - `templates/auth/` (atau file-file login/register)
+- **Tabel Database:** `users`
+- **Next Enhancements:** Halaman Profil Pengguna (`/profile`), Fitur Lupa Password, Verifikasi Email pendaftaran.
 
 ### **Modul 2: Katalog & Admin (Modul Inventory)**
-*   **Fokus:** Dasbor Admin, Manajemen Hotel/Kamar, dan *File System* (Upload/Hapus Gambar).
-*   **Wilayah Kode (Ownership):**
-    *   `routes/admin.py`
-    *   `utils.py` (Fungsi unggah & hapus gambar fisik, Decorators)
-    *   `templates/admin/`
-*   **Tabel Database:** `hotels`, `rooms`, `hotel_images`, `room_images`, `provinces`, `cities`.
-*   **Next Enhancements:** Grafik/Statistik di Dasbor, *Soft Delete* untuk hotel, Fitur Pencarian/Pagination di tabel admin, Kompresi gambar dengan library Pillow.
+
+- **Fokus:** Dasbor Admin, Manajemen Hotel/Kamar, dan _File System_ (Upload/Hapus Gambar).
+- **Wilayah Kode (Ownership):**
+  - `routes/admin.py`
+  - `utils.py` (Fungsi unggah & hapus gambar fisik, Decorators)
+  - `templates/admin/`
+- **Tabel Database:** `hotels`, `rooms`, `hotel_images`, `room_images`, `provinces`, `cities`.
+- **Next Enhancements:** Grafik/Statistik di Dasbor, _Soft Delete_ untuk hotel, Fitur Pencarian/Pagination di tabel admin, Kompresi gambar dengan library Pillow.
 
 ### **Modul 3: Pencarian & Transaksi (Modul Booking)**
-*   **Fokus:** Tampilan pelanggan, Filter Ketersediaan, dan Proses Pemesanan (Checkout).
-*   **Wilayah Kode (Ownership):**
-    *   `routes/main.py`
-    *   `routes/booking.py`
-    *   `templates/index.html`, `templates/rooms.html`, `templates/booking_form.html`, `templates/city_hotels.html` dll.
-*   **Tabel Database:** `bookings`, `waiting_lists`.
-*   **Next Enhancements:** Integrasi Payment Gateway (Midtrans), Sistem Ulasan (Reviews), Kirim Invoice PDF via Email.
-*   **Recent Updates:** 
-    - Pembersihan *inline-style* di seluruh HTML Modul 3 dan standarisasi CSS.
-    - Implementasi *Horizontal Scroll* ala Netflix di Beranda (`index.html`).
-    - Implementasi *Infinite Scroll* (AJAX API & IntersectionObserver) dengan *Skeleton Loader* di halaman Kota (`city_hotels.html`).
+
+- **Fokus:** Tampilan pelanggan, Filter Ketersediaan, dan Proses Pemesanan (Checkout).
+- **Wilayah Kode (Ownership):**
+  - `routes/main.py`
+  - `routes/booking.py`
+  - `templates/index.html`, `templates/rooms.html`, `templates/booking_form.html`, `templates/city_hotels.html` dll.
+- **Tabel Database:** `bookings`, `waiting_lists`.
+- **Next Enhancements:** Integrasi Payment Gateway (Midtrans), Sistem Ulasan (Reviews), Kirim Invoice PDF via Email.
+
+* **Recent Updates:**
+  - Pembersihan _inline-style_ di seluruh HTML Modul 3 dan standarisasi CSS.
+  - Implementasi _Horizontal Scroll_ ala Netflix di Beranda (`index.html`).
+  - Implementasi _Infinite Scroll_ (AJAX API & IntersectionObserver) dengan _Skeleton Loader_ di halaman Kota (`city_hotels.html`).
 
 ---
 

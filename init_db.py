@@ -22,15 +22,14 @@ def init_db():
         with open('schema.sql', 'r', encoding='utf-8') as f:
             sql_script = f.read()
         
-        statements = sql_script.split(';')
-        
-        for statement in statements:
+        for statement in sql_script.split(';'):
             statement = statement.strip()
-            if statement:
-                try:
-                    cursor.execute(statement)
-                except mysql.connector.Error as err:
-                    print(f"Warning: {err}")
+            if not statement:
+                continue
+            try:
+                cursor.execute(statement)
+            except mysql.connector.Error as err:
+                print(f"Warning: {err}")
         
         conn.commit()
         print("[OK] Schema created successfully")
@@ -44,15 +43,14 @@ def init_db():
         with open('seed_data.sql', 'r', encoding='utf-8') as f:
             sql_script = f.read()
         
-        statements = sql_script.split(';')
-        
-        for statement in statements:
+        for statement in sql_script.split(';'):
             statement = statement.strip()
-            if statement and not statement.startswith('--'):
-                try:
-                    cursor.execute(statement)
-                except mysql.connector.Error as err:
-                    print(f"Warning: {err}")
+            if not statement:
+                continue
+            try:
+                cursor.execute(statement)
+            except mysql.connector.Error as err:
+                print(f"Warning: {err}")
         
         conn.commit()
         print("[OK] Seed data inserted successfully")
