@@ -1,9 +1,60 @@
 import os
+from decimal import Decimal
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
 from db import get_db_connection
 from utils import admin_required, delete_image_file, save_file
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+
+def fetch_images_by_parent(cursor, table_name, parent_field, values):
+    if not values:
+        return {}
+
+    placeholders = ', '.join(['%s'] * len(values))
+    query = f"SELECT {parent_field}, image_url FROM {table_name} WHERE {parent_field} IN ({placeholders})"
+    cursor.execute(query, values)
+    rows = cursor.fetchall()
+
+    grouped = {}
+    for row in rows:
+        grouped.setdefault(row[parent_field], []).append(row['image_url'])
+    return grouped
+
+
+def validate_hotel_fields(name, location, province_id, city_id, description):
+    if not name.strip() or not location.strip() or not province_id or not city_id or not description.strip():
+        return False, 'Please fill in all required hotel fields.'
+    return True, ''
+
+
+def validate_room_fields(cursor, hotel_id, room_number, room_type, price, exclude_room_id=None):
+    if not hotel_id:
+        return False, 'Please select a hotel for this room.'
+    if not room_number.strip() or not room_type.strip() or not price:
+        return False, 'Please fill in all required room fields.'
+    try:
+        price_value = Decimal(price)
+        if price_value <= 0:
+            return False, 'Room price must be greater than zero.'
+    except Exception:
+        return False, 'Room price must be a valid number.'
+
+    cursor.execute('SELECT id FROM hotels WHERE id = %s', (hotel_id,))
+    if not cursor.fetchone():
+        return False, 'Selected hotel does not exist.'
+
+    duplicate_query = 'SELECT id FROM rooms WHERE hotel_id = %s AND room_number = %s'
+    params = [hotel_id, room_number.strip()]
+    if exclude_room_id:
+        duplicate_query += ' AND id != %s'
+        params.append(exclude_room_id)
+
+    cursor.execute(duplicate_query, params)
+    if cursor.fetchone():
+        return False, 'This room number already exists for the selected hotel.'
+
+    return True, ''
 
 @admin_bp.route('/dashboard')
 @admin_required
@@ -38,11 +89,18 @@ def hotels():
     cursor = conn.cursor(dictionary=True)
     
     if request.method == 'POST':
-        name = request.form['name']
-        location = request.form['location']
+        name = request.form.get('name', '').strip()
+        location = request.form.get('location', '').strip()
         province_id = request.form.get('province_id')
         city_id = request.form.get('city_id')
-        description = request.form['description']
+        description = request.form.get('description', '').strip()
+
+        valid, message = validate_hotel_fields(name, location, province_id, city_id, description)
+        if not valid:
+            flash(message, 'danger')
+            cursor.close()
+            conn.close()
+            return redirect(url_for('admin.hotels'))
         
         cursor.execute("INSERT INTO hotels (name, location, province_id, city_id, description) VALUES (%s, %s, %s, %s, %s)",
                       (name, location, province_id, city_id, description))
@@ -71,11 +129,11 @@ def hotels():
         
     cursor.execute("SELECT h.*, p.province, c.city_name FROM hotels h LEFT JOIN provinces p ON h.province_id = p.province_id LEFT JOIN cities c ON h.city_id = c.city_id")
     hotel_list = cursor.fetchall()
-    
+    hotel_ids = [hotel['id'] for hotel in hotel_list]
+    images_by_hotel = fetch_images_by_parent(cursor, 'hotel_images', 'hotel_id', hotel_ids)
+
     for hotel in hotel_list:
-        cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel['id'],))
-        imgs = cursor.fetchall()
-        hotel['images'] = [img['image_url'] for img in imgs]
+        hotel['images'] = images_by_hotel.get(hotel['id'], [])
     
     cursor.execute("SELECT * FROM provinces ORDER BY province")
     provinces = cursor.fetchall()
@@ -90,15 +148,22 @@ def edit_hotel(id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    name = request.form['name']
-    location = request.form['location']
+    name = request.form.get('name', '').strip()
+    location = request.form.get('location', '').strip()
     province_id = request.form.get('province_id')
     city_id = request.form.get('city_id')
-    description = request.form['description']
+    description = request.form.get('description', '').strip()
+
+    valid, message = validate_hotel_fields(name, location, province_id, city_id, description)
+    if not valid:
+        flash(message, 'danger')
+        cursor.close()
+        conn.close()
+        return redirect(url_for('admin.hotels'))
     
     cursor.execute("UPDATE hotels SET name=%s, location=%s, province_id=%s, city_id=%s, description=%s WHERE id=%s",
                   (name, location, province_id, city_id, description, id))
-                  
+                   
     files = request.files.getlist('images')
     if files and files[0].filename != '':
         cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (id,))
@@ -130,6 +195,29 @@ def edit_hotel(id):
     flash("Hotel updated successfully!", "success")
     return redirect(url_for('admin.hotels'))
 
+@admin_bp.route('/hotel/delete/<int:id>', methods=['POST'])
+@admin_required
+def delete_hotel(id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT ri.image_url FROM room_images ri JOIN rooms r ON ri.room_id = r.id WHERE r.hotel_id = %s", (id,))
+    room_images = cursor.fetchall()
+    for img in room_images:
+        delete_image_file(img['image_url'], current_app.root_path)
+
+    cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (id,))
+    hotel_images = cursor.fetchall()
+    for img in hotel_images:
+        delete_image_file(img['image_url'], current_app.root_path)
+
+    cursor.execute("DELETE FROM hotels WHERE id = %s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash('Hotel and related data deleted successfully.', 'success')
+    return redirect(url_for('admin.hotels'))
+
 @admin_bp.route('/api/cities/<province_id>')
 def get_cities(province_id):
     conn = get_db_connection()
@@ -147,11 +235,18 @@ def rooms():
     cursor = conn.cursor(dictionary=True)
     
     if request.method == 'POST':
-        hotel_id = request.form['hotel_id']
-        room_number = request.form['room_number']
-        room_type = request.form['room_type']
-        price = request.form['price']
-        
+        hotel_id = request.form.get('hotel_id')
+        room_number = request.form.get('room_number', '').strip()
+        room_type = request.form.get('room_type', '').strip()
+        price = request.form.get('price', '')
+
+        valid, message = validate_room_fields(cursor, hotel_id, room_number, room_type, price)
+        if not valid:
+            flash(message, 'danger')
+            cursor.close()
+            conn.close()
+            return redirect(url_for('admin.rooms'))
+
         cursor.execute("INSERT INTO rooms (hotel_id, room_number, room_type, price) VALUES (%s, %s, %s, %s)",
                       (hotel_id, room_number, room_type, price))
         room_id = cursor.lastrowid
@@ -179,11 +274,11 @@ def rooms():
         
     cursor.execute("SELECT r.*, h.name as hotel_name FROM rooms r JOIN hotels h ON r.hotel_id = h.id")
     room_list = cursor.fetchall()
+    room_ids = [room['id'] for room in room_list]
+    images_by_room = fetch_images_by_parent(cursor, 'room_images', 'room_id', room_ids)
     
     for room in room_list:
-        cursor.execute("SELECT image_url FROM room_images WHERE room_id = %s", (room['id'],))
-        imgs = cursor.fetchall()
-        room['images'] = [img['image_url'] for img in imgs]
+        room['images'] = images_by_room.get(room['id'], [])
     
     cursor.execute("SELECT id, name FROM hotels")
     hotel_list = cursor.fetchall()
@@ -197,11 +292,27 @@ def rooms():
 def edit_room(id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
-    room_number = request.form['room_number']
-    room_type = request.form['room_type']
-    price = request.form['price']
-    
+
+    cursor.execute('SELECT hotel_id FROM rooms WHERE id = %s', (id,))
+    room_info = cursor.fetchone()
+    if not room_info:
+        flash('Room not found.', 'danger')
+        cursor.close()
+        conn.close()
+        return redirect(url_for('admin.rooms'))
+
+    hotel_id = room_info['hotel_id']
+    room_number = request.form.get('room_number', '').strip()
+    room_type = request.form.get('room_type', '').strip()
+    price = request.form.get('price', '')
+
+    valid, message = validate_room_fields(cursor, hotel_id, room_number, room_type, price, exclude_room_id=id)
+    if not valid:
+        flash(message, 'danger')
+        cursor.close()
+        conn.close()
+        return redirect(url_for('admin.rooms'))
+
     cursor.execute("UPDATE rooms SET room_number=%s, room_type=%s, price=%s WHERE id=%s",
                   (room_number, room_type, price, id))
                   
@@ -234,6 +345,24 @@ def edit_room(id):
     cursor.close()
     conn.close()
     flash("Room updated successfully!", "success")
+    return redirect(url_for('admin.rooms'))
+
+@admin_bp.route('/room/delete/<int:id>', methods=['POST'])
+@admin_required
+def delete_room(id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT image_url FROM room_images WHERE room_id = %s", (id,))
+    room_images = cursor.fetchall()
+    for img in room_images:
+        delete_image_file(img['image_url'], current_app.root_path)
+
+    cursor.execute("DELETE FROM rooms WHERE id = %s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash('Room deleted successfully.', 'success')
     return redirect(url_for('admin.rooms'))
 
 @admin_bp.route('/bookings', methods=['GET', 'POST'])

@@ -3,60 +3,76 @@
 {% block title %}Bookings & Audit Trail{% endblock %}
 
 {% block content %}
-<div class="admin-card">
-    <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">All Transactions</h3>
-    <table class="data-table">
+<div class="page-heading">
+    <div>
+        <h2>Bookings & Audit</h2>
+        <p class="heading-meta">Review reservations, update statuses, and capture audit reasons for cancellations.</p>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-info">
+        <div>
+            <p class="table-title">Bookings & Audit</p>
+            <p>Track booking status and manage cancellations with confidence.</p>
+        </div>
+        <div class="toolbar-group">
+            <input id="bookings-search" class="toolbar-input" type="search" placeholder="Search bookings...">
+            <select id="bookings-filter" class="toolbar-select">
+                <option value="">All status</option>
+                <option value="booked">Booked</option>
+                <option value="pending">Pending</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+        </div>
+    </div>
+    <table id="bookings-table" class="data-table">
         <thead>
             <tr>
-                <th style="width: 50px;">ID</th>
+                <th>ID</th>
                 <th>Guest Profile</th>
                 <th>Reservation Details</th>
-                <th style="width: 150px;">Status</th>
-                <th style="width: 200px;">Audit & Actions</th>
+                <th>Status</th>
+                <th>Audit</th>
             </tr>
         </thead>
         <tbody>
             {% for booking in bookings %}
-            <tr>
+            <tr data-status="{{ booking.status|lower }}">
                 <td><strong>#{{ booking.id }}</strong></td>
                 <td>
-                    <strong style="color: #0f172a;">{{ booking.guest_name }}</strong><br>
-                    <span style="color: #64748b; font-size: 0.85rem;">Acc: {{ booking.username }} ({{ booking.email }})</span><br>
-                    <span style="color: #64748b; font-size: 0.85rem;">Phone: {{ booking.contact_number }}</span>
+                    <strong>{{ booking.guest_name }}</strong><br>
+                    <span style="color: var(--subtext); font-size:0.92rem;">{{ booking.username }} · {{ booking.email }}</span><br>
+                    <span style="color: var(--subtext); font-size:0.92rem;">{{ booking.contact_number }}</span>
                 </td>
                 <td>
-                    <strong style="color: #0f172a;">{{ booking.hotel_name }}</strong><br>
-                    <span style="color: #3b82f6; font-size: 0.9rem;">{{ booking.room_type }} ({{ booking.room_number }})</span><br>
-                    <span style="color: #64748b; font-size: 0.85rem;">{{ booking.check_in }} → {{ booking.check_out }}</span>
+                    <strong>{{ booking.hotel_name }}</strong><br>
+                    <span style="color: var(--secondary);">{{ booking.room_type }} • #{{ booking.room_number }}</span><br>
+                    <span style="color: var(--subtext); font-size:0.92rem;">{{ booking.check_in }} → {{ booking.check_out }}</span>
                 </td>
                 <td>
-                    <span style="padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; display: inline-block;
-                        background-color: {% if booking.status == 'Booked' %}#ecfdf5{% elif booking.status == 'Pending' %}#fffbeb{% else %}#fef2f2{% endif %};
-                        color: {% if booking.status == 'Booked' %}#059669{% elif booking.status == 'Pending' %}#d97706{% else %}#dc2626{% endif %};">
-                        {{ booking.status }}
-                    </span>
+                    <span class="badge {% if booking.status == 'Booked' %}booked{% elif booking.status == 'Pending' %}pending{% elif booking.status == 'Cancelled' %}cancelled{% else %}neutral{% endif %}">{{ booking.status }}</span>
                     {% if booking.cancel_reason %}
-                    <div style="margin-top: 8px; font-size: 0.8rem; color: #b91c1c; background: #fef2f2; padding: 6px; border-radius: 4px; border: 1px solid #fca5a5;">
-                        <strong>Reason:</strong> {{ booking.cancel_reason }}
-                    </div>
+                    <p style="margin:0.5rem 0 0; color: var(--subtext); font-size:0.82rem;">Reason: {{ booking.cancel_reason }}</p>
                     {% endif %}
                 </td>
                 <td>
                     {% if booking.status != 'Cancelled' %}
-                    <form method="POST" onsubmit="return confirm('WARNING: You are about to FORCE CANCEL this booking. Proceed?');" style="display: flex; flex-direction: column; gap: 5px;">
+                    <form method="POST" onsubmit="return confirm('WARNING: You are about to FORCE CANCEL this booking. Proceed?');" style="display: grid; gap:0.65rem;">
                         <input type="hidden" name="booking_id" value="{{ booking.id }}">
-                        <input type="text" name="cancel_reason" placeholder="Audit Reason..." required style="padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem; outline: none; width: 100%; box-sizing: border-box;">
-                        <button type="submit" style="padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: background 0.3s; width: 100%;">Force Cancel</button>
+                        <input type="text" name="cancel_reason" placeholder="Audit Reason..." required class="toolbar-input" style="width:100%;">
+                        <button type="submit" class="btn btn-danger">Force Cancel</button>
                     </form>
                     {% else %}
-                    <span style="color: #94a3b8; font-size: 0.85rem; font-style: italic;">No actions available</span>
+                    <span style="color: var(--subtext); font-size:0.92rem;">Completed audit.</span>
                     {% endif %}
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 2rem;">No bookings in database.</td></tr>
+            <tr><td colspan="5" style="text-align:center; color: var(--subtext); padding: 2rem;">No bookings in database.</td></tr>
             {% endfor %}
         </tbody>
     </table>
+    <div id="bookings-pagination" class="pagination"></div>
 </div>
 {% endblock %}

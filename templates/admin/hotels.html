@@ -3,196 +3,425 @@
 {% block title %}Manage Hotels{% endblock %}
 
 {% block content %}
-<div style="display: grid; grid-template-columns: 1fr 2.5fr; gap: 2rem;">
-    <!-- Add Hotel Form -->
-    <div class="admin-card" style="align-self: start;">
-        <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">Add New Hotel</h3>
-        <form method="POST" enctype="multipart/form-data">
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Hotel Name</label>
-                <input type="text" name="name" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; transition: border-color 0.3s; box-sizing: border-box;">
-            </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Province</label>
-                <select name="province_id" id="province_id" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: #fff; box-sizing: border-box;">
-                    <option value="">Select Province...</option>
-                    {% for p in provinces %}
-                    <option value="{{ p.province_id }}">{{ p.province }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">City</label>
-                <select name="city_id" id="city_id" required disabled style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: #f8fafc; box-sizing: border-box;">
-                    <option value="">Select City...</option>
-                </select>
-            </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Detailed Address</label>
-                <input type="text" name="location" required placeholder="Jalan, RT/RW, dsb." style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
-            </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Description</label>
-                <textarea name="description" rows="4" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; resize: vertical; outline: none; box-sizing: border-box;"></textarea>
-            </div>
-            <div style="margin-bottom: 1.8rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Hotel Images (Multiple)</label>
-                <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp" required style="width: 100%; padding: 0.5rem; border: 1px dashed #cbd5e1; border-radius: 8px; box-sizing: border-box; background: #f8fafc;">
-                <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 5px;">Max 16MB. Formats: JPG, PNG, WEBP. You can select multiple files.</small>
-            </div>
-            <button type="submit" style="width: 100%; padding: 1rem; background-color: #0f172a; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.3s;">Add Hotel</button>
-        </form>
-    </div>
+<style>
+.hotel-page-toolbar {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) 180px 160px auto;
+    gap: 0.85rem;
+    align-items: center;
+    margin-bottom: 1.6rem;
+}
+.hotel-page-toolbar .toolbar-input,
+.hotel-page-toolbar .toolbar-select {
+    min-width: 0;
+}
+.hotel-page-toolbar .toolbar-input {
+    width: 100%;
+}
+.hotel-page-toolbar .toolbar-select {
+    width: 100%;
+    max-width: 100%;
+}
+.btn-add-hotel {
+    justify-self: end;
+    white-space: nowrap;
+}
+.hotel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.2rem;
+}
+.hotel-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.hotel-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+}
+.hotel-card img,
+.hotel-card .hotel-card-image {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+}
+.hotel-card .hotel-card-image {
+    background: rgba(15, 23, 42, 0.04);
+    display: grid;
+    place-items: center;
+    min-height: 180px;
+    color: var(--subtext);
+}
+.hotel-card-body {
+    padding: 1.4rem;
+    display: grid;
+    gap: 1rem;
+    flex: 1;
+}
+.hotel-card-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+}
+.hotel-name {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+}
+.hotel-rating {
+    color: #F59E0B;
+    font-size: 0.95rem;
+}
+.hotel-card-meta {
+    display: grid;
+    gap: 0.75rem;
+    color: var(--subtext);
+    font-size: 0.94rem;
+}
+.hotel-card-meta span {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    align-items: center;
+}
+.hotel-card-meta strong {
+    color: var(--text);
+}
+.hotel-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.16);
+    background: rgba(16, 185, 129, 0.08);
+}
+.hotel-card-menu {
+    position: relative;
+}
+.hotel-menu-toggle {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    padding: 0;
+}
+.hotel-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.65rem);
+    display: none;
+    flex-direction: column;
+    min-width: 150px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14);
+    z-index: 10;
+}
+.hotel-dropdown.active {
+    display: flex;
+}
+.hotel-dropdown button,
+.hotel-dropdown .dropdown-button {
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 0.85rem 1rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: background var(--transition);
+}
+.hotel-dropdown button:hover,
+.hotel-dropdown .dropdown-button:hover {
+    background: rgba(37, 99, 235, 0.06);
+}
+.hotel-card-footer {
+    margin-top: auto;
+}
+</style>
 
-    <!-- Hotel List -->
-    <div class="admin-card">
-        <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">Hotel Inventory</h3>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th style="width: 50px;">ID</th>
-                    <th style="width: 100px;">Cover</th>
-                    <th>Hotel Name & Location</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for hotel in hotels %}
-                <tr>
-                    <td>{{ hotel.id }}</td>
-                    <td>
-                        {% if hotel.images and hotel.images|length > 0 %}
-                        <img src="{{ hotel.images[0] }}" alt="{{ hotel.name }}" style="width: 80px; height: 50px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <br><small style="color: #64748b; font-size: 0.7rem;">+{{ hotel.images|length - 1 }} more</small>
-                        {% else %}
-                        <div style="width: 80px; height: 50px; background: #e2e8f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.8rem;">No Img</div>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <strong style="color: #0f172a;">{{ hotel.name }}</strong><br>
-                        <span style="color: #64748b; font-size: 0.85rem;">{{ hotel.city_name or 'City Unknown' }}, {{ hotel.province or 'Province Unknown' }}</span><br>
-                        <span style="color: #94a3b8; font-size: 0.8rem;">{{ hotel.location }}</span>
-                    </td>
-                    <td>
-                        <button onclick="openEditModal({{ hotel.id }}, '{{ hotel.name | escape }}', '{{ hotel.province_id or '' }}', '{{ hotel.city_id or '' }}', '{{ hotel.location | escape }}', '{{ hotel.description | escape }}')" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Edit</button>
-                    </td>
-                </tr>
-                {% else %}
-                <tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 2rem;">No hotels in database.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="page-heading">
+    <div>
+        <h2>Manage Hotels</h2>
+        <p class="heading-meta">Kelola properti Anda dengan dashboard modern yang fokus pada pencarian dan pengalaman pengguna.</p>
     </div>
 </div>
 
-<!-- Edit Modal -->
-<div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
-    <div class="admin-card" style="width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; position: relative;">
-        <button type="button" onclick="closeEditModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
-        <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">Edit Hotel</h3>
-        <form id="editForm" method="POST" enctype="multipart/form-data">
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Hotel Name</label>
-                <input type="text" name="name" id="edit_name" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+<div class="hotel-page-toolbar">
+    <input id="hotels-search" class="toolbar-input" type="search" placeholder="Search Hotel...">
+    <select id="hotels-category" class="toolbar-select">
+        <option value="">Category</option>
+        <option value="has_images">With images</option>
+        <option value="no_images">Without images</option>
+    </select>
+    <select id="hotels-sort" class="toolbar-select">
+        <option value="latest">Sort</option>
+        <option value="latest">Newest</option>
+        <option value="name_asc">Name A - Z</option>
+        <option value="name_desc">Name Z - A</option>
+    </select>
+    <button type="button" class="btn btn-primary btn-add-hotel" data-modal-target="#modalAddHotel">+ Add Hotel</button>
+</div>
+
+<div class="hotel-grid">
+    {% for hotel in hotels %}
+    <article class="hotel-card" data-name="{{ hotel.name | lower }}" data-location="{{ (hotel.city_name or '') | lower }} {{ (hotel.province or '') | lower }}" data-images="{{ hotel.images|length }}" data-description="{{ hotel.description | escape }}" data-index="{{ loop.index0 }}">
+        {% if hotel.images and hotel.images|length > 0 %}
+        <img src="{{ hotel.images[0] }}" alt="{{ hotel.name }}">
+        {% else %}
+        <div class="hotel-card-image">No Image</div>
+        {% endif %}
+        <div class="hotel-card-body">
+            <div class="hotel-card-title">
+                <div>
+                    <p class="hotel-name"><strong>{{ hotel.name }}</strong></p>
+                    <div class="hotel-rating">★★★★★</div>
+                </div>
+                <div class="hotel-card-menu">
+                    <button type="button" class="btn btn-secondary hotel-menu-toggle">⋮</button>
+                    <div class="hotel-dropdown">
+                        <button type="button" class="js-open-edit-hotel" data-id="{{ hotel.id }}" data-name="{{ hotel.name | escape }}" data-province-id="{{ hotel.province_id or '' }}" data-city-id="{{ hotel.city_id or '' }}" data-location="{{ hotel.location | escape }}" data-description="{{ hotel.description | escape }}">Edit</button>
+                        <button type="button" class="dropdown-button hotel-action-delete">Delete</button>
+                        <button type="button" class="dropdown-button hotel-action-detail">Detail</button>
+                    </div>
+                </div>
             </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Province</label>
-                <select name="province_id" id="edit_province_id" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: #fff; box-sizing: border-box;">
+            <div class="hotel-card-meta">
+                <span><strong>{{ hotel.city_name or 'City Unknown' }}</strong><span>{{ hotel.province or 'Province Unknown' }}</span></span>
+                <span><strong>{{ hotel.rooms|length if hotel.rooms else '—' }} Rooms</strong><span>{{ 'Rp ' ~ ('{:,}'.format(hotel.min_price).replace(',', '.') if hotel.min_price else '-') }}</span></span>
+                <span><span class="hotel-badge">Active</span></span>
+            </div>
+            <form method="POST" action="{{ url_for('admin.delete_hotel', id=hotel.id) }}" class="js-delete-form" style="display:none;">
+                <button type="submit" style="display:none;"></button>
+            </form>
+        </div>
+    </article>
+    {% else %}
+    <div style="grid-column:1 / -1; padding:2rem; text-align:center; color: var(--subtext);">No hotels in database.</div>
+    {% endfor %}
+</div>
+
+<div id="modalAddHotel" class="modal">
+    <div class="form-card">
+        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;">×</button>
+        <h2>Add New Hotel</h2>
+        <p style="margin:0 0 1rem; color: var(--subtext);">Provide hotel details and upload gallery images for the new listing.</p>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="input-group">
+                <label>Hotel Name</label>
+                <input type="text" name="name" required placeholder="Enter hotel name">
+            </div>
+            <div class="input-group">
+                <label>Province</label>
+                <select name="province_id" id="province_id" required>
                     <option value="">Select Province...</option>
                     {% for p in provinces %}
                     <option value="{{ p.province_id }}">{{ p.province }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">City</label>
-                <select name="city_id" id="edit_city_id" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: #fff; box-sizing: border-box;">
+            <div class="input-group">
+                <label>City</label>
+                <select name="city_id" id="city_id" required disabled>
                     <option value="">Select City...</option>
                 </select>
             </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Detailed Address</label>
-                <input type="text" name="location" id="edit_location" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+            <div class="input-group">
+                <label>Detailed Address</label>
+                <input type="text" name="location" required placeholder="Jalan, RT/RW, dsb.">
             </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Description</label>
-                <textarea name="description" id="edit_description" rows="4" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; resize: vertical; outline: none; box-sizing: border-box;"></textarea>
+            <div class="input-group">
+                <label>Description</label>
+                <textarea name="description" rows="5" required placeholder="Describe the hotel and amenities..."></textarea>
             </div>
-            <div style="margin-bottom: 1.8rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Update Images (Leave empty to keep current)</label>
-                <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp" style="width: 100%; padding: 0.5rem; border: 1px dashed #cbd5e1; border-radius: 8px; box-sizing: border-box; background: #f8fafc;">
-                <small style="color: #ef4444; font-size: 0.8rem; display: block; margin-top: 5px;">Warning: Uploading new images will delete all previous images for this hotel.</small>
+            <div class="input-group">
+                <label>Hotel Images</label>
+                <div class="dropzone">
+                    <p>Drag & drop images here, or click to browse</p>
+                    <p style="font-size:0.84rem; color: var(--subtext);">Supports JPG, PNG, WEBP. Max 16MB per file.</p>
+                    <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp" required>
+                </div>
+                <div class="preview-grid"></div>
             </div>
-            <button type="submit" style="width: 100%; padding: 1rem; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.3s;">Save Changes</button>
+            <button type="submit" class="btn btn-primary">Add Hotel</button>
+        </form>
+    </div>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="form-card">
+        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;">×</button>
+        <h2>Edit Hotel</h2>
+        <p style="margin:0 0 1rem; color: var(--subtext);">Update hotel details and replace images if needed.</p>
+        <form id="editForm" method="POST" enctype="multipart/form-data">
+            <div class="input-group">
+                <label>Hotel Name</label>
+                <input type="text" name="name" id="edit_name" required>
+            </div>
+            <div class="input-group">
+                <label>Province</label>
+                <select name="province_id" id="edit_province_id" required>
+                    <option value="">Select Province...</option>
+                    {% for p in provinces %}
+                    <option value="{{ p.province_id }}">{{ p.province }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="input-group">
+                <label>City</label>
+                <select name="city_id" id="edit_city_id" required>
+                    <option value="">Select City...</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Detailed Address</label>
+                <input type="text" name="location" id="edit_location" required>
+            </div>
+            <div class="input-group">
+                <label>Description</label>
+                <textarea name="description" id="edit_description" rows="4" required></textarea>
+            </div>
+            <div class="input-group">
+                <label>Update Images (Leave empty to keep current)</label>
+                <div class="dropzone">
+                    <p>Drop files to replace images, or click to choose</p>
+                    <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp">
+                </div>
+                <div class="preview-grid"></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
         </form>
     </div>
 </div>
 
 <script>
-// Logic for Add Form
-document.getElementById('province_id').addEventListener('change', function() {
-    loadCities(this.value, 'city_id');
-});
-
-// Logic for Edit Form
-document.getElementById('edit_province_id').addEventListener('change', function() {
-    loadCities(this.value, 'edit_city_id');
-});
-
-function loadCities(provinceId, targetElementId, selectedCityId = null) {
-    const citySelect = document.getElementById(targetElementId);
-    citySelect.innerHTML = '<option value="">Loading...</option>';
-    citySelect.disabled = true;
-    
-    if (!provinceId) {
-        citySelect.innerHTML = '<option value="">Select City...</option>';
-        return;
-    }
-    
-    fetch(`/admin/api/cities/${provinceId}`)
-        .then(response => response.json())
-        .then(data => {
-            citySelect.innerHTML = '<option value="">Select City...</option>';
-            data.forEach(city => {
-                const option = document.createElement('option');
-                option.value = city.city_id;
-                option.textContent = city.city_name;
-                if (selectedCityId && selectedCityId == city.city_id) {
-                    option.selected = true;
-                }
-                citySelect.appendChild(option);
-            });
-            citySelect.disabled = false;
-            citySelect.style.background = '#fff';
-        })
-        .catch(err => {
-            console.error('Error fetching cities:', err);
-            citySelect.innerHTML = '<option value="">Error loading cities</option>';
-        });
-}
-
 function openEditModal(id, name, province_id, city_id, location, description) {
     document.getElementById('editForm').action = `/admin/hotel/edit/${id}`;
     document.getElementById('edit_name').value = name;
     document.getElementById('edit_province_id').value = province_id;
     document.getElementById('edit_location').value = location;
     document.getElementById('edit_description').value = description;
-    
-    // Load cities and pre-select the city_id
+
     if (province_id) {
         loadCities(province_id, 'edit_city_id', city_id);
     } else {
         const citySelect = document.getElementById('edit_city_id');
         citySelect.innerHTML = '<option value="">Select City...</option>';
         citySelect.disabled = true;
-        citySelect.style.background = '#f8fafc';
     }
-    
-    document.getElementById('editModal').style.display = 'flex';
+    document.getElementById('editModal').classList.add('active');
 }
 
 function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
+    document.getElementById('editModal').classList.remove('active');
 }
+
+function initHotelPage() {
+    const searchInput = document.getElementById('hotels-search');
+    const categorySelect = document.getElementById('hotels-category');
+    const sortSelect = document.getElementById('hotels-sort');
+    const cards = Array.from(document.querySelectorAll('.hotel-card'));
+
+    const updateCards = () => {
+        const query = searchInput.value.trim().toLowerCase();
+        const category = categorySelect.value;
+
+        cards.forEach(card => {
+            const name = card.dataset.name || '';
+            const location = card.dataset.location || '';
+            const hasImages = parseInt(card.dataset.images || '0', 10) > 0;
+            let visible = true;
+
+            if (query && !(`${name} ${location}`).includes(query)) {
+                visible = false;
+            }
+            if (category === 'has_images' && !hasImages) visible = false;
+            if (category === 'no_images' && hasImages) visible = false;
+
+            card.style.display = visible ? 'flex' : 'none';
+        });
+        sortCards();
+    };
+
+    const sortCards = () => {
+        const container = document.querySelector('.hotel-grid');
+        const visibleCards = cards.filter(card => card.style.display !== 'none');
+        const order = sortSelect.value;
+
+        if (order === 'name_asc') {
+            visibleCards.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
+        } else if (order === 'name_desc') {
+            visibleCards.sort((a, b) => b.dataset.name.localeCompare(a.dataset.name));
+        } else {
+            visibleCards.sort((a, b) => parseInt(a.dataset.index, 10) - parseInt(b.dataset.index, 10));
+        }
+
+        visibleCards.forEach(card => container.appendChild(card));
+    };
+
+    searchInput.addEventListener('input', updateCards);
+    categorySelect.addEventListener('change', updateCards);
+    sortSelect.addEventListener('change', updateCards);
+    updateCards();
+
+    document.querySelectorAll('.hotel-card').forEach(card => {
+        const toggle = card.querySelector('.hotel-menu-toggle');
+        const dropdown = card.querySelector('.hotel-dropdown');
+        const deleteButton = card.querySelector('.hotel-action-delete');
+        const detailButton = card.querySelector('.hotel-action-detail');
+
+        if (toggle && dropdown) {
+            toggle.addEventListener('click', event => {
+                event.stopPropagation();
+                document.querySelectorAll('.hotel-dropdown.active').forEach(menu => {
+                    if (menu !== dropdown) menu.classList.remove('active');
+                });
+                dropdown.classList.toggle('active');
+            });
+        }
+
+        if (deleteButton) {
+            deleteButton.addEventListener('click', () => {
+                const form = card.querySelector('.js-delete-form');
+                if (form) {
+                    form.querySelector('button[type="submit"]')?.click();
+                }
+            });
+        }
+
+        if (detailButton) {
+            detailButton.addEventListener('click', () => {
+                const title = card.querySelector('.hotel-name strong')?.textContent || 'Hotel Detail';
+                const location = card.dataset.location || '';
+                const images = card.dataset.images || '0';
+                const description = card.dataset.description || '';
+                Swal.fire({
+                    title: title,
+                    html: `<p style="text-align:left; margin:0.5rem 0;"><strong>Location</strong>: ${location}</p><p style="text-align:left; margin:0.5rem 0;"><strong>Photos</strong>: ${images}</p><p style="text-align:left; margin:0.5rem 0; color: var(--subtext);">${description}</p>`,
+                    showCloseButton: true,
+                    confirmButtonText: 'Close',
+                    width: '28rem'
+                });
+                dropdown.classList.remove('active');
+            });
+        }
+    });
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.hotel-dropdown.active').forEach(menu => menu.classList.remove('active'));
+    });
+}
+
+window.addEventListener('DOMContentLoaded', initHotelPage);
 </script>
 {% endblock %}

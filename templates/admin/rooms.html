@@ -3,114 +3,147 @@
 {% block title %}Manage Rooms{% endblock %}
 
 {% block content %}
-<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
-    <!-- Add Room Form -->
-    <div class="admin-card" style="align-self: start;">
-        <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">Add New Room</h3>
-        <form method="POST" enctype="multipart/form-data">
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Select Hotel</label>
-                <select name="hotel_id" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box; background: white;">
-                    <option value="">-- Choose Hotel --</option>
-                    {% for hotel in hotels %}
-                    <option value="{{ hotel.id }}">{{ hotel.name }}</option>
-                    {% endfor %}
+<div class="grid-2">
+    <section class="form-card">
+        <div class="page-heading">
+            <div>
+                <h2>Add New Room</h2>
+                <p class="heading-meta">Add room inventory with hotel association and room gallery for the best guest experience.</p>
+            </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <p style="margin:0; color: var(--subtext);">Use the modal to add a new room without leaving this page.</p>
+            <button type="button" class="btn btn-primary" data-modal-target="#modalAddRoom">Tambah Kamar</button>
+        </div>
+    </section>
+
+    <section class="table-card">
+        <div class="table-info">
+            <div>
+                <p class="table-title">Room Inventory</p>
+                <p style="margin:0; color: var(--subtext);">Manage listings with quick filters and search.</p>
+            </div>
+            <div class="toolbar-group">
+                <input id="rooms-search" class="toolbar-input" type="search" placeholder="Search rooms...">
+                <select id="rooms-filter" class="toolbar-select">
+                    <option value="">All rooms</option>
+                    <option value="has_images">With images</option>
+                    <option value="no_images">Without images</option>
                 </select>
             </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Room Type</label>
-                <input type="text" name="room_type" placeholder="e.g. Deluxe Room" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
-            </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Room Number / Name</label>
-                <input type="text" name="room_number" placeholder="e.g. 101 or Presidential Suite" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
-            </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Price per Night (Rp)</label>
-                <input type="number" name="price" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
-            </div>
-            <div style="margin-bottom: 1.8rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Room Images (Multiple)</label>
-                <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp" required style="width: 100%; padding: 0.5rem; border: 1px dashed #cbd5e1; border-radius: 8px; box-sizing: border-box; background: #f8fafc;">
-                <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 5px;">Max 16MB. Formats: JPG, PNG, WEBP.</small>
-            </div>
-            <button type="submit" style="width: 100%; padding: 1rem; background-color: #0f172a; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.3s;">Add Room</button>
-        </form>
-    </div>
-
-    <!-- Room List -->
-    <div class="admin-card">
-        <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">Room Inventory</h3>
-        <table class="data-table">
+        </div>
+        <table id="rooms-table" class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 50px;">ID</th>
-                    <th style="width: 100px;">Cover</th>
-                    <th>Hotel & Specs</th>
+                    <th>ID</th>
+                    <th>Cover</th>
+                    <th>Room</th>
                     <th>Price</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for room in rooms %}
-                <tr>
-                    <td>{{ room.id }}</td>
+                <tr data-status="{{ 'has_images' if room.images and room.images|length > 0 else 'no_images' }}">
+                    <td><strong>#{{ room.id }}</strong></td>
                     <td>
                         {% if room.images and room.images|length > 0 %}
-                        <img src="{{ room.images[0] }}" alt="{{ room.room_type }}" style="width: 80px; height: 50px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <br><small style="color: #64748b; font-size: 0.7rem;">+{{ room.images|length - 1 }} more</small>
+                        <div class="card-image"><img src="{{ room.images[0] }}" alt="{{ room.room_type }}"></div>
+                        <div class="gallery-preview">{{ room.images|length }} photos</div>
                         {% else %}
-                        <div style="width: 80px; height: 50px; background: #e2e8f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.8rem;">No Img</div>
+                        <div class="card-image" style="display:flex; align-items:center; justify-content:center; color: var(--subtext);">No Img</div>
                         {% endif %}
                     </td>
                     <td>
-                        <strong style="color: #0f172a;">{{ room.hotel_name }}</strong><br>
-                        <span style="color: #3b82f6; font-weight: 500;">{{ room.room_type }}</span><br>
-                        <span style="color: #64748b; font-size: 0.85rem;">No: {{ room.room_number }}</span>
+                        <strong>{{ room.hotel_name }}</strong><br>
+                        <span style="color: var(--secondary); font-weight: 700;">{{ room.room_type }}</span><br>
+                        <span style="color: var(--subtext); font-size:0.92rem;">#{{ room.room_number }}</span>
                     </td>
-                    <td style="font-weight: 600; color: #10b981;">Rp {{ "{:,.0f}".format(room.price) }}</td>
-                    <td>
-                        <button onclick="openEditRoomModal({{ room.id }}, '{{ room.hotel_name | escape }}', '{{ room.room_type | escape }}', '{{ room.room_number | escape }}', '{{ room.price }}')" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Edit</button>
+                    <td><span class="badge booked">Rp {{ "{:,.0f}".format(room.price) }}</span></td>
+                    <td style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-secondary js-open-edit-room" data-id="{{ room.id }}" data-hotel-name="{{ room.hotel_name | escape }}" data-room-type="{{ room.room_type | escape }}" data-room-number="{{ room.room_number | escape }}" data-price="{{ room.price }}">Edit</button>
+                        <form method="POST" action="{{ url_for('admin.delete_room', id=room.id) }}" class="js-delete-form" style="margin:0;">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 2rem;">No rooms in database.</td></tr>
+                <tr><td colspan="5" style="text-align:center; color: var(--subtext); padding:2rem;">No rooms in database.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
+        <div id="rooms-pagination" class="pagination"></div>
+    </section>
+</div>
+
+<div id="modalAddRoom" class="modal">
+    <div class="form-card">
+        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;">×</button>
+        <h2>Add New Room</h2>
+        <p style="margin:0 0 1rem; color: var(--subtext);">Fill in room details and upload images for the new listing.</p>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="input-group">
+                <label>Select Hotel</label>
+                <select name="hotel_id" required>
+                    <option value="">-- Choose Hotel --</option>
+                    {% for hotel in hotels %}
+                    <option value="{{ hotel.id }}">{{ hotel.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Room Type</label>
+                <input type="text" name="room_type" placeholder="e.g. Deluxe Room" required>
+            </div>
+            <div class="input-group">
+                <label>Room Number / Name</label>
+                <input type="text" name="room_number" placeholder="e.g. 101 or Presidential Suite" required>
+            </div>
+            <div class="input-group">
+                <label>Price per Night (Rp)</label>
+                <input type="number" name="price" required placeholder="250000">
+            </div>
+            <div class="input-group">
+                <label>Room Images</label>
+                <div class="dropzone">
+                    <p>Drag & drop images here, or click to browse</p>
+                    <p style="font-size:0.84rem; color: var(--subtext);">Supports JPG, PNG, WEBP. Max 16MB per file.</p>
+                    <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp" required>
+                </div>
+                <div class="preview-grid"></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Room</button>
+        </form>
     </div>
 </div>
 
-<!-- Edit Room Modal -->
-<div id="editRoomModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
-    <div class="admin-card" style="width: 100%; max-width: 500px; position: relative;">
-        <button type="button" onclick="closeEditRoomModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
-        <h3 style="margin-top: 0; color: #0f172a; margin-bottom: 1.5rem;">Edit Room</h3>
-        
-        <p style="background: #f1f5f9; padding: 10px; border-radius: 6px; font-size: 0.9rem; color: #475569; margin-bottom: 1.5rem;">
-            <strong>Hotel:</strong> <span id="display_hotel_name"></span><br>
-            <em style="font-size: 0.8rem;">(Hotel cannot be changed)</em>
-        </p>
-
+<div id="editRoomModal" class="modal">
+    <div class="form-card">
+        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;">×</button>
+        <h2>Edit Room</h2>
+        <p style="margin:0 0 1rem; color: var(--subtext);">Update room details or replace gallery images.</p>
         <form id="editRoomForm" method="POST" enctype="multipart/form-data">
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Room Type</label>
-                <input type="text" name="room_type" id="edit_room_type" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+            <div class="input-group">
+                <label>Room Type</label>
+                <input type="text" name="room_type" id="edit_room_type" required>
             </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Room Number / Name</label>
-                <input type="text" name="room_number" id="edit_room_number" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+            <div class="input-group">
+                <label>Room Number</label>
+                <input type="text" name="room_number" id="edit_room_number" required>
             </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Price per Night (Rp)</label>
-                <input type="number" name="price" id="edit_price" required style="width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box;">
+            <div class="input-group">
+                <label>Price per Night (Rp)</label>
+                <input type="number" name="price" id="edit_price" required>
             </div>
-            <div style="margin-bottom: 1.8rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #475569;">Update Images (Leave empty to keep current)</label>
-                <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp" style="width: 100%; padding: 0.5rem; border: 1px dashed #cbd5e1; border-radius: 8px; box-sizing: border-box; background: #f8fafc;">
-                <small style="color: #ef4444; font-size: 0.8rem; display: block; margin-top: 5px;">Warning: Uploading new images will delete all previous images for this room.</small>
+            <div class="input-group">
+                <label>Update Images (optional)</label>
+                <div class="dropzone">
+                    <p>Drop new images to replace existing photos</p>
+                    <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp">
+                </div>
+                <div class="preview-grid"></div>
             </div>
-            <button type="submit" style="width: 100%; padding: 1rem; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.3s;">Save Changes</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
         </form>
     </div>
 </div>
@@ -118,16 +151,14 @@
 <script>
 function openEditRoomModal(id, hotel_name, room_type, room_number, price) {
     document.getElementById('editRoomForm').action = `/admin/room/edit/${id}`;
-    document.getElementById('display_hotel_name').textContent = hotel_name;
     document.getElementById('edit_room_type').value = room_type;
     document.getElementById('edit_room_number').value = room_number;
     document.getElementById('edit_price').value = price;
-    
-    document.getElementById('editRoomModal').style.display = 'flex';
+    document.getElementById('editRoomModal').classList.add('active');
 }
 
 function closeEditRoomModal() {
-    document.getElementById('editRoomModal').style.display = 'none';
+    document.getElementById('editRoomModal').classList.remove('active');
 }
 </script>
 {% endblock %}
