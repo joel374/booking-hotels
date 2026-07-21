@@ -13,8 +13,24 @@ from routes.booking import booking_bp
 load_dotenv()
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
 
+from datetime import date, datetime
+
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
+
+@app.template_filter('format_date')
+def format_date(value):
+    if not value:
+        return ""
+    months_id = ["", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"]
+    try:
+        if isinstance(value, (date, datetime)):
+            dt = value
+        else:
+            dt = datetime.strptime(str(value), "%Y-%m-%d")
+        return f"{dt.day} {months_id[dt.month]}"
+    except Exception:
+        return value
 
 # Setup File Uploads
 HOTEL_UPLOAD_FOLDER = os.path.join('static', 'uploads', 'hotels')

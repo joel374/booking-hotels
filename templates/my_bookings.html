@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="padding-top: 2rem;">
-    <h1 style="margin-bottom: 2rem; border-bottom: 2px solid var(--border-color); padding-bottom: 1rem;">My Dashboard</h1>
+<div class="pt-4">
+    <h1 class="section-title" style="border-bottom: 2px solid var(--border-color); padding-bottom: 1rem;">My Dashboard</h1>
 
     <div style="margin-bottom: 4rem;">
         <h2 style="color: var(--primary-color); margin-bottom: 1.5rem; font-family: 'Playfair Display', serif;">My Bookings</h2>
@@ -12,19 +12,19 @@
             {% for booking in bookings %}
             <div class="room-card" style="padding: 1.5rem; position: relative; overflow: hidden; border: 1px solid #e2e8f0;">
                 {% if booking.status == 'Booked' %}
-                    <div style="position: absolute; top: 0; right: 0; background: var(--success); color: white; padding: 0.35rem 1rem; border-bottom-left-radius: 12px; font-weight: 600; font-size: 0.8rem; box-shadow: -2px 2px 10px rgba(0,0,0,0.1);">BOOKED</div>
+                    <div class="status-badge success">BOOKED</div>
                 {% elif booking.status == 'Pending' %}
-                    <div style="position: absolute; top: 0; right: 0; background: var(--warning); color: white; padding: 0.35rem 1rem; border-bottom-left-radius: 12px; font-weight: 600; font-size: 0.8rem; box-shadow: -2px 2px 10px rgba(0,0,0,0.1);">PENDING (Awaiting Payment)</div>
+                    <div class="status-badge warning">PENDING (Awaiting Payment)</div>
                 {% else %}
-                    <div style="position: absolute; top: 0; right: 0; background: var(--danger); color: white; padding: 0.35rem 1rem; border-bottom-left-radius: 12px; font-weight: 600; font-size: 0.8rem; box-shadow: -2px 2px 10px rgba(0,0,0,0.1);">CANCELLED</div>
+                    <div class="status-badge danger">CANCELLED</div>
                 {% endif %}
 
                 <h3 style="margin-top: 1rem; color: var(--primary-color);">{{ booking.hotel_name }}</h3>
                 <p class="text-muted" style="margin-bottom: 1rem;">{{ booking.room_type }} (Room {{ booking.room_number }})</p>
                 
-                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-in:</strong> {{ booking.check_in }}</p>
-                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-out:</strong> {{ booking.check_out }}</p>
+                <div class="booking-summary-box">
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-in:</strong> {{ booking.check_in | format_date }}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-out:</strong> {{ booking.check_out | format_date }}</p>
                     <p style="margin-top: 0.75rem; font-weight: 700; color: var(--accent-color); font-size: 1.1rem;">Rp {{ "{:,.0f}".format(booking.price) }}</p>
                 </div>
 
@@ -68,15 +68,15 @@
         {% if waiting_lists %}
         <div class="grid">
             {% for wl in waiting_lists %}
-            <div class="room-card" style="padding: 1.5rem; border: 1px solid var(--accent-color); background: rgba(230, 126, 34, 0.02);">
+            <div class="wl-card">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
-                    <div style="background: var(--accent-color); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">WAITING</div>
+                    <div class="wl-badge">WAITING</div>
                     <h3 style="margin: 0; color: var(--primary-color);">{{ wl.hotel_name }}</h3>
                 </div>
                 <p class="text-muted">{{ wl.room_type }} (Room {{ wl.room_number }})</p>
                 <div style="margin-top: 1rem; border-top: 1px dashed #cbd5e1; padding-top: 1rem;">
-                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Desired Check-in:</strong> {{ wl.check_in }}</p>
-                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Desired Check-out:</strong> {{ wl.check_out }}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Desired Check-in:</strong> {{ wl.check_in | format_date }}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Desired Check-out:</strong> {{ wl.check_out | format_date }}</p>
                 </div>
                 <p style="margin-top: 1.5rem; color: var(--accent-color); font-size: 0.85rem; font-style: italic; text-align: center;">
                     You will be notified if this room becomes available.

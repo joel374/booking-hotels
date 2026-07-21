@@ -23,9 +23,22 @@ def book_room(room_id):
     room = cursor.fetchone()
 
     if request.method == 'POST':
-        guest_name = request.form['guest_name']
-        contact_number = request.form['contact_number']
-        payment_method = request.form['payment_method']
+        guest_name = request.form.get('guest_name', '').strip()
+        contact_number = request.form.get('contact_number', '').strip()
+        payment_method = request.form.get('payment_method', '').strip()
+        
+        if not guest_name or not contact_number or not payment_method:
+            flash("Semua data pemesanan wajib diisi.", "danger")
+            return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out)
+            
+        if len(guest_name) < 3:
+            flash("Nama lengkap tamu minimal 3 karakter.", "danger")
+            return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out)
+            
+        import re
+        if not re.match(r'^[\d\+\-\(\)\s]{9,15}$', contact_number):
+            flash("Nomor kontak tidak valid. Harap masukkan 9-15 digit angka.", "danger")
+            return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out)
 
         cleanup_expired_bookings(cursor)
         

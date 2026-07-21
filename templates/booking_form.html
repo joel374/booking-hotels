@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+@media (max-width: 768px) {
+    .booking-form-card {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
+</style>
+<div class="card container-sm booking-form-card">
+    <h2 class="section-title">Formulir Pemesanan Kamar</h2>
+    <p class="text-muted mb-4">Silakan lengkapi data diri Anda untuk menyelesaikan pemesanan.</p>
+
+    <div class="booking-summary-box">
+        <h4 style="margin: 0 0 0.5rem 0;">Ringkasan Pesanan</h4>
+        <p style="margin: 0; font-size: 0.95rem;"><strong>Kamar:</strong> {{ room.room_type }} (No. {{ room.room_number }})</p>
+        <p style="margin: 0; font-size: 0.95rem;"><strong>Check-in:</strong> {{ check_in | format_date }}</p>
+        <p style="margin: 0; font-size: 0.95rem;"><strong>Check-out:</strong> {{ check_out | format_date }}</p>
+        <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 0.8rem 0;">
+        <p style="margin: 0; font-size: 1.1rem; color: var(--success); font-weight: 600;">Total per Malam: Rp {{ "{:,.0f}".format(room.price) }}</p>
+    </div>
+
+    <form method="POST">
+        <input type="hidden" name="check_in" value="{{ check_in }}">
+        <input type="hidden" name="check_out" value="{{ check_out }}">
+
+        <div class="form-group">
+            <label for="guest_name" class="form-label">Nama Lengkap Tamu</label>
+            <input type="text" id="guest_name" name="guest_name" class="form-control" required minlength="3" pattern="[a-zA-Z\s\.'\-]+" title="Hanya huruf dan spasi yang diizinkan (minimal 3 karakter)" placeholder="Sesuai KTP" oninput="this.value = this.value.replace(/[^a-zA-Z\s\.'\-]/g, '')">
+        </div>
+
+        <div class="form-group">
+            <label for="contact_number" class="form-label">Nomor WhatsApp / HP</label>
+            <input type="tel" id="contact_number" name="contact_number" class="form-control" required pattern="[\d\+\-\(\)\s]{9,15}" title="Masukkan nomor telepon yang valid (9-15 digit angka)" placeholder="08123456789" oninput="this.value = this.value.replace(/[^\d\+\-\(\)\s]/g, '')">
+        </div>
+
+        <div class="form-group">
+            <label for="payment_method" class="form-label">Metode Pembayaran (Sementara)</label>
+            <select id="payment_method" name="payment_method" class="form-control custom-select-native" required>
+                <option value="Transfer Bank">Transfer Bank</option>
+                <option value="E-Wallet">E-Wallet (OVO/GoPay/Dana)</option>
+                <option value="Cash di Hotel">Bayar di Tempat (Pay at Hotel)</option>
+            </select>
+            <small class="text-muted">Fitur Payment Gateway (Midtrans) akan ditambahkan pada update selanjutnya.</small>
+        </div>
+
+        <div style="display: flex; gap: 1rem;" class="mt-4">
+            <a href="javascript:history.back()" class="btn" style="background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color);">Kembali</a>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Lanjutkan ke Pembayaran</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

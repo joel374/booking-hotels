@@ -67,20 +67,34 @@ def get_booked_rooms(hotel_id, check_in, check_out):
 @main_bp.route('/')
 def index():
     city_id = request.args.get('city_id')
+    check_in = request.args.get('check_in')
+    check_out = request.args.get('check_out')
     
+    if city_id:
+        return redirect(url_for('main.city_hotels', city_id=city_id, check_in=check_in, check_out=check_out))
+        
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    if city_id:
-        cursor.execute("SELECT * FROM hotels WHERE city_id = %s", (city_id,))
-    else:
-        cursor.execute("SELECT * FROM hotels")
-    hotels = cursor.fetchall()
+    base_query = """
+        SELECT h.*, c.city_name, p.province 
+        FROM hotels h 
+        LEFT JOIN cities c ON h.city_id = c.city_id 
+        LEFT JOIN provinces p ON h.province_id = p.province_id
+    """
     
-    for hotel in hotels:
+    # 1. Rekomendasi (Top 14 Rating)
+    cursor.execute(base_query + " ORDER BY h.rating DESC LIMIT 14")
+    rekomendasi = cursor.fetchall()
+    
+    for hotel in rekomendasi:
         cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel['id'],))
         hotel['images'] = [img['image_url'] for img in cursor.fetchall()]
-    
+        cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s", (hotel['id'],))
+        res = cursor.fetchone()
+        hotel['min_price'] = res['min_price'] if res and res['min_price'] else 0
+        
+    # 2. Get cities that have hotels
     cursor.execute("""
         SELECT DISTINCT c.city_id, c.city_name, p.province 
         FROM hotels h 
@@ -90,9 +104,91 @@ def index():
     """)
     available_cities = cursor.fetchall()
     
+    city_groups = []
+    for city in available_cities:
+        cursor.execute(base_query + " WHERE h.city_id = %s LIMIT 14", (city['city_id'],))
+        city_hotels = cursor.fetchall()
+        for hotel in city_hotels:
+            cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel['id'],))
+            hotel['images'] = [img['image_url'] for img in cursor.fetchall()]
+            cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s", (hotel['id'],))
+            res = cursor.fetchone()
+            hotel['min_price'] = res['min_price'] if res and res['min_price'] else 0
+        
+        city_groups.append({
+            'city': city,
+            'hotels': city_hotels
+        })
+        
     cursor.close()
     conn.close()
-    return render_template('index.html', hotels=hotels, available_cities=available_cities, selected_city=city_id)
+    return render_template('index.html', rekomendasi=rekomendasi, city_groups=city_groups, available_cities=available_cities)
+
+@main_bp.route('/city/<int:city_id>')
+def city_hotels(city_id):
+    check_in = request.args.get('check_in')
+    check_out = request.args.get('check_out')
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT c.city_name, p.province 
+        FROM cities c 
+        JOIN provinces p ON c.province_id = p.province_id 
+        WHERE c.city_id = %s
+    """, (city_id,))
+    city_info = cursor.fetchone()
+    
+    cursor.execute("""
+        SELECT DISTINCT c.city_id, c.city_name, p.province 
+        FROM hotels h 
+        JOIN cities c ON h.city_id = c.city_id 
+        JOIN provinces p ON h.province_id = p.province_id
+        ORDER BY c.city_name
+    """)
+    available_cities = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    if not city_info:
+        return redirect(url_for('main.index'))
+        
+    return render_template('city_hotels.html', city=city_info, city_id=city_id, available_cities=available_cities, check_in=check_in, check_out=check_out)
+
+from flask import jsonify
+
+@main_bp.route('/api/hotels')
+def api_hotels():
+    city_id = request.args.get('city_id')
+    page = request.args.get('page', 1, type=int)
+    per_page = 14
+    offset = (page - 1) * per_page
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    base_query = """
+        SELECT h.*, c.city_name, p.province 
+        FROM hotels h 
+        LEFT JOIN cities c ON h.city_id = c.city_id 
+        LEFT JOIN provinces p ON h.province_id = p.province_id
+        WHERE h.city_id = %s
+        LIMIT %s OFFSET %s
+    """
+    cursor.execute(base_query, (city_id, per_page, offset))
+    hotels = cursor.fetchall()
+    
+    for hotel in hotels:
+        cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel['id'],))
+        hotel['images'] = [img['image_url'] for img in cursor.fetchall()]
+        cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s", (hotel['id'],))
+        res = cursor.fetchone()
+        hotel['min_price'] = res['min_price'] if res and res['min_price'] else 0
+        
+    cursor.close()
+    conn.close()
+    
+    return jsonify({'hotels': hotels})
 
 @main_bp.route('/about')
 def about():
@@ -140,7 +236,13 @@ def hotel_rooms(hotel_id):
     
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM hotels WHERE id = %s", (hotel_id,))
+    cursor.execute("""
+        SELECT h.*, c.city_name, p.province 
+        FROM hotels h 
+        LEFT JOIN cities c ON h.city_id = c.city_id 
+        LEFT JOIN provinces p ON h.province_id = p.province_id
+        WHERE h.id = %s
+    """, (hotel_id,))
     hotel = cursor.fetchone()
     
     if hotel:

@@ -47,6 +47,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Flatpickr -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 
     <script>
         // SweetAlert2 for Flash Messages
@@ -87,6 +88,67 @@
             this.classList.toggle('active');
         });
 
+        // Custom Select Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const selects = document.querySelectorAll('select.custom-select-native');
+            selects.forEach(select => {
+                select.style.display = 'none';
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'custom-select-wrapper';
+                select.parentNode.insertBefore(wrapper, select);
+                wrapper.appendChild(select);
+                
+                const trigger = document.createElement('div');
+                trigger.className = 'custom-select ' + (select.className.replace('custom-select-native', '').replace('form-control', ''));
+                if(select.style.padding) trigger.style.padding = select.style.padding;
+                if(select.style.border) trigger.style.border = select.style.border;
+                
+                const selectedOption = select.options[select.selectedIndex];
+                trigger.innerHTML = `<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${selectedOption ? selectedOption.text : 'Pilih...'}</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 10px; flex-shrink: 0;"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+                
+                const optionsList = document.createElement('div');
+                optionsList.className = 'custom-select-options';
+                
+                Array.from(select.options).forEach((option) => {
+                    const customOption = document.createElement('div');
+                    customOption.className = 'custom-option' + (option.selected ? ' selected' : '');
+                    customOption.textContent = option.text;
+                    customOption.dataset.value = option.value;
+                    
+                    customOption.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        select.value = option.value;
+                        select.dispatchEvent(new Event('change'));
+                        
+                        trigger.querySelector('span').textContent = option.text;
+                        optionsList.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+                        customOption.classList.add('selected');
+                        trigger.classList.remove('open');
+                    });
+                    optionsList.appendChild(customOption);
+                });
+                
+                wrapper.appendChild(trigger);
+                wrapper.appendChild(optionsList);
+                
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.custom-select.open').forEach(el => {
+                        if(el !== trigger) el.classList.remove('open');
+                    });
+                    trigger.classList.toggle('open');
+                });
+            });
+            
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.custom-select.open').forEach(el => {
+                    el.classList.remove('open');
+                });
+            });
+        });
+
         // Navbar Scroll Effect
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
@@ -98,5 +160,32 @@
         });
     </script>
     {% block scripts %}{% endblock %}
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+        <a href="{{ url_for('main.index') }}" class="nav-item {% if request.endpoint == 'main.index' %}active{% endif %}">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('main.about') }}" class="nav-item {% if request.endpoint == 'main.about' %}active{% endif %}">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>About</span>
+        </a>
+        <a href="{{ url_for('booking.my_bookings') }}" class="nav-item {% if request.endpoint == 'booking.my_bookings' %}active{% endif %}">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <span>Bookings</span>
+        </a>
+        {% if session.get('user_id') %}
+        <a href="{{ url_for('auth.logout') }}" class="nav-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <span>Logout</span>
+        </a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="nav-item {% if request.endpoint == 'auth.login' %}active{% endif %}">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            <span>Login</span>
+        </a>
+        {% endif %}
+    </nav>
 </body>
 </html>

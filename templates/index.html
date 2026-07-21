@@ -10,25 +10,34 @@
 
     <!-- Floating Search Bar -->
     <div class="floating-search">
-        <form action="{{ url_for('main.index') }}" method="GET" id="searchForm" style="display: flex; width: 100%; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+        <form action="{{ url_for('main.index') }}" method="GET" id="searchForm">
             <div class="search-group">
                 <label>Lokasi (Kota)</label>
-                <select name="city_id" style="padding: 0.8rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8f9fa; outline: none; box-sizing: border-box; cursor: pointer; color: var(--text-main); font-family: 'Inter', sans-serif;">
-                    <option value="">Semua Lokasi</option>
-                    {% for city in available_cities %}
-                    <option value="{{ city.city_id }}" {% if selected_city == city.city_id %}selected{% endif %}>{{ city.city_name }}, {{ city.province }}</option>
-                    {% endfor %}
-                </select>
+                <div class="input-with-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <select name="city_id" class="custom-select-native" style="border: 1px solid #e2e8f0; border-radius: 8px; outline: none; box-sizing: border-box; cursor: pointer; color: var(--text-main); font-family: 'Inter', sans-serif;">
+                        <option value="">Semua Lokasi</option>
+                        {% for city in available_cities %}
+                        <option value="{{ city.city_id }}" {% if selected_city == city.city_id %}selected{% endif %}>{{ city.city_name }}, {{ city.province }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
             <div class="search-group">
                 <label>Check-in</label>
-                <input type="text" name="check_in" id="check_in" value="{{ request.args.get('check_in', '') }}" placeholder="Pilih Tanggal" required>
+                <div class="input-with-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <input type="text" name="check_in" id="check_in" value="{{ request.args.get('check_in', '') }}" placeholder="Pilih Tanggal" required>
+                </div>
             </div>
             <div class="search-group">
                 <label>Check-out</label>
-                <input type="text" name="check_out" id="check_out" value="{{ request.args.get('check_out', '') }}" placeholder="Pilih Tanggal" required>
+                <div class="input-with-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <input type="text" name="check_out" id="check_out" value="{{ request.args.get('check_out', '') }}" placeholder="Pilih Tanggal" required>
+                </div>
             </div>
-            <div style="flex-basis: auto;">
+            <div style="flex: 1; min-width: 120px;">
                 <button type="submit" class="btn btn-primary" style="width: 100%; height: 45px; margin-bottom: 2px;">Cari Hotel</button>
             </div>
         </form>
@@ -37,28 +46,32 @@
 {% endblock %}
 
 {% block content %}
-<div style="text-align: center; margin-bottom: 3rem;">
-    <h2>Destinasi Pilihan Kami</h2>
-    <p class="text-muted">Jelajahi berbagai hotel mewah yang sesuai dengan gaya Anda.</p>
+<div class="section-title-wrapper" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h2 class="section-title" style="margin: 0;">Rekomendasi Terbaik</h2>
 </div>
-
-<div class="grid">
-    {% for hotel in hotels %}
-    <div class="hotel-card">
+<div class="horizontal-scroll-container">
+    {% for hotel in rekomendasi %}
+    <div class="horizontal-card hotel-card">
         <div style="position: relative;">
             {% if hotel.images and hotel.images|length > 0 %}
-            <img src="{{ hotel.images[0] }}" alt="{{ hotel.name }}" class="hotel-image">
+            <img src="{{ hotel.images[0] }}" alt="{{ hotel.name }}" class="hotel-image" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';">
             {% else %}
             <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="{{ hotel.name }}" class="hotel-image">
             {% endif %}
-            <div class="badge-rating">★ 5.0</div>
+            
+            {% if hotel.rating %}
+            <div class="badge-rating">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="margin-right: 2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                {{ hotel.rating }}
+            </div>
+            {% endif %}
         </div>
         
         <div class="hotel-card-content">
             <h3 class="hotel-title">{{ hotel.name }}</h3>
             <div class="hotel-location">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                {{ hotel.location }}
+                <span title="{{ hotel.location }}, {{ hotel.city_name }}, {{ hotel.province }}">{{ hotel.location }}, {{ hotel.city_name }}</span>
             </div>
             
             <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: var(--text-main); flex: 1;">{{ hotel.description[:80] }}...</p>
@@ -66,7 +79,11 @@
             <div class="hotel-footer">
                 <div class="hotel-price">
                     <span>Mulai dari</span><br>
-                    Rp 800.000<span style="font-size: 0.85rem;"> / malam</span>
+                    {% if hotel.min_price > 0 %}
+                    Rp {{ "{:,.0f}".format(hotel.min_price).replace(',', '.') }}<span style="font-size: 0.85rem;"> / malam</span>
+                    {% else %}
+                    TBA
+                    {% endif %}
                 </div>
                 
                 <form action="{{ url_for('main.hotel_rooms', hotel_id=hotel.id) }}" method="GET" style="margin: 0;">
@@ -79,6 +96,63 @@
     </div>
     {% endfor %}
 </div>
+
+{% for group in city_groups %}
+<div class="section-title-wrapper" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; margin-bottom: 1rem;">
+    <h2 class="section-title" style="margin: 0;">Populer di {{ group.city.city_name }}</h2>
+    <a href="{{ url_for('main.city_hotels', city_id=group.city.city_id) }}" class="see-all-link" style="color: var(--accent-color); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+        Lihat Semua
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </a>
+</div>
+<div class="horizontal-scroll-container">
+    {% for hotel in group.hotels %}
+    <div class="horizontal-card hotel-card">
+        <div style="position: relative;">
+            {% if hotel.images and hotel.images|length > 0 %}
+            <img src="{{ hotel.images[0] }}" alt="{{ hotel.name }}" class="hotel-image" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';">
+            {% else %}
+            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="{{ hotel.name }}" class="hotel-image">
+            {% endif %}
+            
+            {% if hotel.rating %}
+            <div class="badge-rating">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="margin-right: 2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                {{ hotel.rating }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="hotel-card-content">
+            <h3 class="hotel-title">{{ hotel.name }}</h3>
+            <div class="hotel-location">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span title="{{ hotel.location }}, {{ hotel.city_name }}, {{ hotel.province }}">{{ hotel.location }}, {{ hotel.city_name }}</span>
+            </div>
+            
+            <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: var(--text-main); flex: 1;">{{ hotel.description[:80] }}...</p>
+            
+            <div class="hotel-footer">
+                <div class="hotel-price">
+                    <span>Mulai dari</span><br>
+                    {% if hotel.min_price > 0 %}
+                    Rp {{ "{:,.0f}".format(hotel.min_price).replace(',', '.') }}<span style="font-size: 0.85rem;"> / malam</span>
+                    {% else %}
+                    TBA
+                    {% endif %}
+                </div>
+                
+                <form action="{{ url_for('main.hotel_rooms', hotel_id=hotel.id) }}" method="GET" style="margin: 0;">
+                    <input type="hidden" name="check_in" class="hidden_check_in">
+                    <input type="hidden" name="check_out" class="hidden_check_out">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1rem;">Lihat Kamar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
 {% endblock %}
 
 {% block scripts %}
@@ -87,27 +161,70 @@
     const checkOutInput = document.getElementById('check_out');
 
     function syncDates() {
-        document.querySelectorAll('.hidden_check_in').forEach(el => el.value = checkInInput.value);
-        document.querySelectorAll('.hidden_check_out').forEach(el => el.value = checkOutInput.value);
+        const checkInVal = checkInInput.value;
+        const checkOutVal = checkOutInput.value;
+        
+        document.querySelectorAll('.hidden_check_in').forEach(el => el.value = checkInVal);
+        document.querySelectorAll('.hidden_check_out').forEach(el => el.value = checkOutVal);
+        
+        document.querySelectorAll('.see-all-link').forEach(el => {
+            const baseUrl = el.getAttribute('data-base-url') || el.href.split('?')[0];
+            if (!el.getAttribute('data-base-url')) {
+                el.setAttribute('data-base-url', baseUrl);
+            }
+            if (checkInVal && checkOutVal) {
+                el.href = `${baseUrl}?check_in=${checkInVal}&check_out=${checkOutVal}`;
+            }
+        });
     }
 
-    // Initialize Premium Flatpickr
-    flatpickr("#check_in", {
-        minDate: "today",
-        defaultDate: "{{ request.args.get('check_in') or 'today' }}",
+    const urlCheckIn = "{{ request.args.get('check_in', '') }}";
+    const urlCheckOut = "{{ request.args.get('check_out', '') }}";
+    
+    let baseCheckInDate = urlCheckIn ? new Date(urlCheckIn) : new Date();
+    
+    let defaultCheckOut = new Date(baseCheckInDate);
+    defaultCheckOut.setDate(defaultCheckOut.getDate() + 2);
+    
+    let minCheckOut = new Date(baseCheckInDate);
+    minCheckOut.setDate(minCheckOut.getDate() + 1);
+
+    const checkOutPicker = flatpickr("#check_out", {
+        locale: "id",
+        disableMobile: "true",
+        minDate: minCheckOut,
+        defaultDate: urlCheckOut ? new Date(urlCheckOut) : defaultCheckOut,
         altInput: true,
-        altFormat: "F j, Y",
+        altFormat: "j M",
         dateFormat: "Y-m-d",
         onChange: syncDates
     });
 
-    flatpickr("#check_out", {
-        minDate: new Date().fp_incr(1), // Default min checkout is tomorrow
-        defaultDate: "{{ request.args.get('check_out') }}" || new Date().fp_incr(1),
+    const checkInPicker = flatpickr("#check_in", {
+        locale: "id",
+        disableMobile: "true",
+        minDate: "today",
+        defaultDate: baseCheckInDate,
         altInput: true,
-        altFormat: "F j, Y",
+        altFormat: "j M",
         dateFormat: "Y-m-d",
-        onChange: syncDates
+        onChange: function(selectedDates, dateStr, instance) {
+            syncDates();
+            if (selectedDates.length > 0) {
+                let newMinCheckout = new Date(selectedDates[0]);
+                newMinCheckout.setDate(newMinCheckout.getDate() + 1);
+                checkOutPicker.set("minDate", newMinCheckout);
+                
+                // If current checkout is before new min checkout, update it
+                let currentCheckout = checkOutPicker.selectedDates[0];
+                if (!currentCheckout || currentCheckout <= selectedDates[0]) {
+                    let newCheckout = new Date(selectedDates[0]);
+                    newCheckout.setDate(newCheckout.getDate() + 2);
+                    checkOutPicker.setDate(newCheckout);
+                    syncDates();
+                }
+            }
+        }
     });
 
     // Populate hidden forms initially

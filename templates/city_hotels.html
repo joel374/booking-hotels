@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Hotel di {{ city.city_name }} - Antigravity Hotels{% endblock %}
+
+{% block content %}
+<div class="search-bar" style="margin-top: 1rem; margin-bottom: 3rem; background: var(--card-bg); padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow-soft);">
+    <form action="{{ url_for('main.city_hotels', city_id=city_id) }}" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+        <div class="search-group" style="flex: 1; min-width: 250px;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--primary-color); margin-bottom: 0.5rem;">Lokasi</label>
+            <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <select name="city_id" class="custom-select-native" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; background: #ffffff; padding: 0.8rem 0.8rem 0.8rem 2.5rem; font-size: 1rem; color: var(--text-main); cursor: pointer;">
+                    {% for c in available_cities %}
+                    <option value="{{ c.city_id }}" {% if city_id|string == c.city_id|string %}selected{% endif %}>
+                        {{ c.city_name }}, {{ c.province }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="search-group" style="flex: 1; min-width: 150px;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--primary-color); margin-bottom: 0.5rem;">Check-in</label>
+            <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <input type="date" name="check_in" id="check_in" value="{{ check_in if check_in else '' }}" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; background: #ffffff; padding: 0.8rem 0.8rem 0.8rem 2.5rem; font-size: 1rem; color: var(--text-main);" required>
+            </div>
+        </div>
+        
+        <div class="search-group" style="flex: 1; min-width: 150px;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--primary-color); margin-bottom: 0.5rem;">Check-out</label>
+            <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <input type="date" name="check_out" id="check_out" value="{{ check_out if check_out else '' }}" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; background: #ffffff; padding: 0.8rem 0.8rem 0.8rem 2.5rem; font-size: 1rem; color: var(--text-main);" required>
+            </div>
+        </div>
+        
+        <div style="flex: 1; min-width: 120px; text-align: right;">
+            <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2rem; border-radius: 8px; width: 100%; height: 48px; box-sizing: border-box;">Cari</button>
+        </div>
+    </form>
+</div>
+
+<div class="section-title-wrapper" style="margin-bottom: 2rem;">
+    <h2 class="section-title">Eksplorasi di {{ city.city_name }}</h2>
+    <p class="text-muted">Temukan berbagai penginapan terbaik untuk perjalanan Anda.</p>
+</div>
+
+<div class="grid" id="hotels-grid">
+    <!-- Hotels will be loaded here via Infinite Scroll -->
+</div>
+
+<!-- Skeleton Loader for Infinite Scroll -->
+<div id="loading-spinner" class="grid" style="padding: 2rem 0; display: none;">
+    {% for i in range(3) %}
+    <div class="skeleton-card">
+        <div class="skeleton skeleton-img"></div>
+        <div class="skeleton-content">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text short"></div>
+            <div style="margin: 1.5rem 0; flex: 1;">
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text short"></div>
+            </div>
+            <div class="skeleton-footer">
+                <div>
+                    <div class="skeleton skeleton-text short" style="width: 60px;"></div>
+                    <div class="skeleton skeleton-text" style="width: 100px; height: 20px;"></div>
+                </div>
+                <div class="skeleton skeleton-btn"></div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<div id="scroll-trigger" style="height: 10px; width: 100%;"></div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const cityId = "{{ city_id }}";
+    let currentPage = 1;
+    let hasMore = true;
+    let isLoading = false;
+    
+    const grid = document.getElementById('hotels-grid');
+    const spinner = document.getElementById('loading-spinner');
+    
+    // Function to format currency
+    function formatRupiah(number) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number).replace('Rp', 'Rp ').replace(',00', '');
+    }
+    
+    // Create card HTML
+    function createHotelCard(hotel) {
+        const imageUrl = hotel.images && hotel.images.length > 0 ? hotel.images[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+        
+        let ratingHtml = '';
+        if (hotel.rating) {
+            ratingHtml = `<div class="badge-rating"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="margin-right: 2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>${hotel.rating}</div>`;
+        }
+        
+        let priceHtml = hotel.min_price > 0 ? `${formatRupiah(hotel.min_price)}<span style="font-size: 0.85rem;"> / malam</span>` : 'TBA';
+        
+        const description = hotel.description ? hotel.description.substring(0, 80) + '...' : '';
+        
+        return `
+        <div class="hotel-card">
+            <div style="position: relative;">
+                <img src="${imageUrl}" alt="${hotel.name}" class="hotel-image" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';">
+                ${ratingHtml}
+            </div>
+            <div class="hotel-card-content">
+                <h3 class="hotel-title">${hotel.name}</h3>
+                <div class="hotel-location">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span title="${hotel.location}, ${hotel.city_name}, ${hotel.province}">${hotel.location}, ${hotel.city_name}</span>
+                </div>
+                <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: var(--text-main); flex: 1;">${description}</p>
+                <div class="hotel-footer">
+                    <div class="hotel-price">
+                        <span>Mulai dari</span><br>
+                        ${priceHtml}
+                    </div>
+                    <form action="/hotel/${hotel.id}" method="GET" style="margin: 0;">
+                        <input type="hidden" name="check_in" value="${document.getElementById('check_in').value}">
+                        <input type="hidden" name="check_out" value="${document.getElementById('check_out').value}">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1rem;">Lihat Kamar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+    
+    // Load hotels from API
+    async function loadHotels() {
+        if (isLoading || !hasMore) return;
+        
+        isLoading = true;
+        spinner.style.display = 'grid'; // Show skeleton loader
+        
+        try {
+            const response = await fetch(`/api/hotels?city_id=${cityId}&page=${currentPage}`);
+            const data = await response.json();
+            
+            if (data.hotels.length === 0) {
+                hasMore = false;
+                spinner.style.display = 'none';
+                if (currentPage === 1) {
+                    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem;">Belum ada hotel yang tersedia untuk kota ini.</div>';
+                }
+                return;
+            }
+            
+            // Append hotels to grid
+            data.hotels.forEach(hotel => {
+                grid.insertAdjacentHTML('beforeend', createHotelCard(hotel));
+            });
+            
+            currentPage++;
+            
+            // If less than 14 hotels returned, we've reached the end
+            if (data.hotels.length < 14) {
+                hasMore = false;
+            }
+        } catch (error) {
+            console.error('Error fetching hotels:', error);
+        } finally {
+            isLoading = false;
+            spinner.style.display = 'none';
+        }
+    }
+    
+    // Initialize IntersectionObserver for Infinite Scroll
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading) {
+            loadHotels();
+        }
+    }, { rootMargin: '200px' });
+    
+    observer.observe(document.getElementById('scroll-trigger'));
+    
+    // Date Pickers using Flatpickr (Consistent with index)
+    const checkInInput = document.getElementById('check_in');
+    const checkOutInput = document.getElementById('check_out');
+    
+    function syncHiddenDates() {
+        document.querySelectorAll('input[name="check_in"]').forEach(input => {
+            if(input.id !== 'check_in') input.value = checkInInput.value;
+        });
+        document.querySelectorAll('input[name="check_out"]').forEach(input => {
+            if(input.id !== 'check_out') input.value = checkOutInput.value;
+        });
+    }
+
+    const urlCheckIn = "{{ check_in if check_in else '' }}";
+    const urlCheckOut = "{{ check_out if check_out else '' }}";
+    
+    let baseCheckInDate = urlCheckIn ? new Date(urlCheckIn) : new Date();
+    
+    let defaultCheckOut = new Date(baseCheckInDate);
+    defaultCheckOut.setDate(defaultCheckOut.getDate() + 2);
+    
+    let minCheckOut = new Date(baseCheckInDate);
+    minCheckOut.setDate(minCheckOut.getDate() + 1);
+
+    const checkOutPicker = flatpickr("#check_out", {
+        locale: "id",
+        disableMobile: "true",
+        minDate: minCheckOut,
+        defaultDate: urlCheckOut ? new Date(urlCheckOut) : defaultCheckOut,
+        altInput: true,
+        altFormat: "j M",
+        dateFormat: "Y-m-d",
+        onChange: syncHiddenDates
+    });
+
+    const checkInPicker = flatpickr("#check_in", {
+        locale: "id",
+        disableMobile: "true",
+        minDate: "today",
+        defaultDate: baseCheckInDate,
+        altInput: true,
+        altFormat: "j M",
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates, dateStr, instance) {
+            syncHiddenDates();
+            if (selectedDates.length > 0) {
+                let newMinCheckout = new Date(selectedDates[0]);
+                newMinCheckout.setDate(newMinCheckout.getDate() + 1);
+                checkOutPicker.set("minDate", newMinCheckout);
+                
+                let currentCheckout = checkOutPicker.selectedDates[0];
+                if (!currentCheckout || currentCheckout <= selectedDates[0]) {
+                    let newCheckout = new Date(selectedDates[0]);
+                    newCheckout.setDate(newCheckout.getDate() + 2);
+                    checkOutPicker.setDate(newCheckout);
+                    syncHiddenDates();
+                }
+            }
+        }
+    });
+
+    // Initial sync
+    syncHiddenDates();
+</script>
+{% endblock %}

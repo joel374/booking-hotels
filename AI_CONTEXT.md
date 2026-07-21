@@ -164,7 +164,26 @@ query = """
 
 **⚠️ Known Issues:**
 - Availability logic might have edge cases (overlapping dates)
-- No pagination (can be slow with many results)
+
+---
+
+### **2. Hotel Listing & Infinite Scroll (AJAX)**
+
+**Route:** `GET /api/hotels?city_id=X&page=Y`
+
+**Logic:**
+```python
+# routes/main.py::api_hotels()
+# 1. Base query for hotels in a city
+# 2. Add limits and offset based on `page` (per_page = 14)
+# 3. Retrieve min_price and cover image for each hotel
+# 4. Return JSON response
+```
+
+**Frontend Interaction (`city_hotels.html`):**
+- Uses `IntersectionObserver` to detect when the user scrolls near the bottom of the page.
+- Injects a Skeleton Loader animation while fetching data.
+- Fetches the next page of hotels via `/api/hotels` and appends them to the DOM without refreshing the page.
 
 ---
 
@@ -672,12 +691,16 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
 *   **Wilayah Kode (Ownership):**
     *   `routes/main.py`
     *   `routes/booking.py`
-    *   `templates/index.html`, `templates/rooms.html`, `templates/booking_form.html`, dll.
+    *   `templates/index.html`, `templates/rooms.html`, `templates/booking_form.html`, `templates/city_hotels.html` dll.
 *   **Tabel Database:** `bookings`, `waiting_lists`.
 *   **Next Enhancements:** Integrasi Payment Gateway (Midtrans), Sistem Ulasan (Reviews), Kirim Invoice PDF via Email.
+*   **Recent Updates:** 
+    - Pembersihan *inline-style* di seluruh HTML Modul 3 dan standarisasi CSS.
+    - Implementasi *Horizontal Scroll* ala Netflix di Beranda (`index.html`).
+    - Implementasi *Infinite Scroll* (AJAX API & IntersectionObserver) dengan *Skeleton Loader* di halaman Kota (`city_hotels.html`).
 
 ---
 
-**Last Updated:** July 18, 2026  
-**Version:** 1.1  
+**Last Updated:** July 21, 2026  
+**Version:** 1.2  
 **Status:** Active Development (Distributed to 3 Team Members)
