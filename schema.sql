@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 -- ------------------------------------------------------------
 -- Tabel: hotels
--- Data hotel; province_id & city_id berelasi ke tabel master
+-- Data hotel, province_id & city_id berelasi ke tabel master
 -- (image_url DIHAPUS – gambar kini disimpan di tabel hotel_images)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `hotels` (
@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS `hotels` (
   `name`        VARCHAR(100) NOT NULL,
   `location`    VARCHAR(100) NOT NULL,               -- Alamat detail (jalan, RT/RW, dsb.)
   `description` TEXT         DEFAULT NULL,
+  `rating`      DECIMAL(3,1) DEFAULT 0.0,
   `province_id` VARCHAR(255) DEFAULT NULL,
   `city_id`     VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
