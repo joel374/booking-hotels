@@ -19,8 +19,14 @@
         <p style="margin: 0; font-size: 0.95rem;"><strong>Kamar:</strong> {{ room.room_type }} (No. {{ room.room_number }})</p>
         <p style="margin: 0; font-size: 0.95rem;"><strong>Check-in:</strong> {{ check_in | format_date }}</p>
         <p style="margin: 0; font-size: 0.95rem;"><strong>Check-out:</strong> {{ check_out | format_date }}</p>
+        <p style="margin: 0.25rem 0 0 0; font-size: 0.95rem;"><strong>Durasi Inap:</strong> {{ nights }} Malam</p>
         <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 0.8rem 0;">
-        <p style="margin: 0; font-size: 1.1rem; color: var(--success); font-weight: 600;">Total per Malam: Rp {{ "{:,.0f}".format(room.price) }}</p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Harga per Malam: Rp {{ "{:,.0f}".format(room.price) }}</p>
+                <p style="margin: 0; font-size: 1.2rem; color: var(--success); font-weight: 700;">Total: Rp {{ "{:,.0f}".format(grand_total) }}</p>
+            </div>
+        </div>
     </div>
 
     <form method="POST">
