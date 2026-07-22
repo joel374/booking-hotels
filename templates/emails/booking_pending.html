@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Selesaikan Pembayaran Pesanan Anda</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
+        .email-container { max-width: 600px; margin: 2rem auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { background: #f59e0b; color: white; padding: 2rem; text-align: center; }
+        .header h1 { margin: 0; font-size: 1.8rem; }
+        .content { padding: 2rem; color: #334155; }
+        .content p { font-size: 1rem; line-height: 1.6; }
+        .booking-details { background: #fef3c7; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; }
+        .booking-details h3 { margin-top: 0; color: #0f172a; border-bottom: 1px solid #fcd34d; padding-bottom: 0.5rem; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+        .detail-row strong { color: #475569; }
+        .footer { background: #f8fafc; padding: 1.5rem; text-align: center; color: #64748b; font-size: 0.85rem; border-top: 1px solid #e2e8f0; }
+        .btn { display: inline-block; background: #f59e0b; color: white; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: bold; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Menunggu Pembayaran</h1>
+        </div>
+        <div class="content">
+            <p>Halo <strong>{{ booking.guest_name }}</strong>,</p>
+            <p>Anda baru saja membuat pesanan kamar di Booking Hotels. Saat ini pesanan Anda berstatus <strong>MENUNGGU PEMBAYARAN</strong>. Kamar ini telah dikunci khusus untuk Anda, namun akan otomatis dibatalkan jika Anda tidak menyelesaikan pembayaran dalam waktu 15 menit.</p>
+            
+            <div class="booking-details">
+                <h3>Rincian Pesanan</h3>
+                <div class="detail-row">
+                    <strong>Hotel:</strong> <span>{{ booking.hotel_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <strong>Tipe Kamar:</strong> <span>{{ booking.room_type }}</span>
+                </div>
+                <div class="detail-row">
+                    <strong>Total Tagihan:</strong> <span style="font-weight: bold; color: #b45309;">Rp {{ "{:,.0f}".format(booking.price) }}</span>
+                </div>
+            </div>
+
+            <p>Silakan klik tombol di bawah ini untuk menyelesaikan pembayaran Anda segera:</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ url_for('booking.pay', booking_id=booking.id, _external=True) }}" class="btn">Bayar Sekarang</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; Booking Hotels. All rights reserved.</p>
+            <p>Email ini dikirim secara otomatis, mohon tidak membalas email ini.</p>
+        </div>
+    </div>
+</body>
+</html>

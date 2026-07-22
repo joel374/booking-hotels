@@ -2,25 +2,32 @@
 
 {% block content %}
 <div class="pt-4">
-    <h1 class="section-title" style="border-bottom: 2px solid var(--border-color); padding-bottom: 1rem;">My Dashboard</h1>
-
     <div style="margin-bottom: 4rem;">
-        <h2 style="color: var(--primary-color); margin-bottom: 1.5rem; font-family: 'Playfair Display', serif;">My Bookings</h2>
+        <h1 class="section-title" style="color: var(--primary-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 2rem; font-family: 'Playfair Display', serif;">Pesanan Saya</h1>
         
         {% if bookings %}
         <div class="grid">
             {% for booking in bookings %}
             <div class="room-card" style="padding: 1.5rem; position: relative; overflow: hidden; border: 1px solid #e2e8f0;">
                 {% if booking.status == 'Booked' %}
-                    <div class="status-badge success">BOOKED</div>
+                    <div class="status-badge success">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        BOOKED
+                    </div>
                 {% elif booking.status == 'Pending' %}
-                    <div class="status-badge warning">PENDING (Awaiting Payment)</div>
+                    <div class="status-badge warning">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        PENDING
+                    </div>
                 {% else %}
-                    <div class="status-badge danger">CANCELLED</div>
+                    <div class="status-badge danger">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        CANCELLED
+                    </div>
                 {% endif %}
 
                 <h3 style="margin-top: 1rem; color: var(--primary-color);">{{ booking.hotel_name }}</h3>
-                <p class="text-muted" style="margin-bottom: 1rem;">{{ booking.room_type }} (Room {{ booking.room_number }})</p>
+                <p class="text-muted" style="margin-bottom: 1rem;">{{ booking.room_type }} (Kamar {{ booking.room_number }})</p>
                 
                 <div class="booking-summary-box">
                     <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-in:</strong> {{ booking.check_in | format_date }}</p>
@@ -35,23 +42,29 @@
                         </div>
                     {% endif %}
 
-                    <div style="display: flex; gap: 0.5rem;">
+                    <div style="display: flex; gap: 0.75rem;">
                         {% if booking.status == 'Pending' %}
-                            <a href="{{ url_for('booking.pay', booking_id=booking.id) }}" class="btn btn-warning" style="flex: 1; padding: 0.6rem; font-size: 0.85rem;">Pay Now</a>
+                            <a href="{{ url_for('booking.pay', booking_id=booking.id) }}" class="btn btn-warning" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 40px;">Bayar Sekarang</a>
                         {% endif %}
                         
                         {% if booking.status == 'Booked' %}
-                            <a href="{{ url_for('booking.invoice', booking_id=booking.id) }}" class="btn btn-primary" style="flex: 1; padding: 0.6rem; font-size: 0.85rem;">View Invoice</a>
+                            <a href="{{ url_for('booking.invoice', booking_id=booking.id) }}" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 40px;">Lihat Invoice</a>
                             
-                            {% if booking.has_reviewed == 0 %}
-                            <button type="button" class="btn btn-primary" onclick="openReviewModal({{ booking.id }}, '{{ booking.hotel_name | escape }}')" style="flex: 1; padding: 0.6rem; font-size: 0.85rem; background: #8b5cf6; border-color: #8b5cf6;">Write Review</button>
+                            {% if booking.has_reviewed == 0 and booking.can_review %}
+                            <button type="button" class="btn btn-primary" onclick="openReviewModal({{ booking.id }}, '{{ booking.hotel_name | escape }}')" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 40px; background: var(--bg-color); color: var(--primary-color); border: 1px solid var(--primary-color);">Tulis Ulasan</button>
                             {% endif %}
                         {% endif %}
 
-                        {% if booking.status != 'Cancelled' %}
-                            <form action="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" method="POST" style="flex: 1;" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
-                                <button type="submit" class="btn btn-danger" style="width: 100%; padding: 0.6rem; font-size: 0.85rem;">Cancel</button>
+                        {% if booking.status in ['Booked', 'Pending'] %}
+                            {% if booking.can_cancel %}
+                            <form action="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" method="POST" style="flex: 1; margin: 0;" class="cancel-booking-form">
+                                <button type="submit" class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 6px; text-align: center; margin: 0; min-height: 40px;">Batal</button>
                             </form>
+                            {% else %}
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; background: #f1f5f9; color: #94a3b8; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; margin: 0; min-height: 40px; cursor: not-allowed;" title="Batas waktu pembatalan sudah lewat">
+                                Batal
+                            </div>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -59,15 +72,16 @@
             {% endfor %}
         </div>
         {% else %}
-        <div style="background: var(--card-bg); padding: 3rem; text-align: center; border-radius: var(--radius); box-shadow: var(--shadow-soft);">
-            <p class="text-muted" style="font-size: 1.1rem;">You have no bookings yet.</p>
-            <a href="{{ url_for('main.index') }}" class="btn btn-primary" style="margin-top: 1rem;">Explore Hotels</a>
+        <div style="padding: 4rem 2rem; text-align: center; background: white; border-radius: 16px; box-shadow: var(--shadow-soft);">
+            <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Belum ada pesanan</h3>
+            <p class="text-muted" style="margin-bottom: 2rem;">Anda belum melakukan pemesanan apa pun. Yuk temukan hotel impian Anda!</p>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Cari Hotel</a>
         </div>
         {% endif %}
     </div>
 
     <div>
-        <h2 style="color: var(--accent-color); margin-bottom: 1.5rem; font-family: 'Playfair Display', serif;">My Waiting Lists</h2>
+        <h2 style="color: var(--primary-color); margin-bottom: 1.5rem; font-family: 'Playfair Display', serif;">Waiting List Anda</h2>
         
         {% if waiting_lists %}
         <div class="grid">
@@ -77,53 +91,57 @@
                     <div class="wl-badge">WAITING</div>
                     <h3 style="margin: 0; color: var(--primary-color);">{{ wl.hotel_name }}</h3>
                 </div>
-                <p class="text-muted">{{ wl.room_type }} (Room {{ wl.room_number }})</p>
+                <p class="text-muted">{{ wl.room_type }} (Kamar {{ wl.room_number }})</p>
                 <div style="margin-top: 1rem; border-top: 1px dashed #cbd5e1; padding-top: 1rem;">
-                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Desired Check-in:</strong> {{ wl.check_in | format_date }}</p>
-                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Desired Check-out:</strong> {{ wl.check_out | format_date }}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-in yang Diinginkan:</strong> {{ wl.check_in | format_date }}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-out yang Diinginkan:</strong> {{ wl.check_out | format_date }}</p>
                 </div>
                 <p style="margin-top: 1.5rem; color: var(--accent-color); font-size: 0.85rem; font-style: italic; text-align: center;">
-                    You will be notified if this room becomes available.
+                    Anda akan diberitahu jika kamar ini tersedia.
                 </p>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-muted">You are not on any waiting lists.</p>
+        <div style="padding: 3rem 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1px dashed #cbd5e1;">
+            <p class="text-muted">Anda tidak sedang mengantre di kamar mana pun.</p>
+        </div>
         {% endif %}
     </div>
 </div>
 
 <!-- Review Modal -->
-<div id="review-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div style="background: white; width: 100%; max-width: 500px; border-radius: 16px; padding: 2rem; position: relative;">
-        <button type="button" onclick="closeReviewModal()" style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
-        <h3 style="margin-top: 0; color: var(--primary-color);">Write a Review</h3>
-        <p class="text-muted" style="margin-bottom: 1.5rem;">Share your experience at <strong id="modal-hotel-name"></strong>.</p>
+<div id="review-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div style="background: white; width: 90%; max-width: 500px; border-radius: 16px; padding: 2.5rem; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: modalSlideUp 0.3s ease-out forwards;">
+        <button type="button" onclick="closeReviewModal()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; padding: 0;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">&times;</button>
+        <h3 style="margin-top: 0; color: var(--primary-color);">Tulis Ulasan</h3>
+        <p class="text-muted" style="margin-bottom: 1.5rem;">Bagikan pengalaman Anda menginap di <strong id="modal-hotel-name"></strong>.</p>
         
         <form id="review-form" method="POST" action="">
             <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Rating</label>
-                <div style="display: flex; gap: 10px; flex-direction: row-reverse; justify-content: flex-end;" class="star-rating">
-                    <input type="radio" id="star5" name="rating" value="5" required style="display: none;"/><label for="star5" style="cursor: pointer; font-size: 2rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
-                    <input type="radio" id="star4" name="rating" value="4" style="display: none;"/><label for="star4" style="cursor: pointer; font-size: 2rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
-                    <input type="radio" id="star3" name="rating" value="3" style="display: none;"/><label for="star3" style="cursor: pointer; font-size: 2rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
-                    <input type="radio" id="star2" name="rating" value="2" style="display: none;"/><label for="star2" style="cursor: pointer; font-size: 2rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
-                    <input type="radio" id="star1" name="rating" value="1" style="display: none;"/><label for="star1" style="cursor: pointer; font-size: 2rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Penilaian (Rating)</label>
+                <div style="display: flex; gap: 5px; flex-direction: row-reverse; justify-content: flex-end;" class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5" required style="display: none;"/><label for="star5" style="cursor: pointer; font-size: 2.5rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
+                    <input type="radio" id="star4" name="rating" value="4" style="display: none;"/><label for="star4" style="cursor: pointer; font-size: 2.5rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
+                    <input type="radio" id="star3" name="rating" value="3" style="display: none;"/><label for="star3" style="cursor: pointer; font-size: 2.5rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
+                    <input type="radio" id="star2" name="rating" value="2" style="display: none;"/><label for="star2" style="cursor: pointer; font-size: 2.5rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
+                    <input type="radio" id="star1" name="rating" value="1" style="display: none;"/><label for="star1" style="cursor: pointer; font-size: 2.5rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
                 </div>
                 <style>
+                @keyframes modalSlideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
                 .star-rating label:hover, .star-rating label:hover ~ label, .star-rating input:checked ~ label {
                     color: #FFD700 !important;
+                    transform: scale(1.1);
                 }
                 </style>
             </div>
             
-            <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label for="comment" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Comment (Optional)</label>
-                <textarea name="comment" id="comment" rows="4" class="form-control" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.8rem;" placeholder="What did you like or dislike?"></textarea>
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label for="comment" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Komentar (Opsional)</label>
+                <textarea name="comment" id="comment" rows="4" class="form-control" style="width: 100%; box-sizing: border-box;" placeholder="Apa yang Anda suka atau tidak suka dari penginapan ini?"></textarea>
             </div>
             
-            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">Submit Review</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; padding: 0.8rem; font-size: 1rem; min-height: 45px; border-radius: 8px;">Kirim Ulasan</button>
         </form>
     </div>
 </div>
@@ -132,11 +150,31 @@
 function openReviewModal(bookingId, hotelName) {
     document.getElementById('modal-hotel-name').innerText = hotelName;
     document.getElementById('review-form').action = "/review/" + bookingId;
-    const modal = document.getElementById('review-modal');
-    modal.style.display = 'flex';
+    document.getElementById('review-modal').style.display = 'flex';
 }
+
 function closeReviewModal() {
     document.getElementById('review-modal').style.display = 'none';
 }
+
+document.querySelectorAll('.cancel-booking-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Batalkan Pesanan?',
+            text: "Apakah Anda yakin ingin membatalkan pesanan ini? Tindakan ini tidak dapat dibatalkan.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Ya, Batalkan!',
+            cancelButtonText: 'Tutup'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+});
 </script>
 {% endblock %}

@@ -139,17 +139,16 @@
             </div>
             
             <form method="POST" style="margin-top: 2rem;">
-                <!-- Payment method placeholder, can be saved to DB later if needed -->
                 <input type="hidden" name="payment_method" id="selected-method" value="BCA Virtual Account">
                 
-                <button type="button" id="pay-button" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: 700; background: #0ea5e9; border: none; border-radius: 10px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); transition: all 0.3s;">
+                <button type="button" id="pay-button" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; padding: 0.8rem; font-size: 1.1rem; font-weight: 700; min-height: 50px; background: #0ea5e9; border: none; border-radius: 10px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); transition: all 0.3s; margin: 0;">
                     Bayar Sekarang
                 </button>
             </form>
             
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <form action="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" method="POST" style="margin:0;">
-                    <button type="submit" style="background: none; border: none; color: #94a3b8; font-size: 0.85rem; cursor: pointer; text-decoration: underline;">Batalkan Pesanan</button>
+            <div style="text-align: center; margin-top: 1rem;">
+                <form action="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" method="POST" style="margin:0;" class="cancel-booking-form">
+                    <button type="submit" class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; padding: 0.6rem 1rem; font-size: 0.95rem; font-weight: 600; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 10px; margin: 0; min-height: 45px; transition: 0.3s;">Batalkan Pesanan</button>
                 </form>
             </div>
         </div>
@@ -207,6 +206,27 @@
                 btn.closest('form').submit();
             }, 1200);
         }, 2000);
+    });
+    
+    // SweetAlert Cancel Confirmation
+    document.querySelectorAll('.cancel-booking-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Batalkan Pesanan?',
+                text: "Apakah Anda yakin ingin membatalkan pesanan ini? Tindakan ini tidak dapat dibatalkan.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Ya, Batalkan!',
+                cancelButtonText: 'Tutup'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
     });
 </script>
 {% endblock %}

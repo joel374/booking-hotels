@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Booking Confirmation</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
+        .email-container { max-width: 600px; margin: 2rem auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { background: #2563eb; color: white; padding: 2rem; text-align: center; }
+        .header h1 { margin: 0; font-size: 1.8rem; }
+        .content { padding: 2rem; color: #334155; }
+        .content p { font-size: 1rem; line-height: 1.6; }
+        .booking-details { background: #f1f5f9; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; }
+        .booking-details h3 { margin-top: 0; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.5rem; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+        .detail-row strong { color: #475569; }
+        .footer { background: #f8fafc; padding: 1.5rem; text-align: center; color: #64748b; font-size: 0.85rem; border-top: 1px solid #e2e8f0; }
+        .btn { display: inline-block; background: #2563eb; color: white; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: bold; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Booking Hotels</h1>
+        </div>
+        <div class="content">
+            <p>Halo <strong>{{ booking.guest_name }}</strong>,</p>
+            <p>Terima kasih telah melakukan pemesanan melalui Booking Hotels. Pembayaran Anda telah kami terima dan pesanan Anda kini berstatus <strong>LUNAS</strong>.</p>
+            
+            <div class="booking-details">
+                <h3>Rincian Pesanan</h3>
+                <div class="detail-row">
+                    <strong>Booking ID:</strong> <span>INV-{{ booking.id }}-{{ booking.created_at.strftime('%Y') }}</span>
+                </div>
+                <div class="detail-row">
+                    <strong>Hotel:</strong> <span>{{ booking.hotel_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <strong>Tipe Kamar:</strong> <span>{{ booking.room_type }} (Kamar {{ booking.room_number }})</span>
+                </div>
+                <div class="detail-row">
+                    <strong>Check-in:</strong> <span>{{ booking.check_in.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-row">
+                    <strong>Check-out:</strong> <span>{{ booking.check_out.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-row">
+                    <strong>Total Harga:</strong> <span style="font-weight: bold; color: #2563eb;">Rp {{ "{:,.0f}".format(booking.price) }}</span>
+                </div>
+            </div>
+
+            <p>Silakan tunjukkan email ini atau Invoice dari Dasbor Anda saat melakukan proses Check-in di resepsionis.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ url_for('booking.invoice', booking_id=booking.id, _external=True) }}" class="btn">Lihat Invoice Online</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ booking.created_at.strftime('%Y') }} Booking Hotels. All rights reserved.</p>
+            <p>Email ini dikirim secara otomatis, mohon tidak membalas email ini.</p>
+        </div>
+    </div>
+</body>
+</html>

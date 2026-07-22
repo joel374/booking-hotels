@@ -125,7 +125,7 @@
         justify-content: space-between;
         align-items: center;
     }
-    .desktop-back-link { display: none; }
+    .desktop-back-link { display: inline-block; margin-bottom: 10px; }
 }
 </style>
 
@@ -181,7 +181,7 @@
         {% if available_rooms %}
         <div class="grid" style="grid-template-columns: 1fr;">
             {% for room in available_rooms %}
-            <div class="room-card card">
+            <div class="room-card">
                 <div class="room-carousel">
                     {% for img in room.images %}
                     <img src="{{ img }}" alt="{{ room.room_type }}">
@@ -194,7 +194,7 @@
                     <h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 0.5rem;">{{ room.room_type }}</h3>
                     <p class="text-muted" style="font-size: 0.9rem; margin-top: 0;">Nomor Kamar: {{ room.room_number }}</p>
                     
-                    <div style="margin: 1.5rem 0; padding-top: 1rem; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="margin: 1.5rem 0 0 0; padding-top: 1rem; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <span style="font-size: 0.85rem; color: var(--text-muted);">Harga per malam</span>
                             <p style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin: 0.2rem 0 0 0;">Rp {{ "{:,.0f}".format(room.price) }}</p>
@@ -215,7 +215,7 @@
         <h2 class="section-title mt-4">Kamar Penuh (Waiting List)</h2>
         <div class="grid" style="grid-template-columns: 1fr;">
             {% for room in booked_rooms %}
-            <div class="room-card card" style="opacity: 0.7; background: #f8fafc;">
+            <div class="room-card" style="opacity: 0.7; background: #f8fafc;">
                 <div class="room-carousel">
                     {% for img in room.images %}
                     <img src="{{ img }}" alt="{{ room.room_type }}">
@@ -228,7 +228,7 @@
                     <h3 style="color: var(--text-muted); margin-top: 0; margin-bottom: 0.5rem;">{{ room.room_type }}</h3>
                     <p class="text-muted" style="font-size: 0.9rem; margin-top: 0;">Nomor Kamar: {{ room.room_number }}</p>
                     
-                    <div style="margin: 1.5rem 0; padding-top: 1rem; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="margin: 1.5rem 0 0 0; padding-top: 1rem; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <span style="font-size: 0.85rem; color: var(--text-muted);">Status</span>
                             <p style="color: var(--danger); font-weight: 600; margin: 0.2rem 0 0 0;">Tidak Tersedia</p>
@@ -276,7 +276,7 @@
             <h3 style="margin-top: 0; font-size: 1.2rem;">Atur Perjalanan</h3>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Ubah tanggal atau saring harga untuk menemukan kamar yang tepat.</p>
             
-            <form method="GET" action="{{ url_for('main.hotel_rooms', hotel_id=hotel.id) }}" class="filter-form">
+            <form method="GET" action="{{ url_for('main.hotel_rooms', hotel_id=hotel.id) }}">
                 <div class="filter-group" style="margin-bottom: 1rem;">
                     <label for="check_in" class="form-label" style="font-size: 0.9rem; font-weight: 600;">Check-in</label>
                     <div class="input-with-icon">

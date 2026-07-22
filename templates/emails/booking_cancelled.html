@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Pesanan Dibatalkan</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
+        .email-container { max-width: 600px; margin: 2rem auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { background: #ef4444; color: white; padding: 2rem; text-align: center; }
+        .header h1 { margin: 0; font-size: 1.8rem; }
+        .content { padding: 2rem; color: #334155; }
+        .content p { font-size: 1rem; line-height: 1.6; }
+        .booking-details { background: #fee2e2; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; }
+        .booking-details h3 { margin-top: 0; color: #7f1d1d; border-bottom: 1px solid #fca5a5; padding-bottom: 0.5rem; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+        .detail-row strong { color: #475569; }
+        .footer { background: #f8fafc; padding: 1.5rem; text-align: center; color: #64748b; font-size: 0.85rem; border-top: 1px solid #e2e8f0; }
+        .btn { display: inline-block; background: #3b82f6; color: white; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: bold; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Pesanan Dibatalkan</h1>
+        </div>
+        <div class="content">
+            <p>Halo,</p>
+            <p>Kami memberitahukan bahwa pesanan Anda di <strong>{{ booking.hotel_name }}</strong> untuk kamar <strong>{{ booking.room_type }}</strong> telah <strong>DIBATALKAN</strong>.</p>
+            
+            <p>Pembatalan ini terjadi karena Anda membatalkan pesanan secara mandiri, atau batas waktu pembayaran Anda telah kedaluwarsa.</p>
+
+            <div class="booking-details">
+                <h3>Rincian Pembatalan</h3>
+                <div class="detail-row">
+                    <strong>Check-in:</strong> <span>{{ booking.check_in.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-row">
+                    <strong>Check-out:</strong> <span>{{ booking.check_out.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-row">
+                    <strong>Status:</strong> <span style="font-weight: bold; color: #ef4444;">DIBATALKAN</span>
+                </div>
+            </div>
+
+            <p>Jika Anda masih ingin menginap, silakan lakukan pemesanan ulang melalui aplikasi kami. Terima kasih telah menggunakan layanan Booking Hotels.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ url_for('main.index', _external=True) }}" class="btn">Cari Hotel Lain</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; Booking Hotels. All rights reserved.</p>
+            <p>Email ini dikirim secara otomatis, mohon tidak membalas email ini.</p>
+        </div>
+    </div>
+</body>
+</html>

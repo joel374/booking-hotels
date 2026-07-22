@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from datetime import datetime
+from datetime import datetime, timedelta
 from db import get_db_connection, cleanup_expired_bookings
 
 main_bp = Blueprint('main', __name__)
@@ -15,13 +15,10 @@ def get_available_rooms(hotel_id, check_in, check_out, min_price=None, max_price
         WHERE r.hotel_id = %s AND r.id NOT IN (
             SELECT b.room_id FROM bookings b
             WHERE b.status IN ('Booked', 'Pending') 
-            AND (
-                (b.check_in <= %s AND b.check_out >= %s) OR
-                (b.check_in >= %s AND b.check_in < %s)
-            )
+            AND (b.check_in < %s AND b.check_out > %s)
         )
     """
-    params = [hotel_id, check_out, check_in, check_in, check_out]
+    params = [hotel_id, check_out, check_in]
     
     if min_price:
         query += " AND r.price >= %s"
@@ -51,13 +48,10 @@ def get_booked_rooms(hotel_id, check_in, check_out):
         WHERE r.hotel_id = %s AND r.id IN (
             SELECT b.room_id FROM bookings b
             WHERE b.status IN ('Booked', 'Pending') 
-            AND (
-                (b.check_in <= %s AND b.check_out >= %s) OR
-                (b.check_in >= %s AND b.check_in < %s)
-            )
+            AND (b.check_in < %s AND b.check_out > %s)
         )
     """
-    cursor.execute(query, (hotel_id, check_out, check_in, check_in, check_out))
+    cursor.execute(query, (hotel_id, check_out, check_in))
     rooms = cursor.fetchall()
     
     cursor.close()
@@ -213,6 +207,44 @@ def api_hotels():
     
     return jsonify({'hotels': hotels})
 
+@main_bp.route('/api/search')
+def live_search():
+    query = request.args.get('q', '').strip()
+    if len(query) < 4:
+        return jsonify({'hotels': [], 'cities': []})
+        
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Search Hotels
+    cursor.execute("""
+        SELECT h.id, h.name, c.city_name, p.province 
+        FROM hotels h
+        LEFT JOIN cities c ON h.city_id = c.city_id
+        LEFT JOIN provinces p ON h.province_id = p.province_id
+        WHERE h.name LIKE %s
+        LIMIT 5
+    """, (f'%{query}%',))
+    hotels = cursor.fetchall()
+    
+    # Search Cities
+    cursor.execute("""
+        SELECT c.city_id, c.city_name, p.province 
+        FROM cities c
+        JOIN provinces p ON c.province_id = p.province_id
+        WHERE c.city_name LIKE %s
+        LIMIT 5
+    """, (f'%{query}%',))
+    cities = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return jsonify({
+        'hotels': hotels,
+        'cities': cities
+    })
+
 @main_bp.route('/about')
 def about():
     return render_template('about.html')
@@ -237,8 +269,8 @@ def hotel_rooms(hotel_id):
     sort_by = request.args.get('sort_by')
 
     if not check_in or not check_out:
-        flash("Please select check-in and check-out dates.", "warning")
-        return redirect(url_for('main.index'))
+        check_in = datetime.now().strftime('%Y-%m-%d')
+        check_out = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
 
     try:
         ci_date = datetime.strptime(check_in, '%Y-%m-%d')

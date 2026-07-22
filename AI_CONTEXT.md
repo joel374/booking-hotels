@@ -715,9 +715,11 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - Redesign detail hotel dengan *Masonry Gallery* UI dan Sistem Ulasan Pengguna (`rooms.html`).
   - Integrasi UI Mock Midtrans Snap untuk Gateway Pembayaran (`pay.html`).
   - Implementasi ekspor Invoice ke PDF dengan `html2pdf.js` (`invoice.html`).
+  - Integrasi Layanan Email Otomatis (Fail-Safe) untuk konfirmasi dan pembatalan (*Pending*, *Booked*, *Cancelled*) dengan `smtplib` (`services/email_service.py`).
+  - Implementasi fitur *Global Live Search Autocomplete* di *navbar* dan *mobile* (`routes/main.py`, `templates/base.html`).
 
 ---
 
 **Last Updated:** July 22, 2026  
-**Version:** 1.4  
+**Version:** 1.5  
 **Status:** Active Development (Distributed to 3 Team Members)
