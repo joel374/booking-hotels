@@ -1,78 +1,534 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}Bookings & Audit Trail{% endblock %}
+{% block title %}{{ 'Audit Trail' if request.args.get('view') == 'audit' else 'Bookings' }}{% endblock %}
+
+{% block page_description %}
+    {% if request.args.get('view') == 'audit' %}
+        Monitor all administrator activities.
+    {% else %}
+        Manage guest reservations, payments, and booking status.
+    {% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="page-heading">
-    <div>
-        <h2>Bookings & Audit</h2>
-        <p class="heading-meta">Review reservations, update statuses, and capture audit reasons for cancellations.</p>
+<style>
+.bookings-toolbar {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) 180px 160px 140px;
+    gap: 0.85rem;
+    align-items: center;
+    margin-bottom: 1.6rem;
+}
+.bookings-toolbar .toolbar-input,
+.bookings-toolbar .toolbar-select {
+    min-width: 0;
+    height: 52px;
+}
+.bookings-toolbar .toolbar-search {
+    position: relative;
+    min-width: 0;
+}
+.bookings-toolbar .toolbar-search-icon {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 16px;
+    width: 18px;
+    height: 18px;
+    transform: translateY(-50%);
+    color: #656D7A;
+    pointer-events: none;
+}
+.bookings-toolbar .toolbar-input {
+    width: 100%;
+    padding-left: 48px;
+}
+.bookings-toolbar .toolbar-input:focus,
+.bookings-toolbar .toolbar-select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+.bookings-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+.bookings-table thead {
+    background: #f8fafc;
+}
+.bookings-table th,
+.bookings-table td {
+    padding: 1rem 1.1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+.bookings-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.bookings-table tbody tr:hover {
+    background: rgba(37, 99, 235, 0.04);
+}
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(15, 23, 42, 0.04);
+}
+.badge.confirmed { color: var(--success); border-color: rgba(16, 185, 129, 0.16); background: rgba(16, 185, 129, 0.08); }
+.badge.pending { color: var(--warning); border-color: rgba(245, 158, 11, 0.16); background: rgba(245, 158, 11, 0.08); }
+.badge.cancelled { color: var(--danger); border-color: rgba(239, 68, 68, 0.16); background: rgba(239, 68, 68, 0.08); }
+.badge.completed { color: #2563EB; border-color: rgba(37, 99, 235, 0.16); background: rgba(37, 99, 235, 0.08); }
+.action-menu {
+    position: relative;
+}
+.action-toggle {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    padding: 0;
+}
+.action-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.6rem);
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    min-width: 170px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.14);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    z-index: 100;
+}
+.action-dropdown.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+.action-dropdown.portal-menu {
+    position: fixed;
+}
+.action-dropdown button {
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 0.95rem 1rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: background var(--transition);
+}
+.action-dropdown button svg {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.55rem;
+    vertical-align: -0.18rem;
+}
+.action-dropdown button:hover {
+    background: rgba(37, 99, 235, 0.06);
+}
+.empty-state-card,
+.audit-empty-state {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+.empty-state-card h3,
+.audit-empty-state h3 {
+    margin: 1rem 0 0.5rem;
+    font-size: 1.3rem;
+}
+.empty-state-card p,
+.audit-empty-state p {
+    margin: 0;
+    color: var(--subtext);
+}
+.empty-state-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    display: grid;
+    place-items: center;
+    margin: 0 auto;
+    color: var(--subtext);
+}
+.empty-state-icon svg {
+    width: 100%;
+    height: 100%;
+}
+.timeline-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.5rem;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+.timeline-list {
+    position: relative;
+    margin: 0;
+    padding-left: 1.4rem;
+    list-style: none;
+}
+.timeline-list::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 16px;
+    bottom: 0;
+    width: 2px;
+    background: rgba(15, 23, 42, 0.08);
+}
+.timeline-item {
+    position: relative;
+    padding: 1rem 0 1rem 1.2rem;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+.timeline-item:last-child {
+    border-bottom: none;
+}
+.timeline-marker {
+    position: absolute;
+    left: -7px;
+    top: 1.1rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--secondary);
+}
+.timeline-item.success .timeline-marker { border-color: var(--success); }
+.timeline-item.warning .timeline-marker { border-color: var(--warning); }
+.timeline-item.danger .timeline-marker { border-color: var(--danger); }
+.timeline-item.info .timeline-marker { border-color: #2563EB; }
+.timeline-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--subtext);
+    font-size: 0.92rem;
+}
+.timeline-title {
+    margin: 0 0 0.4rem;
+    font-weight: 700;
+}
+.timeline-actor {
+    color: var(--text);
+    font-size: 0.92rem;
+}
+.timeline-description {
+    margin: 0;
+    color: var(--subtext);
+    line-height: 1.6;
+}
+.pagination-modern {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.6rem;
+}
+.pagination-modern button {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    min-width: 48px;
+    height: 44px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.pagination-modern button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+.pagination-modern .active-page {
+    background: var(--secondary);
+    border-color: var(--secondary);
+    color: #fff;
+}
+@media (max-width: 960px) {
+    .bookings-toolbar {
+        grid-template-columns: 1fr;
+    }
+    .bookings-toolbar .toolbar-select {
+        width: 100%;
+    }
+}
+</style>
+
+{% set view = request.args.get('view') %}
+
+{% if view == 'audit' %}
+<div class="bookings-toolbar">
+    <div class="toolbar-search">
+        <svg class="toolbar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="audit-search" class="toolbar-input" type="search" placeholder="Search Audit...">
     </div>
+    <select class="toolbar-select">
+        <option value="">User</option>
+        <option value="admin">Admin</option>
+    </select>
+    <select class="toolbar-select">
+        <option value="">Date</option>
+        <option value="today">Today</option>
+        <option value="yesterday">Yesterday</option>
+    </select>
+    <select class="toolbar-select">
+        <option value="">Action</option>
+        <option value="confirmed">Booking confirmed</option>
+        <option value="cancelled">Booking cancelled</option>
+        <option value="pending">Booking pending</option>
+    </select>
 </div>
 
+{% if bookings %}
+<div class="timeline-card">
+    <ul class="timeline-list">
+        {% for booking in bookings %}
+        {% set status = booking.status|lower %}
+        {% set event_label = 'Booking confirmed' if status == 'booked' else 'Booking pending' if status == 'pending' else 'Booking cancelled' if status == 'cancelled' else 'Booking completed' %}
+        {% set badge_class = 'success' if status == 'booked' else 'warning' if status == 'pending' else 'danger' if status == 'cancelled' else 'info' %}
+        <li class="timeline-item {{ badge_class }}">
+            <span class="timeline-marker"></span>
+            <div class="timeline-meta">
+                <span>{{ booking.created_at.strftime('%d %b %Y, %H:%M') if booking.created_at else '-' }}</span>
+                <span class="timeline-actor">Oleh: Admin</span>
+            </div>
+            <h3 class="timeline-title">{{ event_label }}</h3>
+            <p class="timeline-description">{{ booking.username or 'Guest' }} - {{ booking.hotel_name }} • {{ booking.room_type }} #{{ booking.room_number }}.</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% else %}
+<div class="audit-empty-state">
+    <div class="empty-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M9 11h6M9 15h6M9 7h2"/></svg></div>
+    <h3>Belum ada aktivitas audit.</h3>
+    <p>Semua aktivitas administrator akan muncul di sini.</p>
+</div>
+{% endif %}
+
+{% else %}
+<div class="bookings-toolbar">
+    <div class="toolbar-search">
+        <svg class="toolbar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="bookings-search" class="toolbar-input" type="search" placeholder="Search Bookings...">
+    </div>
+    <select id="bookings-status" class="toolbar-select">
+        <option value="">Status</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Pending">Pending</option>
+        <option value="Cancelled">Cancelled</option>
+        <option value="Completed">Completed</option>
+    </select>
+    <select id="bookings-date" class="toolbar-select">
+        <option value="">Date</option>
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+    </select>
+    <select id="bookings-sort" class="toolbar-select">
+        <option value="latest">Sort</option>
+        <option value="latest">Newest</option>
+        <option value="oldest">Oldest</option>
+        <option value="price_high">Price High</option>
+        <option value="price_low">Price Low</option>
+    </select>
+</div>
+
+{% if bookings %}
 <div class="table-card">
-    <div class="table-info">
+    <div class="table-info" style="padding: 1.25rem 1.4rem; gap: 0.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
         <div>
-            <p class="table-title">Bookings & Audit</p>
-            <p>Track booking status and manage cancellations with confidence.</p>
-        </div>
-        <div class="toolbar-group">
-            <input id="bookings-search" class="toolbar-input" type="search" placeholder="Search bookings...">
-            <select id="bookings-filter" class="toolbar-select">
-                <option value="">All status</option>
-                <option value="booked">Booked</option>
-                <option value="pending">Pending</option>
-                <option value="cancelled">Cancelled</option>
-            </select>
+            <p class="table-title">Bookings</p>
+            <p>Review reservation details and manage booking actions.</p>
         </div>
     </div>
-    <table id="bookings-table" class="data-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Guest Profile</th>
-                <th>Reservation Details</th>
-                <th>Status</th>
-                <th>Audit</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for booking in bookings %}
-            <tr data-status="{{ booking.status|lower }}">
-                <td><strong>#{{ booking.id }}</strong></td>
-                <td>
-                    <strong>{{ booking.guest_name }}</strong><br>
-                    <span style="color: var(--subtext); font-size:0.92rem;">{{ booking.username }} · {{ booking.email }}</span><br>
-                    <span style="color: var(--subtext); font-size:0.92rem;">{{ booking.contact_number }}</span>
-                </td>
-                <td>
-                    <strong>{{ booking.hotel_name }}</strong><br>
-                    <span style="color: var(--secondary);">{{ booking.room_type }} • #{{ booking.room_number }}</span><br>
-                    <span style="color: var(--subtext); font-size:0.92rem;">{{ booking.check_in }} → {{ booking.check_out }}</span>
-                </td>
-                <td>
-                    <span class="badge {% if booking.status == 'Booked' %}booked{% elif booking.status == 'Pending' %}pending{% elif booking.status == 'Cancelled' %}cancelled{% else %}neutral{% endif %}">{{ booking.status }}</span>
-                    {% if booking.cancel_reason %}
-                    <p style="margin:0.5rem 0 0; color: var(--subtext); font-size:0.82rem;">Reason: {{ booking.cancel_reason }}</p>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if booking.status != 'Cancelled' %}
-                    <form method="POST" onsubmit="return confirm('WARNING: You are about to FORCE CANCEL this booking. Proceed?');" style="display: grid; gap:0.65rem;">
-                        <input type="hidden" name="booking_id" value="{{ booking.id }}">
-                        <input type="text" name="cancel_reason" placeholder="Audit Reason..." required class="toolbar-input" style="width:100%;">
-                        <button type="submit" class="btn btn-danger">Force Cancel</button>
-                    </form>
-                    {% else %}
-                    <span style="color: var(--subtext); font-size:0.92rem;">Completed audit.</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="5" style="text-align:center; color: var(--subtext); padding: 2rem;">No bookings in database.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <div id="bookings-pagination" class="pagination"></div>
+    <div style="overflow-x:auto;">
+        <table class="bookings-table">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Guest</th>
+                    <th>Hotel</th>
+                    <th>Room</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Total Price</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td><strong>#{{ booking.id }}</strong></td>
+                    <td>
+                        <strong>{{ booking.guest_name }}</strong><br>
+                        <span style="color: var(--subtext); font-size:0.92rem;">{{ booking.username }}</span>
+                    </td>
+                    <td>{{ booking.hotel_name }}</td>
+                    <td>{{ booking.room_type }} • #{{ booking.room_number }}</td>
+                    <td>{{ booking.check_in }}</td>
+                    <td>{{ booking.check_out }}</td>
+                    <td><strong>{{ 'Rp ' ~ ('{:,}'.format(booking.total_price).replace(',', '.') if booking.total_price else '-') }}</strong></td>
+                    <td>
+                        <span class="badge {{ booking.status|lower }}">{{ booking.status }}</span>
+                    </td>
+                    <td>
+                        <div class="action-menu">
+                            <button type="button" class="btn btn-secondary action-toggle">⋮</button>
+                            <div class="action-dropdown">
+                                <button type="button" class="action-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.05 12c1.4-4.08 5-7 9.95-7s8.55 2.92 9.95 7c-1.4 4.08-5 7-9.95 7S3.45 16.08 2.05 12Z"/><circle cx="12" cy="12" r="3"/></svg>Detail</button>
+                                <button type="button" class="action-update-status" data-id="{{ booking.id }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5Z"/></svg>Update Status</button>
+                                <button type="button" class="action-delete" data-id="{{ booking.id }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>Delete</button>
+                            </div>
+                        </div>
+                        <form method="POST" class="booking-cancel-form" data-id="{{ booking.id }}" style="display:none;">
+                            <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                            <input type="hidden" name="cancel_reason" class="cancel-reason-input" value="">
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination-modern">
+        <button type="button">Previous</button>
+        <button type="button" class="active-page">1</button>
+        <button type="button">Next</button>
+    </div>
 </div>
+{% else %}
+<div class="empty-state-card">
+    <div class="empty-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></div>
+    <h3>Belum ada reservasi.</h3>
+    <p>Reservasi pelanggan akan muncul di sini.</p>
+</div>
+{% endif %}
+{% endif %}
+
+<script>
+    document.querySelectorAll('.action-toggle').forEach(button => {
+        button.addEventListener('click', event => {
+            event.stopPropagation();
+            const dropdown = button._dropdown || button.parentElement.querySelector('.action-dropdown');
+            button._dropdown = dropdown;
+            document.querySelectorAll('.action-dropdown.active').forEach(menu => {
+                if (menu !== dropdown) menu.classList.remove('active');
+            });
+
+            if (dropdown.parentElement !== document.body) {
+                dropdown._sourceRow = button.closest('tr');
+                document.body.appendChild(dropdown);
+                dropdown.classList.add('portal-menu');
+            }
+
+            const rect = button.getBoundingClientRect();
+            const menuWidth = 170;
+            dropdown.style.left = `${Math.max(12, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 12))}px`;
+            dropdown.style.top = `${Math.min(rect.bottom + 10, window.innerHeight - 170)}px`;
+            dropdown.classList.toggle('active');
+        });
+    });
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.action-dropdown.active').forEach(menu => menu.classList.remove('active'));
+    });
+
+    window.addEventListener('resize', () => {
+        document.querySelectorAll('.action-dropdown.active').forEach(menu => menu.classList.remove('active'));
+    });
+
+    document.querySelectorAll('.action-delete').forEach(button => {
+        button.addEventListener('click', event => {
+            event.stopPropagation();
+            const id = button.dataset.id;
+            const form = document.querySelector(`.booking-cancel-form[data-id='${id}']`);
+            if (!form) return;
+            Swal.fire({
+                title: 'Delete booking?',
+                text: 'This action will cancel the reservation permanently.',
+                icon: 'warning',
+                input: 'text',
+                inputPlaceholder: 'Reason for delete',
+                showCancelButton: true,
+                confirmButtonText: 'Delete',
+                cancelButtonText: 'Cancel',
+                inputValidator: (value) => {
+                    if (!value) return 'Please provide a reason.';
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    form.querySelector('.cancel-reason-input').value = result.value;
+                    form.submit();
+                }
+            });
+        });
+    });
+
+    document.querySelectorAll('.action-update-status').forEach(button => {
+        button.addEventListener('click', event => {
+            event.stopPropagation();
+            const id = button.dataset.id;
+            const form = document.querySelector(`.booking-cancel-form[data-id='${id}']`);
+            if (!form) return;
+            Swal.fire({
+                title: 'Update status',
+                text: 'Enter the reason for the status change.',
+                icon: 'question',
+                input: 'text',
+                inputPlaceholder: 'Reason',
+                showCancelButton: true,
+                confirmButtonText: 'Submit',
+                cancelButtonText: 'Cancel',
+                inputValidator: (value) => {
+                    if (!value) return 'Please provide a reason.';
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    form.querySelector('.cancel-reason-input').value = result.value;
+                    form.submit();
+                }
+            });
+        });
+    });
+
+    document.querySelectorAll('.action-detail').forEach(button => {
+        button.addEventListener('click', event => {
+            event.stopPropagation();
+            const row = button.closest('tr') || button.closest('.action-dropdown')._sourceRow;
+            if (!row) return;
+            Swal.fire({
+                title: 'Booking Detail',
+                html: '<p style="text-align:left; margin:0.5rem 0;"><strong>ID:</strong> ' + row.querySelector('td:first-child strong').textContent + '</p>' +
+                      '<p style="text-align:left; margin:0.5rem 0;"><strong>Guest:</strong> ' + row.querySelector('td:nth-child(2) strong').textContent + '</p>' +
+                      '<p style="text-align:left; margin:0.5rem 0;"><strong>Hotel:</strong> ' + row.children[2].textContent + '</p>' +
+                      '<p style="text-align:left; margin:0.5rem 0;"><strong>Room:</strong> ' + row.children[3].textContent + '</p>' +
+                      '<p style="text-align:left; margin:0.5rem 0;"><strong>Check In:</strong> ' + row.children[4].textContent + '</p>' +
+                      '<p style="text-align:left; margin:0.5rem 0;"><strong>Check Out:</strong> ' + row.children[5].textContent + '</p>' +
+                      '<p style="text-align:left; margin:0.5rem 0;"><strong>Status:</strong> ' + row.children[7].textContent + '</p>',
+                confirmButtonText: 'Close'
+            });
+        });
+    });
+</script>
 {% endblock %}

@@ -96,7 +96,6 @@ def book_room(room_id):
         
         if booking_data and booking_data.get('user_email'):
             from services.email_service import send_email
-            from flask import render_template
             
             html_content = render_template('emails/booking_pending.html', booking=booking_data)
             subject = f"Menunggu Pembayaran - {booking_data['hotel_name']}"
@@ -164,7 +163,6 @@ def pay(booking_id):
         
         if booking_data and booking_data.get('user_email'):
             from services.email_service import send_email
-            from flask import render_template
             
             html_content = render_template('emails/booking_confirmation.html', booking=booking_data)
             subject = f"Konfirmasi Pemesanan - {booking_data['hotel_name']} (INV-{booking_data['id']})"
@@ -284,7 +282,6 @@ def cancel_booking(booking_id):
     
     if booking_data and booking_data.get('user_email'):
         from services.email_service import send_email
-        from flask import render_template
         
         html_content = render_template('emails/booking_cancelled.html', booking=booking_data)
         subject = f"Pesanan Dibatalkan - {booking_data['hotel_name']}"

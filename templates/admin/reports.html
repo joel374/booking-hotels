@@ -1,0 +1,546 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Manage Reports{% endblock %}
+{% block page_description %}Generate professional hotel reports and export them as PDF or send them via email.{% endblock %}
+
+{% block content %}
+<style>
+.report-page-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    background: #fff;
+    padding: 1.25rem 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 2rem;
+}
+.toolbar-search {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+.toolbar-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--subtext);
+}
+.toolbar-input {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.8rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #F8FAFC;
+    color: var(--text);
+    transition: var(--transition);
+}
+.toolbar-input:focus {
+    outline: none;
+    background: #fff;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+.toolbar-select {
+    padding: 0.85rem 2.5rem 0.85rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") no-repeat right 1rem center / 16px;
+    appearance: none;
+    color: var(--text);
+    cursor: pointer;
+    min-width: 150px;
+}
+.toolbar-select:focus {
+    outline: none;
+    border-color: var(--secondary);
+}
+
+.report-preview-container {
+    background: #fff;
+    border-radius: 24px;
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-soft);
+    display: none;
+}
+.report-preview-container.active {
+    display: block;
+}
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+.report-brand-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+}
+.report-brand-sub {
+    color: var(--subtext);
+    font-size: 0.95rem;
+}
+.report-meta {
+    text-align: right;
+    font-size: 0.9rem;
+    color: var(--subtext);
+}
+.report-meta strong {
+    color: var(--text);
+}
+.report-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.report-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+.report-stat-card {
+    background: #F8FAFC;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(15, 23, 42, 0.04);
+}
+.report-stat-label {
+    display: block;
+    font-size: 0.92rem;
+    color: var(--subtext);
+    margin-bottom: 0.5rem;
+}
+.report-stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.report-table-wrapper {
+    overflow-x: auto;
+}
+.report-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.report-table th, .report-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+.report-table th {
+    font-weight: 600;
+    color: var(--subtext);
+    background: #F8FAFC;
+}
+.report-table th:first-child { border-top-left-radius: 12px; }
+.report-table th:last-child { border-top-right-radius: 12px; }
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border-radius: 24px;
+    border: 1px dashed var(--border);
+    color: var(--subtext);
+}
+.empty-state svg {
+    width: 64px;
+    height: 64px;
+    color: var(--border);
+    margin-bottom: 1rem;
+}
+
+/* Modal styles for Email */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    display: none;
+    place-items: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.modal-overlay.active {
+    display: grid;
+    opacity: 1;
+}
+.modal-card {
+    background: #fff;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 500px;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+    transform: scale(0.95);
+    transition: transform 0.2s;
+}
+.modal-overlay.active .modal-card {
+    transform: scale(1);
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+.close-modal {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--subtext);
+}
+.form-group {
+    margin-bottom: 1.25rem;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text);
+}
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.room-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(15, 23, 42, 0.04);
+    color: var(--text);
+}
+.room-badge.available {
+    color: var(--success);
+    border-color: rgba(16, 185, 129, 0.16);
+    background: rgba(16, 185, 129, 0.08);
+}
+.room-badge.maintenance {
+    color: var(--warning);
+    border-color: rgba(245, 158, 11, 0.16);
+    background: rgba(245, 158, 11, 0.08);
+}
+.room-badge.occupied {
+    color: var(--danger);
+    border-color: rgba(239, 68, 68, 0.16);
+    background: rgba(239, 68, 68, 0.08);
+}
+</style>
+
+<div class="report-page-toolbar">
+    <div class="toolbar-search">
+        <svg class="toolbar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="report-search" class="toolbar-input" type="search" placeholder="Search Report...">
+    </div>
+    <select id="report-type" class="toolbar-select">
+        <option value="Dashboard Summary">Dashboard Summary</option>
+        <option value="Hotels">Hotels</option>
+        <option value="Rooms">Rooms</option>
+        <option value="Bookings">Bookings</option>
+    </select>
+    <select id="report-period" class="toolbar-select">
+        <option value="Today">Today</option>
+        <option value="This Week">This Week</option>
+        <option value="This Month" selected>This Month</option>
+        <option value="This Year">This Year</option>
+        <option value="Custom Date">Custom Date</option>
+    </select>
+    <div id="custom-date-group" style="display: none; gap: 0.5rem; align-items: center;">
+        <input type="date" id="date-start" class="toolbar-input" style="padding-left: 1rem;">
+        <span>-</span>
+        <input type="date" id="date-end" class="toolbar-input" style="padding-left: 1rem;">
+    </div>
+    <select id="report-sort" class="toolbar-select">
+        <option value="latest">Sort</option>
+        <option value="latest">Newest</option>
+        <option value="name_asc">Name A - Z</option>
+    </select>
+    <button type="button" class="btn btn-primary" id="btn-generate-report">Generate Report</button>
+</div>
+
+<div class="empty-state" id="report-empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <h3>No Report Generated</h3>
+    <p>Select your report parameters and click Generate Report to view data.</p>
+</div>
+
+<div class="report-preview-container" id="report-preview">
+    <div class="report-header">
+        <div>
+            <div class="report-brand-title">ANTIGRAVITY HOTELS</div>
+            <div class="report-brand-sub">Property Management System</div>
+            <h2 style="margin-top: 1.5rem; color: var(--text);" id="preview-title">Dashboard Summary Report</h2>
+        </div>
+        <div class="report-meta">
+            <div><strong>Generated:</strong> <span id="preview-date"></span></div>
+            <div><strong>Period:</strong> <span id="preview-period"></span></div>
+            <div class="report-actions">
+                <form id="form-download-pdf" action="{{ url_for('admin.api_reports_download_pdf') }}" method="POST" target="_blank">
+                    <input type="hidden" name="type" id="pdf-type">
+                    <input type="hidden" name="period" id="pdf-period">
+                    <button type="submit" class="btn btn-secondary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:0.4rem;vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download PDF
+                    </button>
+                </form>
+                <button type="button" class="btn btn-primary" onclick="openEmailModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:0.4rem;vertical-align:middle;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    Send Email
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <h3 style="margin-bottom: 1rem;">Summary</h3>
+    <div class="report-cards-grid">
+        <div class="report-stat-card">
+            <span class="report-stat-label">Total Hotels</span>
+            <span class="report-stat-value" id="val-hotels">0</span>
+        </div>
+        <div class="report-stat-card">
+            <span class="report-stat-label">Total Rooms</span>
+            <span class="report-stat-value" id="val-rooms">0</span>
+        </div>
+        <div class="report-stat-card">
+            <span class="report-stat-label">Total Bookings</span>
+            <span class="report-stat-value" id="val-bookings">0</span>
+        </div>
+        <div class="report-stat-card">
+            <span class="report-stat-label">Total Revenue</span>
+            <span class="report-stat-value" id="val-revenue">Rp 0</span>
+        </div>
+    </div>
+
+    <div id="details-section" style="display: none;">
+        <h3 style="margin-bottom: 1rem;" id="details-title">Details</h3>
+        <div class="report-table-wrapper">
+            <table class="report-table">
+                <thead id="table-head">
+                    <!-- Dynamic Headers -->
+                </thead>
+                <tbody id="table-body">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Email Modal -->
+<div class="modal-overlay" id="emailModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Send Report via Email</h3>
+            <button type="button" class="close-modal" onclick="closeEmailModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Recipient Email</label>
+                <input type="email" id="email-recipient" placeholder="manager@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" id="email-subject" value="Antigravity Hotels Report" required>
+            </div>
+            <div class="form-group">
+                <label>Message</label>
+                <textarea id="email-message" required>Hello,
+
+Please find the attached report generated from Antigravity Hotels Property Management System.
+
+Regards,
+Antigravity Hotels</textarea>
+            </div>
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 2rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeEmailModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-send-email">Send Email</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const reportPeriod = document.getElementById('report-period');
+    const customDateGroup = document.getElementById('custom-date-group');
+    const btnGenerate = document.getElementById('btn-generate-report');
+    const emptyState = document.getElementById('report-empty-state');
+    const previewContainer = document.getElementById('report-preview');
+
+    reportPeriod.addEventListener('change', (e) => {
+        if (e.target.value === 'Custom Date') {
+            customDateGroup.style.display = 'flex';
+        } else {
+            customDateGroup.style.display = 'none';
+        }
+    });
+
+    btnGenerate.addEventListener('click', () => {
+        const type = document.getElementById('report-type').value;
+        let period = document.getElementById('report-period').value;
+
+        if (period === 'Custom Date') {
+            const start = document.getElementById('date-start').value;
+            const end = document.getElementById('date-end').value;
+            period = `${start} to ${end}`;
+        }
+
+        const originalText = btnGenerate.textContent;
+        btnGenerate.textContent = 'Generating...';
+        btnGenerate.disabled = true;
+
+        fetch("{{ url_for('admin.api_reports_preview') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, period })
+        })
+        .then(res => res.json())
+        .then(data => {
+            // Update UI
+            emptyState.style.display = 'none';
+            previewContainer.classList.add('active');
+
+            document.getElementById('preview-title').textContent = `${type} Report`;
+            document.getElementById('preview-date').textContent = new Date().toLocaleString('id-ID');
+            document.getElementById('preview-period').textContent = period;
+
+            // Form hidden inputs
+            document.getElementById('pdf-type').value = type;
+            document.getElementById('pdf-period').value = period;
+
+            // Update Summary
+            document.getElementById('val-hotels').textContent = data.summary.total_hotels;
+            document.getElementById('val-rooms').textContent = data.summary.total_rooms;
+            document.getElementById('val-bookings').textContent = data.summary.total_bookings;
+            document.getElementById('val-revenue').textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(data.summary.total_revenue);
+
+            // Update Details
+            const detailsSection = document.getElementById('details-section');
+            const thead = document.getElementById('table-head');
+            const tbody = document.getElementById('table-body');
+            
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            if (type !== 'Dashboard Summary' && data.details.length > 0) {
+                detailsSection.style.display = 'block';
+                document.getElementById('details-title').textContent = `${type} Details`;
+
+                let headRow = '<tr>';
+                if (type === 'Hotels') {
+                    headRow += '<th>Hotel</th><th>Location</th><th>Rooms</th><th>Status</th>';
+                    data.details.forEach(row => {
+                        tbody.innerHTML += `<tr><td>${row.hotel}</td><td>${row.location}</td><td>${row.rooms}</td><td><span class="room-badge available">${row.status}</span></td></tr>`;
+                    });
+                } else if (type === 'Rooms') {
+                    headRow += '<th>Room</th><th>Hotel</th><th>Room Number</th><th>Price</th><th>Status</th>';
+                    data.details.forEach(row => {
+                        const price = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(row.price);
+                        tbody.innerHTML += `<tr><td>${row.room}</td><td>${row.hotel}</td><td>${row.room_number}</td><td>${price}</td><td><span class="room-badge available">${row.status}</span></td></tr>`;
+                    });
+                } else if (type === 'Bookings') {
+                    headRow += '<th>Booking ID</th><th>Guest</th><th>Hotel</th><th>Date</th><th>Status</th>';
+                    data.details.forEach(row => {
+                        let badgeClass = row.status === 'Pending' ? 'maintenance' : (row.status === 'Cancelled' ? 'occupied' : 'available');
+                        tbody.innerHTML += `<tr><td>#${row.booking_id}</td><td>${row.guest}</td><td>${row.hotel}</td><td>${row.date}</td><td><span class="room-badge ${badgeClass}">${row.status}</span></td></tr>`;
+                    });
+                }
+                headRow += '</tr>';
+                thead.innerHTML = headRow;
+
+            } else {
+                detailsSection.style.display = 'none';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire('Error', 'Failed to generate preview.', 'error');
+        })
+        .finally(() => {
+            btnGenerate.textContent = originalText;
+            btnGenerate.disabled = false;
+        });
+    });
+
+    function openEmailModal() {
+        document.getElementById('emailModal').classList.add('active');
+    }
+
+    function closeEmailModal() {
+        document.getElementById('emailModal').classList.remove('active');
+    }
+
+    document.getElementById('btn-send-email').addEventListener('click', () => {
+        const email = document.getElementById('email-recipient').value;
+        const subject = document.getElementById('email-subject').value;
+        const message = document.getElementById('email-message').value;
+        const type = document.getElementById('pdf-type').value;
+        const period = document.getElementById('pdf-period').value;
+
+        if (!email) {
+            Swal.fire('Warning', 'Recipient email is required', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btn-send-email');
+        btn.textContent = 'Sending...';
+        btn.disabled = true;
+
+        fetch("{{ url_for('admin.api_reports_send_email') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, period, email, subject, message })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                closeEmailModal();
+                Swal.fire('Success', data.message, 'success');
+            } else {
+                Swal.fire('Error', data.error || 'Failed to send email.', 'error');
+            }
+        })
+        .catch(err => {
+            Swal.fire('Error', 'An unexpected error occurred.', 'error');
+        })
+        .finally(() => {
+            btn.textContent = 'Send Email';
+            btn.disabled = false;
+        });
+    });
+</script>
+{% endblock %}

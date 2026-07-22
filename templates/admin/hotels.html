@@ -2,6 +2,8 @@
 
 {% block title %}Manage Hotels{% endblock %}
 
+{% block page_description %}Browse and manage your hotel portfolio with fast search, filtering and premium listing cards.{% endblock %}
+
 {% block content %}
 <style>
 .hotel-page-toolbar {
@@ -14,55 +16,114 @@
 .hotel-page-toolbar .toolbar-input,
 .hotel-page-toolbar .toolbar-select {
     min-width: 0;
+    height: 52px;
+}
+.hotel-page-toolbar .toolbar-search {
+    position: relative;
+    width: 100%;
+}
+.hotel-page-toolbar .toolbar-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: #656D7A;
+    pointer-events: none;
 }
 .hotel-page-toolbar .toolbar-input {
     width: 100%;
+    padding-left: 48px;
+}
+.hotel-page-toolbar .toolbar-input:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 .hotel-page-toolbar .toolbar-select {
     width: 100%;
-    max-width: 100%;
+}
+.hotel-page-toolbar .toolbar-select:focus {
+    outline: none;
+    border-color: var(--secondary);
 }
 .btn-add-hotel {
     justify-self: end;
     white-space: nowrap;
+    min-height: 52px;
+    height: 52px;
 }
 .hotel-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(3, minmax(260px, 1fr));
     gap: 1.2rem;
+}
+@media (max-width: 1024px) {
+    .hotel-grid {
+        grid-template-columns: repeat(2, minmax(240px, 1fr));
+    }
+}
+@media (max-width: 680px) {
+    .hotel-grid {
+        grid-template-columns: 1fr;
+    }
 }
 .hotel-card {
     background: #fff;
     border: 1px solid var(--border);
     border-radius: 18px;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: visible;
+    min-height: 400px;
+    min-width: 0;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
     display: flex;
     flex-direction: column;
     position: relative;
 }
 .hotel-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
 }
 .hotel-card img,
 .hotel-card .hotel-card-image {
     width: 100%;
-    aspect-ratio: 16 / 10;
+    min-height: 210px;
+    max-height: 210px;
     object-fit: cover;
+    transition: transform 0.25s ease;
+}
+.hotel-card:hover img {
+    transform: scale(1.03);
 }
 .hotel-card .hotel-card-image {
-    background: rgba(15, 23, 42, 0.04);
+    background: #F8FAFC;
+    border: 1px solid rgba(15, 23, 42, 0.08);
     display: grid;
     place-items: center;
-    min-height: 180px;
     color: var(--subtext);
 }
-.hotel-card-body {
-    padding: 1.4rem;
+.hotel-card .hotel-card-image .image-placeholder {
     display: grid;
-    gap: 1rem;
+    gap: 0.55rem;
+    place-items: center;
+    text-align: center;
+}
+.hotel-card .hotel-card-image .placeholder-icon {
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+}
+.hotel-card .hotel-card-image .placeholder-icon svg {
+    width: 1.8rem;
+    height: 1.8rem;
+}
+.hotel-card-body {
+    padding: 1.25rem;
+    display: grid;
+    gap: 0.85rem;
     flex: 1;
 }
 .hotel-card-title {
@@ -73,11 +134,30 @@
 }
 .hotel-name {
     margin: 0 0 0.35rem;
-    font-size: 1.05rem;
+    font-size: 1.1rem;
 }
 .hotel-rating {
-    color: #F59E0B;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     font-size: 0.95rem;
+    font-weight: 700;
+}
+.hotel-rating-empty {
+    color: var(--subtext);
+    font-size: 0.95rem;
+}
+.hotel-rating-icon {
+    width: 1rem;
+    height: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #F59E0B;
+}
+.hotel-rating-icon svg {
+    width: 1rem;
+    height: 1rem;
 }
 .hotel-card-meta {
     display: grid;
@@ -94,6 +174,45 @@
 .hotel-card-meta strong {
     color: var(--text);
 }
+.hotel-card-meta .hotel-location,
+.hotel-card-meta .hotel-room-count {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+.hotel-card-meta .hotel-location::before {
+    content: '';
+    width: 1rem;
+    height: 1rem;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21C12 21 19 13.5 19 8.5C19 5.462 16.538 3 13.5 3C10.462 3 8 5.462 8 8.5C8 13.5 12 21 12 21Z'/%3E%3Ccircle cx='12' cy='8.5' r='2.5'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.hotel-card-meta .hotel-room-count::before {
+    content: '';
+    width: 1rem;
+    height: 1rem;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 13H21V18H3V13Z'/%3E%3Cpath d='M3 10H21V13'/%3E%3Cpath d='M6 18V21'/%3E%3Cpath d='M18 18V21'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.hotel-price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.hotel-price {
+    display: grid;
+    gap: 0.2rem;
+}
+.hotel-price strong {
+    font-size: 1.05rem;
+}
+.hotel-price small {
+    color: var(--subtext);
+}
+.hotel-status {
+    display: flex;
+    align-items: center;
+}
 .hotel-badge {
     display: inline-flex;
     align-items: center;
@@ -102,12 +221,31 @@
     border-radius: 999px;
     font-size: 0.82rem;
     font-weight: 700;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(15, 23, 42, 0.04);
+    color: var(--text);
+}
+.hotel-badge.active {
     color: var(--success);
-    border: 1px solid rgba(16, 185, 129, 0.16);
+    border-color: rgba(16, 185, 129, 0.16);
     background: rgba(16, 185, 129, 0.08);
+}
+.hotel-badge.inactive {
+    color: #64748B;
+    border-color: rgba(100, 116, 139, 0.16);
+    background: rgba(100, 116, 139, 0.08);
+}
+.hotel-badge.maintenance {
+    color: var(--warning);
+    border-color: rgba(245, 158, 11, 0.16);
+    background: rgba(245, 158, 11, 0.08);
 }
 .hotel-card-menu {
     position: relative;
+    overflow: visible;
+}
+.hotel-card.menu-open {
+    z-index: 30;
 }
 .hotel-menu-toggle {
     width: 42px;
@@ -118,25 +256,30 @@
 .hotel-dropdown {
     position: absolute;
     right: 0;
-    top: calc(100% + 0.65rem);
-    display: none;
+    top: calc(100% + 0.6rem);
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
     flex-direction: column;
-    min-width: 150px;
+    min-width: 180px;
     background: #fff;
     border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14);
-    z-index: 10;
+    border-radius: 18px;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.14);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    z-index: 100;
 }
 .hotel-dropdown.active {
-    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
 }
 .hotel-dropdown button,
 .hotel-dropdown .dropdown-button {
     border: none;
     background: transparent;
     text-align: left;
-    padding: 0.85rem 1rem;
+    padding: 0.95rem 1rem;
     color: var(--text);
     cursor: pointer;
     transition: background var(--transition);
@@ -145,20 +288,58 @@
 .hotel-dropdown .dropdown-button:hover {
     background: rgba(37, 99, 235, 0.06);
 }
-.hotel-card-footer {
-    margin-top: auto;
+.hotel-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1.75rem;
+}
+.hotel-pagination[hidden] {
+    display: none;
+}
+.hotel-pagination button {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+}
+.hotel-pagination button:hover:not(:disabled) {
+    border-color: rgba(79, 70, 229, 0.3);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+}
+.hotel-pagination button.is-active {
+    background: var(--secondary);
+    border-color: var(--secondary);
+    color: #fff;
+}
+.hotel-pagination button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+.hotel-pagination .pagination-dots {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 0.9rem;
+    color: var(--subtext);
+    font-weight: 600;
 }
 </style>
 
-<div class="page-heading">
-    <div>
-        <h2>Manage Hotels</h2>
-        <p class="heading-meta">Kelola properti Anda dengan dashboard modern yang fokus pada pencarian dan pengalaman pengguna.</p>
-    </div>
-</div>
-
 <div class="hotel-page-toolbar">
-    <input id="hotels-search" class="toolbar-input" type="search" placeholder="Search Hotel...">
+    <div class="toolbar-search">
+        <svg class="toolbar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="hotels-search" class="toolbar-input" type="search" placeholder="Search Hotel...">
+    </div>
     <select id="hotels-category" class="toolbar-select">
         <option value="">Category</option>
         <option value="has_images">With images</option>
@@ -179,27 +360,47 @@
         {% if hotel.images and hotel.images|length > 0 %}
         <img src="{{ hotel.images[0] }}" alt="{{ hotel.name }}">
         {% else %}
-        <div class="hotel-card-image">No Image</div>
+        <div class="hotel-card-image">
+            <div class="image-placeholder">
+                <span class="placeholder-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg></span>
+                <strong>No Image Available</strong>
+            </div>
+        </div>
         {% endif %}
         <div class="hotel-card-body">
             <div class="hotel-card-title">
                 <div>
                     <p class="hotel-name"><strong>{{ hotel.name }}</strong></p>
-                    <div class="hotel-rating">★★★★★</div>
+                    <div class="hotel-rating">
+                        {% if hotel.rating|default(0) | float > 0 %}
+                            <span class="hotel-rating-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"/></svg></span>
+                            <span>{{ hotel.rating }}</span>
+                        {% else %}
+                            <span class="hotel-rating-empty">Belum ada rating</span>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="hotel-card-menu">
-                    <button type="button" class="btn btn-secondary hotel-menu-toggle">⋮</button>
+                    <button type="button" class="btn btn-secondary hotel-menu-toggle" aria-label="Open hotel menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
                     <div class="hotel-dropdown">
-                        <button type="button" class="js-open-edit-hotel" data-id="{{ hotel.id }}" data-name="{{ hotel.name | escape }}" data-province-id="{{ hotel.province_id or '' }}" data-city-id="{{ hotel.city_id or '' }}" data-location="{{ hotel.location | escape }}" data-description="{{ hotel.description | escape }}">Edit</button>
-                        <button type="button" class="dropdown-button hotel-action-delete">Delete</button>
-                        <button type="button" class="dropdown-button hotel-action-detail">Detail</button>
+                        <button type="button" class="dropdown-button hotel-action-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path d="M2.05 12c1.4-4.08 5-7 9.95-7s8.55 2.92 9.95 7c-1.4 4.08-5 7-9.95 7s-8.55-2.92-9.95-7z"/></svg> View</button>
+                        <button type="button" class="js-open-edit-hotel" data-id="{{ hotel.id }}" data-name="{{ hotel.name | escape }}" data-province-id="{{ hotel.province_id or '' }}" data-city-id="{{ hotel.city_id or '' }}" data-location="{{ hotel.location | escape }}" data-description="{{ hotel.description | escape }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg> Edit</button>
+                        <button type="button" class="dropdown-button hotel-action-delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> Delete</button>
                     </div>
                 </div>
             </div>
             <div class="hotel-card-meta">
-                <span><strong>{{ hotel.city_name or 'City Unknown' }}</strong><span>{{ hotel.province or 'Province Unknown' }}</span></span>
-                <span><strong>{{ hotel.rooms|length if hotel.rooms else '—' }} Rooms</strong><span>{{ 'Rp ' ~ ('{:,}'.format(hotel.min_price).replace(',', '.') if hotel.min_price else '-') }}</span></span>
-                <span><span class="hotel-badge">Active</span></span>
+                <span class="hotel-location"><strong>{{ (hotel.city_name ~ ', ' ~ hotel.province) if hotel.city_name and hotel.province else hotel.city_name or hotel.province or 'No location' }}</strong></span>
+                <span class="hotel-room-count"><strong>{{ hotel.rooms|length if hotel.rooms else 0 }} Rooms</strong></span>
+            </div>
+            <div class="hotel-price-row">
+                <div class="hotel-price">
+                    <strong>{% if hotel.min_price %}{{ 'Rp ' ~ ('{:,}'.format(hotel.min_price).replace(',', '.')) }}{% else %}Harga belum tersedia{% endif %}</strong>
+                    <small>per malam</small>
+                </div>
+                <div class="hotel-status">
+                    <span class="hotel-badge {{ hotel.status|default('Active')|lower }}">{{ hotel.status|default('Active') }}</span>
+                </div>
             </div>
             <form method="POST" action="{{ url_for('admin.delete_hotel', id=hotel.id) }}" class="js-delete-form" style="display:none;">
                 <button type="submit" style="display:none;"></button>
@@ -210,6 +411,8 @@
     <div style="grid-column:1 / -1; padding:2rem; text-align:center; color: var(--subtext);">No hotels in database.</div>
     {% endfor %}
 </div>
+
+<nav id="hotel-pagination" class="hotel-pagination" aria-label="Hotel pagination" hidden></nav>
 
 <div id="modalAddHotel" class="modal">
     <div class="form-card">
@@ -331,42 +534,101 @@ function initHotelPage() {
     const categorySelect = document.getElementById('hotels-category');
     const sortSelect = document.getElementById('hotels-sort');
     const cards = Array.from(document.querySelectorAll('.hotel-card'));
+    const grid = document.querySelector('.hotel-grid');
+    const pagination = document.getElementById('hotel-pagination');
+    const pageSize = 12;
+    let currentPage = 1;
+    let filteredCards = [...cards];
 
-    const updateCards = () => {
+    const sortCards = () => {
+        const order = sortSelect.value;
+        filteredCards.sort((a, b) => {
+            if (order === 'name_asc') return a.dataset.name.localeCompare(b.dataset.name);
+            if (order === 'name_desc') return b.dataset.name.localeCompare(a.dataset.name);
+            return parseInt(a.dataset.index, 10) - parseInt(b.dataset.index, 10);
+        });
+    };
+
+    const renderPagination = () => {
+        const pageCount = Math.ceil(filteredCards.length / pageSize);
+        pagination.replaceChildren();
+        pagination.hidden = pageCount <= 1;
+        if (pageCount <= 1) return;
+
+        const addButton = (label, page, disabled = false, active = false, isDots = false) => {
+            const button = document.createElement(isDots ? 'span' : 'button');
+            if (!isDots) button.type = 'button';
+            button.textContent = label;
+            if (!isDots) {
+                button.disabled = disabled;
+                button.classList.toggle('is-active', active);
+                button.setAttribute('aria-label', label);
+                if (active) button.setAttribute('aria-current', 'page');
+                button.addEventListener('click', () => {
+                    currentPage = page;
+                    renderPage();
+                    pagination.scrollIntoView({ block: 'nearest' });
+                });
+            } else {
+                button.className = 'pagination-dots';
+            }
+            pagination.appendChild(button);
+        };
+
+        addButton('Previous', currentPage - 1, currentPage === 1);
+
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(pageCount, currentPage + 2);
+        
+        if (currentPage <= 3) endPage = Math.min(pageCount, 5);
+        if (currentPage >= pageCount - 2) startPage = Math.max(1, pageCount - 4);
+
+        if (startPage > 1) {
+            addButton('1', 1);
+            if (startPage > 2) addButton('...', null, false, false, true);
+        }
+
+        for (let page = startPage; page <= endPage; page++) {
+            addButton(String(page), page, false, page === currentPage);
+        }
+
+        if (endPage < pageCount) {
+            if (endPage < pageCount - 1) addButton('...', null, false, false, true);
+            addButton(String(pageCount), pageCount);
+        }
+
+        addButton('Next', currentPage + 1, currentPage === pageCount);
+    };
+
+    const renderPage = () => {
+        const pageCount = Math.max(1, Math.ceil(filteredCards.length / pageSize));
+        currentPage = Math.min(currentPage, pageCount);
+        const start = (currentPage - 1) * pageSize;
+        const pageCards = filteredCards.slice(start, start + pageSize);
+
+        cards.forEach(card => { card.style.display = 'none'; });
+        pageCards.forEach(card => {
+            card.style.display = 'flex';
+            grid.appendChild(card);
+        });
+        renderPagination();
+    };
+
+    const updateCards = (resetPage = true) => {
         const query = searchInput.value.trim().toLowerCase();
         const category = categorySelect.value;
 
-        cards.forEach(card => {
+        filteredCards = cards.filter(card => {
             const name = card.dataset.name || '';
             const location = card.dataset.location || '';
             const hasImages = parseInt(card.dataset.images || '0', 10) > 0;
-            let visible = true;
-
-            if (query && !(`${name} ${location}`).includes(query)) {
-                visible = false;
-            }
-            if (category === 'has_images' && !hasImages) visible = false;
-            if (category === 'no_images' && hasImages) visible = false;
-
-            card.style.display = visible ? 'flex' : 'none';
+            return (!query || `${name} ${location}`.includes(query))
+                && !(category === 'has_images' && !hasImages)
+                && !(category === 'no_images' && hasImages);
         });
+        if (resetPage) currentPage = 1;
         sortCards();
-    };
-
-    const sortCards = () => {
-        const container = document.querySelector('.hotel-grid');
-        const visibleCards = cards.filter(card => card.style.display !== 'none');
-        const order = sortSelect.value;
-
-        if (order === 'name_asc') {
-            visibleCards.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
-        } else if (order === 'name_desc') {
-            visibleCards.sort((a, b) => b.dataset.name.localeCompare(a.dataset.name));
-        } else {
-            visibleCards.sort((a, b) => parseInt(a.dataset.index, 10) - parseInt(b.dataset.index, 10));
-        }
-
-        visibleCards.forEach(card => container.appendChild(card));
+        renderPage();
     };
 
     searchInput.addEventListener('input', updateCards);
@@ -384,9 +646,13 @@ function initHotelPage() {
             toggle.addEventListener('click', event => {
                 event.stopPropagation();
                 document.querySelectorAll('.hotel-dropdown.active').forEach(menu => {
-                    if (menu !== dropdown) menu.classList.remove('active');
+                    if (menu !== dropdown) {
+                        menu.classList.remove('active');
+                        menu.closest('.hotel-card')?.classList.remove('menu-open');
+                    }
                 });
-                dropdown.classList.toggle('active');
+                const isOpen = dropdown.classList.toggle('active');
+                card.classList.toggle('menu-open', isOpen);
             });
         }
 
@@ -418,7 +684,10 @@ function initHotelPage() {
     });
 
     document.addEventListener('click', () => {
-        document.querySelectorAll('.hotel-dropdown.active').forEach(menu => menu.classList.remove('active'));
+        document.querySelectorAll('.hotel-dropdown.active').forEach(menu => {
+            menu.classList.remove('active');
+            menu.closest('.hotel-card')?.classList.remove('menu-open');
+        });
     });
 }
 

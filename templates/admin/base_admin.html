@@ -1360,9 +1360,13 @@
                     <svg viewBox="0 0 24 24" fill="none"><path d="M3 7H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 7V19H19V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                     Bookings
                 </a>
-                <a href="{{ url_for('admin.bookings') }}" class="sidebar-link {% if request.endpoint == 'admin.bookings' %}active{% endif %}">
+                <a href="{{ url_for('admin.bookings', view='audit') }}" class="sidebar-link {% if request.endpoint == 'admin.bookings' and request.args.get('view') == 'audit' %}active{% endif %}">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M4 6H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 10V18H19V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 10V6H10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                     Audit
+                </a>
+                <a href="{{ url_for('admin.reports') }}" class="sidebar-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M9 17v-2m4 2v-4m4 4v-6m-4-7a9 9 0 1 1-9 9 9.01 9.01 0 0 1 9-9z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Reports
                 </a>
             </nav>
             <div class="sidebar-footer">
@@ -1376,7 +1380,7 @@
                 <div class="header-left">
                     <div class="breadcrumb">
                         <span>Dashboard</span>
-                        <span>{% if request.endpoint == 'admin.dashboard' %}Overview{% elif request.endpoint == 'admin.hotels' %}Hotels{% elif request.endpoint == 'admin.rooms' %}Rooms{% elif request.endpoint == 'admin.bookings' %}Bookings{% else %}Admin{% endif %}</span>
+                        <span>{% if request.endpoint == 'admin.dashboard' %}Overview{% elif request.endpoint == 'admin.hotels' %}Hotels{% elif request.endpoint == 'admin.rooms' %}Rooms{% elif request.endpoint == 'admin.bookings' and request.args.get('view') == 'audit' %}Audit{% elif request.endpoint == 'admin.bookings' %}Bookings{% elif request.endpoint == 'admin.reports' %}Reports{% else %}Admin{% endif %}</span>
                     </div>
                     <h1 class="header-title">{{ self.title() }}</h1>
                     <p class="header-description">{% block page_description %}Manage your admin operations with confidence.{% endblock %}</p>
