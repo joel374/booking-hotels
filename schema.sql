@@ -37,14 +37,16 @@ CREATE TABLE IF NOT EXISTS `cities` (
 -- Akun pengguna, mendukung login lokal maupun Google OAuth
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `users` (
-  `id`            INT           NOT NULL AUTO_INCREMENT,
-  `username`      VARCHAR(50)   NOT NULL,
-  `password_hash` VARCHAR(255)  DEFAULT NULL,          -- NULL jika login via Google
-  `email`         VARCHAR(100)  NOT NULL,
-  `phone`         VARCHAR(20)   DEFAULT NULL,
-  `google_id`     VARCHAR(100)  DEFAULT NULL,
-  `auth_provider` VARCHAR(50)   DEFAULT 'local',       -- 'local' | 'google'
-  `role`          ENUM('customer','admin') DEFAULT 'customer',
+  `id`                       INT           NOT NULL AUTO_INCREMENT,
+  `username`                 VARCHAR(50)   NOT NULL,
+  `password_hash`            VARCHAR(255)  DEFAULT NULL,          -- NULL jika login via Google
+  `email`                    VARCHAR(100)  NOT NULL,
+  `phone`                    VARCHAR(20)   DEFAULT NULL,
+  `google_id`                VARCHAR(100)  DEFAULT NULL,
+  `auth_provider`            VARCHAR(50)   DEFAULT 'local',       -- 'local' | 'google'
+  `role`                     ENUM('customer','admin') DEFAULT 'customer',
+  `password_reset_token`     VARCHAR(255)  DEFAULT NULL,
+  `password_reset_expires`   DATETIME      DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username`  (`username`),
   UNIQUE KEY `email`     (`email`),

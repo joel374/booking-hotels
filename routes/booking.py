@@ -2,14 +2,13 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from datetime import datetime, timedelta
 import mysql.connector
 from db import get_db_connection, cleanup_expired_bookings
+from utils import login_required
 
 booking_bp = Blueprint('booking', __name__)
 
 @booking_bp.route('/book/<int:room_id>', methods=['GET', 'POST'])
+@login_required
 def book_room(room_id):
-    if 'user_id' not in session:
-        flash("Please login to book a room.", "warning")
-        return redirect(url_for('auth.login'))
 
     check_in = request.args.get('check_in')
     check_out = request.args.get('check_out')
@@ -38,6 +37,9 @@ def book_room(room_id):
     
     cursor.execute("SELECT * FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.id = %s", (room_id,))
     room = cursor.fetchone()
+    
+    nights = (co_date - ci_date).days
+    grand_total = room['price'] * nights
 
     if request.method == 'POST':
         guest_name = request.form.get('guest_name', '').strip()
@@ -46,16 +48,16 @@ def book_room(room_id):
         
         if not guest_name or not contact_number or not payment_method:
             flash("Semua data pemesanan wajib diisi.", "danger")
-            return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out)
+            return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out, nights=nights, grand_total=grand_total)
             
         if len(guest_name) < 3:
             flash("Nama lengkap tamu minimal 3 karakter.", "danger")
-            return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out)
+            return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out, nights=nights, grand_total=grand_total)
             
         import re
         if not re.match(r'^[\d\+\-\(\)\s]{9,15}$', contact_number):
             flash("Nomor kontak tidak valid. Harap masukkan 9-15 digit angka.", "danger")
-            return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out)
+            return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out, nights=nights, grand_total=grand_total)
 
         cleanup_expired_bookings(cursor)
         
@@ -96,6 +98,7 @@ def book_room(room_id):
         
         if booking_data and booking_data.get('user_email'):
             from services.email_service import send_email
+
             
             html_content = render_template('emails/booking_pending.html', booking=booking_data)
             subject = f"Menunggu Pembayaran - {booking_data['hotel_name']}"
@@ -108,12 +111,11 @@ def book_room(room_id):
 
     cursor.close()
     conn.close()
-    return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out)
+    return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out, nights=nights, grand_total=grand_total)
 
 @booking_bp.route('/pay/<int:booking_id>', methods=['GET', 'POST'])
+@login_required
 def pay(booking_id):
-    if 'user_id' not in session:
-        return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -163,6 +165,7 @@ def pay(booking_id):
         
         if booking_data and booking_data.get('user_email'):
             from services.email_service import send_email
+
             
             html_content = render_template('emails/booking_confirmation.html', booking=booking_data)
             subject = f"Konfirmasi Pemesanan - {booking_data['hotel_name']} (INV-{booking_data['id']})"
@@ -176,12 +179,14 @@ def pay(booking_id):
     cursor.close()
     conn.close()
     
-    return render_template('pay.html', booking=booking_record, room=room, time_left_seconds=int(time_left_seconds))
+    nights = (booking_record['check_out'] - booking_record['check_in']).days
+    grand_total = room['price'] * nights
+    
+    return render_template('pay.html', booking=booking_record, room=room, time_left_seconds=int(time_left_seconds), nights=nights, grand_total=grand_total)
 
 @booking_bp.route('/invoice/<int:booking_id>')
+@login_required
 def invoice(booking_id):
-    if 'user_id' not in session:
-        return redirect(url_for('auth.login'))
         
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -199,12 +204,14 @@ def invoice(booking_id):
     if not booking_record or booking_record['status'] != 'Booked':
         return redirect(url_for('main.index'))
         
-    return render_template('invoice.html', booking=booking_record)
+    nights = (booking_record['check_out'] - booking_record['check_in']).days
+    grand_total = booking_record['price'] * nights
+        
+    return render_template('invoice.html', booking=booking_record, nights=nights, grand_total=grand_total)
 
 @booking_bp.route('/my-bookings')
+@login_required
 def my_bookings():
-    if 'user_id' not in session:
-        return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -244,9 +251,8 @@ def my_bookings():
     return render_template('my_bookings.html', bookings=bookings, waiting_lists=waiting_lists)
 
 @booking_bp.route('/cancel/<int:booking_id>', methods=['POST'])
+@login_required
 def cancel_booking(booking_id):
-    if 'user_id' not in session:
-        return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -282,10 +288,38 @@ def cancel_booking(booking_id):
     
     if booking_data and booking_data.get('user_email'):
         from services.email_service import send_email
+
         
         html_content = render_template('emails/booking_cancelled.html', booking=booking_data)
         subject = f"Pesanan Dibatalkan - {booking_data['hotel_name']}"
         send_email(booking_data['user_email'], subject, html_content)
+        
+        # Cek Waiting List
+        cursor.execute("""
+            SELECT w.id, w.check_in, w.check_out, u.email as user_email, u.username, h.name as hotel_name, r.room_type, h.id as hotel_id
+            FROM waiting_lists w
+            JOIN users u ON w.user_id = u.id
+            JOIN rooms r ON w.room_id = r.id
+            JOIN hotels h ON r.hotel_id = h.id
+            WHERE w.room_id = %s
+            AND w.check_in < %s AND w.check_out > %s
+        """, (booking_data['room_id'], booking_data['check_out'], booking_data['check_in']))
+        waitlist_users = cursor.fetchall()
+        
+        for wu in waitlist_users:
+            # Pastikan benar-benar kosong untuk tanggal mereka
+            cursor.execute("""
+                SELECT id FROM bookings
+                WHERE room_id = %s
+                AND status != 'Cancelled'
+                AND (check_in < %s AND check_out > %s)
+            """, (booking_data['room_id'], wu['check_out'], wu['check_in']))
+            conflicts = cursor.fetchone()
+            
+            if not conflicts and wu.get('user_email'):
+                html_waitlist = render_template('emails/waitlist_available.html', waitlist=wu)
+                subject_waitlist = f"Kabar Gembira! Kamar Tersedia - {wu['hotel_name']}"
+                send_email(wu['user_email'], subject_waitlist, html_waitlist)
 
     cursor.close()
     conn.close()
@@ -293,10 +327,8 @@ def cancel_booking(booking_id):
     return redirect(url_for('booking.my_bookings'))
 
 @booking_bp.route('/waitlist/<int:room_id>', methods=['POST'])
+@login_required
 def join_waitlist(room_id):
-    if 'user_id' not in session:
-        flash("Please login to join the waiting list.", "warning")
-        return redirect(url_for('auth.login'))
 
     check_in = request.form['check_in']
     check_out = request.form['check_out']

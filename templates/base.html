@@ -27,6 +27,7 @@
 
         <div class="nav-actions">
             {% if session.get('user_id') %}
+                <a href="{{ url_for('auth.profile') }}" class="login-btn">Profile</a>
                 <a href="{{ url_for('booking.my_bookings') }}" class="login-btn">My Bookings</a>
                 <a href="{{ url_for('auth.logout') }}" class="btn btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">Logout</a>
             {% else %}
@@ -71,9 +72,10 @@
                     else if ('{{ category }}' === 'danger') iconType = 'error';
                     else if ('{{ category }}' === 'warning') iconType = 'warning';
 
+                    const toastPosition = window.matchMedia('(max-width: 768px)').matches ? 'center' : 'top-end';
                     const Toast = Swal.mixin({
                       toast: true,
-                      position: 'top-end',
+                      position: toastPosition,
                       showConfirmButton: false,
                       timer: 5000,
                       timerProgressBar: true,

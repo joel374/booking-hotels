@@ -121,11 +121,11 @@
             
             <p style="text-align: center; margin: 0; color: #64748b; font-size: 0.9rem;">Total Tagihan</p>
             <div class="snap-amount">
-                Rp {{ "{:,.0f}".format(room.price) }}
+                Rp {{ "{:,.0f}".format(grand_total) }}
             </div>
             
             <div class="snap-details">
-                <div><span>Kamar:</span> <strong style="color: #0f172a; text-align: right;">{{ room.room_type }}<br><span style="font-size: 0.8rem; color: #64748b;">(Semalam)</span></strong></div>
+                <div><span>Kamar:</span> <strong style="color: #0f172a; text-align: right;">{{ room.room_type }}<br><span style="font-size: 0.8rem; color: #64748b;">({{ nights }} Malam)</span></strong></div>
                 <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.5rem; margin-top: 0.5rem;"><span>Check-in:</span> <strong style="color: #0f172a;">{{ booking.check_in }}</strong></div>
                 <div><span>Tamu:</span> <strong style="color: #0f172a;">{{ booking.guest_name }}</strong></div>
             </div>
