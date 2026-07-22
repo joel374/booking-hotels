@@ -137,6 +137,11 @@ booking-hotels/
 
 - `id`, `user_id`, `room_id`, `check_in`, `check_out`
 
+**10. reviews**
+
+- `id`, `hotel_id`, `user_id`, `booking_id`, `rating`, `comment`, `created_at`
+- **CASCADE DELETE**: Deleting hotel, user, or booking deletes the review
+
 ---
 
 ## 🔄 Critical Flows
@@ -396,67 +401,29 @@ return render_template('admin/dashboard.html',
 
 ### **Issue 1: Booking Availability Race Condition**
 
-**Problem:**
-
-```python
-# User A checks availability → Room available
-# User B checks availability → Room available (same time)
-# User A submits booking → Success
-# User B submits booking → Success (DOUBLE BOOKING!)
-```
-
-**Location:** `routes/booking.py::booking_form()` (POST)
-
-**Fix Needed:** Database transaction or row locking
+**Status:** ✅ RESOLVED
+- **Fix Applied:** Added `SELECT ... FOR UPDATE` row-level locking on the `rooms` table in `routes/booking.py` before inserting new bookings to prevent double bookings.
 
 ---
 
 ### **Issue 2: Expired Bookings Not Auto-Cleaned**
 
-**Problem:**
-
-```python
-# db.py::cleanup_expired_bookings() exists but NOT called automatically
-def cleanup_expired_bookings(cursor):
-    query = """
-        UPDATE bookings
-        SET status = 'Cancelled'
-        WHERE status = 'Pending' AND created_at < NOW() - INTERVAL 15 MINUTE
-    """
-    cursor.execute(query)
-```
-
-**Location:** `db.py`
-
-**Fix Needed:** Call this function in routes or use background job
+**Status:** ✅ RESOLVED
+- **Fix Applied:** `cleanup_expired_bookings(cursor)` is now explicitly called on critical routes (`/rooms`, `/book`, `/my-bookings`) to ensure stale pending bookings are cancelled lazily before checking availability.
 
 ---
 
 ### **Issue 3: Orphaned Image Files**
 
-**Problem:**
-
-- Admin deletes hotel → DB records deleted (CASCADE)
-- Physical files in `static/uploads/hotels/` NOT deleted automatically
-- `cleanup_unused_images()` exists but might not be called
-
-**Location:** `utils.py::cleanup_unused_images()`
-
-**Fix Needed:** Call cleanup after delete operations
+**Status:** ✅ RESOLVED
+- **Fix Applied:** Physical image files are now safely deleted via `delete_image_file()` iteratively before running `DELETE CASCADE` operations in `routes/admin.py` for both hotels and rooms.
 
 ---
 
 ### **Issue 4: No File Upload Validation**
 
-**Problem:**
-
-- No max file size check
-- No file type validation (could upload .exe, .php)
-- Could fill up disk space
-
-**Location:** `utils.py::save_file()`
-
-**Fix Needed:** Add validation (max 5MB, only images)
+**Status:** ✅ RESOLVED
+- **Fix Applied:** `MAX_FILE_SIZE` restricted to 5MB in both Flask app config (`app.py`) and manual check (`utils.py`). Extensions restricted to valid image formats (`.jpg`, `.png`, `.webp`).
 
 ---
 
@@ -602,6 +569,7 @@ def delete_hotel(hotel_id):
 - ✅ Use `login_required` and `admin_required` decorators
 - ✅ Follow existing template structure (extend base.html)
 - ✅ **ALWAYS update this AI_CONTEXT.md file** after completing a task or preparing a commit, so the context is always fresh.
+- ✅ **ALWAYS update `schema.sql`** whenever there is a change to the database structure (adding tables, altering columns) so the team stays synced.
 
 ### **DON'T:**
 
@@ -736,17 +704,20 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
 - **Wilayah Kode (Ownership):**
   - `routes/main.py`
   - `routes/booking.py`
-  - `templates/index.html`, `templates/rooms.html`, `templates/booking_form.html`, `templates/city_hotels.html` dll.
-- **Tabel Database:** `bookings`, `waiting_lists`.
-- **Next Enhancements:** Integrasi Payment Gateway (Midtrans), Sistem Ulasan (Reviews), Kirim Invoice PDF via Email.
+  - `templates/index.html`, `templates/rooms.html`, `templates/booking_form.html`, `templates/city_hotels.html`, `templates/pay.html`, `templates/invoice.html` dll.
+- **Tabel Database:** `bookings`, `waiting_lists`, `reviews`.
+- **Next Enhancements:** Integrasi API Eksternal OTA (Jika diperlukan).
 
 * **Recent Updates:**
   - Pembersihan _inline-style_ di seluruh HTML Modul 3 dan standarisasi CSS.
   - Implementasi _Horizontal Scroll_ ala Netflix di Beranda (`index.html`).
-  - Implementasi _Infinite Scroll_ (AJAX API & IntersectionObserver) dengan _Skeleton Loader_ di halaman Kota (`city_hotels.html`).
+  - Implementasi _Infinite Scroll_ (AJAX API & IntersectionObserver) dengan _Skeleton Loader_ dan Filter Kriteria (`city_hotels.html`).
+  - Redesign detail hotel dengan *Masonry Gallery* UI dan Sistem Ulasan Pengguna (`rooms.html`).
+  - Integrasi UI Mock Midtrans Snap untuk Gateway Pembayaran (`pay.html`).
+  - Implementasi ekspor Invoice ke PDF dengan `html2pdf.js` (`invoice.html`).
 
 ---
 
-**Last Updated:** July 21, 2026  
-**Version:** 1.2  
+**Last Updated:** July 22, 2026  
+**Version:** 1.4  
 **Status:** Active Development (Distributed to 3 Team Members)

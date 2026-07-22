@@ -40,7 +40,7 @@ os.makedirs(ROOM_UPLOAD_FOLDER, exist_ok=True)
 app.config['HOTEL_UPLOAD_FOLDER'] = HOTEL_UPLOAD_FOLDER
 app.config['ROOM_UPLOAD_FOLDER'] = ROOM_UPLOAD_FOLDER
 app.config['UPLOAD_FOLDER'] = HOTEL_UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB Limit
 
 # Session Setup
 app.config["SESSION_PERMANENT"] = False

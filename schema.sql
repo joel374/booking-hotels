@@ -151,3 +151,25 @@ CREATE TABLE IF NOT EXISTS `waiting_lists` (
   CONSTRAINT `waiting_lists_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `waiting_lists_ibfk_2` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- Tabel: reviews
+-- Ulasan pelanggan untuk hotel berdasarkan pesanan yang selesai
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `reviews` (
+  `id`         INT      NOT NULL AUTO_INCREMENT,
+  `hotel_id`   INT      NOT NULL,
+  `user_id`    INT      NOT NULL,
+  `booking_id` INT      NOT NULL,
+  `rating`     INT      NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  `comment`    TEXT     DEFAULT NULL,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `hotel_id` (`hotel_id`),
+  KEY `user_id`  (`user_id`),
+  KEY `booking_id` (`booking_id`),
+  UNIQUE KEY `unique_booking_review` (`booking_id`),
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`hotel_id`) REFERENCES `hotels` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `reviews_ibfk_3` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

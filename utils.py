@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from db import get_db_connection
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
-MAX_FILE_SIZE = 16 * 1024 * 1024
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB Limit
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -25,7 +25,7 @@ def save_file(file, upload_folder, relative_upload_folder):
     stream.seek(0)
 
     if file_size > MAX_FILE_SIZE:
-        raise ValueError('File is too large. Maximum size is 16 MB.')
+        raise ValueError('File is too large. Maximum size is 5 MB.')
 
     filename = secure_filename(file.filename)
     unique_filename = f"{uuid.uuid4().hex}_{filename}"

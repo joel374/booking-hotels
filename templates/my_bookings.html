@@ -42,6 +42,10 @@
                         
                         {% if booking.status == 'Booked' %}
                             <a href="{{ url_for('booking.invoice', booking_id=booking.id) }}" class="btn btn-primary" style="flex: 1; padding: 0.6rem; font-size: 0.85rem;">View Invoice</a>
+                            
+                            {% if booking.has_reviewed == 0 %}
+                            <button type="button" class="btn btn-primary" onclick="openReviewModal({{ booking.id }}, '{{ booking.hotel_name | escape }}')" style="flex: 1; padding: 0.6rem; font-size: 0.85rem; background: #8b5cf6; border-color: #8b5cf6;">Write Review</button>
+                            {% endif %}
                         {% endif %}
 
                         {% if booking.status != 'Cancelled' %}
@@ -89,4 +93,50 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Review Modal -->
+<div id="review-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: white; width: 100%; max-width: 500px; border-radius: 16px; padding: 2rem; position: relative;">
+        <button type="button" onclick="closeReviewModal()" style="position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+        <h3 style="margin-top: 0; color: var(--primary-color);">Write a Review</h3>
+        <p class="text-muted" style="margin-bottom: 1.5rem;">Share your experience at <strong id="modal-hotel-name"></strong>.</p>
+        
+        <form id="review-form" method="POST" action="">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Rating</label>
+                <div style="display: flex; gap: 10px; flex-direction: row-reverse; justify-content: flex-end;" class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5" required style="display: none;"/><label for="star5" style="cursor: pointer; font-size: 2rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
+                    <input type="radio" id="star4" name="rating" value="4" style="display: none;"/><label for="star4" style="cursor: pointer; font-size: 2rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
+                    <input type="radio" id="star3" name="rating" value="3" style="display: none;"/><label for="star3" style="cursor: pointer; font-size: 2rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
+                    <input type="radio" id="star2" name="rating" value="2" style="display: none;"/><label for="star2" style="cursor: pointer; font-size: 2rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
+                    <input type="radio" id="star1" name="rating" value="1" style="display: none;"/><label for="star1" style="cursor: pointer; font-size: 2rem; color: #cbd5e1; transition: 0.2s;">&#9733;</label>
+                </div>
+                <style>
+                .star-rating label:hover, .star-rating label:hover ~ label, .star-rating input:checked ~ label {
+                    color: #FFD700 !important;
+                }
+                </style>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="comment" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Comment (Optional)</label>
+                <textarea name="comment" id="comment" rows="4" class="form-control" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.8rem;" placeholder="What did you like or dislike?"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">Submit Review</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openReviewModal(bookingId, hotelName) {
+    document.getElementById('modal-hotel-name').innerText = hotelName;
+    document.getElementById('review-form').action = "/review/" + bookingId;
+    const modal = document.getElementById('review-modal');
+    modal.style.display = 'flex';
+}
+function closeReviewModal() {
+    document.getElementById('review-modal').style.display = 'none';
+}
+</script>
 {% endblock %}

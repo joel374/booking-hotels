@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from datetime import datetime, timedelta
+import mysql.connector
 from db import get_db_connection, cleanup_expired_bookings
 
 booking_bp = Blueprint('booking', __name__)
@@ -41,6 +42,9 @@ def book_room(room_id):
             return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out)
 
         cleanup_expired_bookings(cursor)
+        
+        # LOCK THE ROOM ROW to prevent race conditions (Double Booking)
+        cursor.execute("SELECT id FROM rooms WHERE id = %s FOR UPDATE", (room_id,))
         
         query = """
             SELECT COUNT(*) as count FROM bookings 
@@ -154,7 +158,8 @@ def my_bookings():
     cleanup_expired_bookings(cursor)
     
     query = """
-        SELECT b.*, r.room_number, r.room_type, r.price, h.name as hotel_name 
+        SELECT b.*, r.room_number, r.room_type, r.price, h.name as hotel_name,
+               (SELECT COUNT(*) FROM reviews WHERE booking_id = b.id) as has_reviewed
         FROM bookings b 
         JOIN rooms r ON b.room_id = r.id 
         JOIN hotels h ON r.hotel_id = h.id 
@@ -211,4 +216,45 @@ def join_waitlist(room_id):
     conn.close()
     
     flash("Successfully joined the waiting list! We will notify you if it becomes available (Mock).", "success")
+    return redirect(url_for('booking.my_bookings'))
+
+@booking_bp.route('/review/<int:booking_id>', methods=['POST'])
+def submit_review(booking_id):
+    if 'user_id' not in session:
+        return redirect(url_for('auth.login'))
+        
+    rating = request.form.get('rating', type=int)
+    comment = request.form.get('comment')
+    
+    if not rating or rating < 1 or rating > 5:
+        flash("Invalid rating submitted.", "danger")
+        return redirect(url_for('booking.my_bookings'))
+        
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT r.hotel_id FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.id = %s AND b.user_id = %s AND b.status = 'Booked'", (booking_id, session['user_id']))
+    booking = cursor.fetchone()
+    
+    if not booking:
+        cursor.close()
+        conn.close()
+        flash("Booking not found or cannot be reviewed.", "danger")
+        return redirect(url_for('booking.my_bookings'))
+        
+    try:
+        cursor.execute("""
+            INSERT INTO reviews (hotel_id, user_id, booking_id, rating, comment)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (booking['hotel_id'], session['user_id'], booking_id, rating, comment))
+        conn.commit()
+        flash("Thank you for your review!", "success")
+    except mysql.connector.IntegrityError:
+        flash("You have already reviewed this booking.", "warning")
+    except Exception as e:
+        flash("An error occurred while submitting your review.", "danger")
+        
+    cursor.close()
+    conn.close()
+    
     return redirect(url_for('booking.my_bookings'))

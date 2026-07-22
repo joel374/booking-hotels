@@ -41,9 +41,27 @@
     </form>
 </div>
 
-<div class="section-title-wrapper" style="margin-bottom: 2rem;">
+<div class="section-title-wrapper" style="margin-bottom: 1rem;">
     <h2 class="section-title">Eksplorasi di {{ city.city_name }}</h2>
     <p class="text-muted">Temukan berbagai penginapan terbaik untuk perjalanan Anda.</p>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar" style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; background: var(--card-bg); padding: 1rem; border-radius: var(--radius); box-shadow: var(--shadow-soft); align-items: center;">
+    <span style="font-weight: 600; font-size: 0.9rem; color: var(--primary-color);">Filter:</span>
+    
+    <div style="display: flex; gap: 0.5rem; flex: 1; min-width: 200px;">
+        <input type="number" id="filter-min-price" placeholder="Harga Min (Rp)" style="padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%; outline: none;">
+        <input type="number" id="filter-max-price" placeholder="Harga Max (Rp)" style="padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%; outline: none;">
+    </div>
+    
+    <select id="filter-sort-by" style="padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; outline: none; min-width: 180px; background: white;">
+        <option value="">Urutkan: Rekomendasi</option>
+        <option value="cheapest">Termurah - Termahal</option>
+        <option value="expensive">Termahal - Termurah</option>
+    </select>
+    
+    <button id="apply-filter-btn" class="btn btn-primary" style="padding: 0.6rem 1.5rem; border-radius: 6px;">Terapkan</button>
 </div>
 
 <div class="grid" id="hotels-grid">
@@ -84,6 +102,10 @@
     let currentPage = 1;
     let hasMore = true;
     let isLoading = false;
+    
+    let currentMinPrice = '';
+    let currentMaxPrice = '';
+    let currentSortBy = '';
     
     const grid = document.getElementById('hotels-grid');
     const spinner = document.getElementById('loading-spinner');
@@ -140,19 +162,19 @@
         if (isLoading || !hasMore) return;
         
         isLoading = true;
-        spinner.style.display = 'grid'; // Show skeleton loader
+        spinner.style.display = 'grid';
         
         try {
-            const response = await fetch(`/api/hotels?city_id=${cityId}&page=${currentPage}`);
+            const url = `/api/hotels?city_id=${cityId}&page=${currentPage}&min_price=${currentMinPrice}&max_price=${currentMaxPrice}&sort_by=${currentSortBy}`;
+            const response = await fetch(url);
             const data = await response.json();
             
-            if (data.hotels.length === 0) {
+            if (data.hotels.length < 14) {
                 hasMore = false;
                 spinner.style.display = 'none';
                 if (currentPage === 1) {
                     grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem;">Belum ada hotel yang tersedia untuk kota ini.</div>';
                 }
-                return;
             }
             
             // Append hotels to grid
@@ -183,6 +205,31 @@
     
     observer.observe(document.getElementById('scroll-trigger'));
     
+    // Apply Filters Logic
+    document.getElementById('apply-filter-btn').addEventListener('click', () => {
+        currentMinPrice = document.getElementById('filter-min-price').value;
+        currentMaxPrice = document.getElementById('filter-max-price').value;
+        currentSortBy = document.getElementById('filter-sort-by').value;
+        
+        // Reset grid and pagination state
+        grid.innerHTML = '';
+        currentPage = 1;
+        hasMore = true;
+        
+        // Disconnect observer temporarily so it doesn't trigger double load
+        if (observer) {
+            observer.disconnect();
+        }
+        
+        // Load initial filter results manually
+        loadHotels().then(() => {
+            // Re-observe after initial load is done if there's more data
+            if(hasMore) {
+                observer.observe(document.getElementById('scroll-trigger'));
+            }
+        });
+    });
+
     // Date Pickers using Flatpickr (Consistent with index)
     const checkInInput = document.getElementById('check_in');
     const checkOutInput = document.getElementById('check_out');

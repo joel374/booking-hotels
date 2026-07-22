@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+/* Mock Midtrans Snap CSS */
+.snap-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+.snap-box {
+    background: white;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out forwards;
+    transform: translateY(20px);
+    opacity: 0;
+}
+@keyframes slideUp {
+    to { transform: translateY(0); opacity: 1; }
+}
+.snap-header {
+    background: #f8fafc;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.snap-body {
+    padding: 1.5rem;
+}
+.snap-amount {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0.5rem 0 1.5rem 0;
+    text-align: center;
+}
+.snap-timer {
+    background: #fffbeb;
+    color: #b45309;
+    padding: 0.6rem;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border: 1px dashed #fcd34d;
+}
+.snap-details {
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    color: #475569;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+}
+.snap-details div {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+.snap-details div:last-child {
+    margin-bottom: 0;
+}
+.snap-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.snap-method-btn {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 10px;
+    background: white;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: 500;
+    color: #475569;
+}
+.snap-method-btn:hover {
+    border-color: #0ea5e9;
+    background: #f0f9ff;
+    color: #0ea5e9;
+}
+.snap-method-btn.selected {
+    border-color: #0ea5e9;
+    background: #e0f2fe;
+    font-weight: 700;
+    color: #0284c7;
+    box-shadow: 0 4px 10px rgba(14, 165, 233, 0.1);
+}
+</style>
+
+<div class="snap-overlay">
+    <div class="snap-box">
+        <div class="snap-header">
+            <span style="font-weight: 800; font-size: 1.2rem; color: #0ea5e9; display: flex; align-items: center; gap: 8px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                Mocktrans
+            </span>
+            <span style="font-size: 0.8rem; color: #64748b; background: #e2e8f0; padding: 4px 8px; border-radius: 4px;">#{{ booking.id }}</span>
+        </div>
+        <div class="snap-body">
+            <div class="snap-timer" id="timer">
+                Selesaikan pembayaran dalam <span id="time-left" style="font-variant-numeric: tabular-nums;">15:00</span>
+            </div>
+            
+            <p style="text-align: center; margin: 0; color: #64748b; font-size: 0.9rem;">Total Tagihan</p>
+            <div class="snap-amount">
+                Rp {{ "{:,.0f}".format(room.price) }}
+            </div>
+            
+            <div class="snap-details">
+                <div><span>Kamar:</span> <strong style="color: #0f172a; text-align: right;">{{ room.room_type }}<br><span style="font-size: 0.8rem; color: #64748b;">(Semalam)</span></strong></div>
+                <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.5rem; margin-top: 0.5rem;"><span>Check-in:</span> <strong style="color: #0f172a;">{{ booking.check_in }}</strong></div>
+                <div><span>Tamu:</span> <strong style="color: #0f172a;">{{ booking.guest_name }}</strong></div>
+            </div>
+            
+            <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; color: #334155;">Pilih Metode Pembayaran</p>
+            <div class="snap-methods" id="payment-methods">
+                <div class="snap-method-btn selected" data-method="BCA Virtual Account">BCA VA</div>
+                <div class="snap-method-btn" data-method="GoPay">GoPay</div>
+                <div class="snap-method-btn" data-method="OVO">OVO</div>
+                <div class="snap-method-btn" data-method="QRIS">QRIS</div>
+            </div>
+            
+            <form method="POST" style="margin-top: 2rem;">
+                <!-- Payment method placeholder, can be saved to DB later if needed -->
+                <input type="hidden" name="payment_method" id="selected-method" value="BCA Virtual Account">
+                
+                <button type="button" id="pay-button" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: 700; background: #0ea5e9; border: none; border-radius: 10px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); transition: all 0.3s;">
+                    Bayar Sekarang
+                </button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <form action="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" method="POST" style="margin:0;">
+                    <button type="submit" style="background: none; border: none; color: #94a3b8; font-size: 0.85rem; cursor: pointer; text-decoration: underline;">Batalkan Pesanan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Timer Logic
+    let timeLeft = {{ time_left_seconds }};
+    const timeDisplay = document.getElementById('time-left');
+    
+    const timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            window.location.href = "/";
+            return;
+        }
+        
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = Math.floor(timeLeft % 60);
+        timeDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        timeLeft--;
+    }, 1000);
+    
+    // Method Selection
+    const methods = document.querySelectorAll('.snap-method-btn');
+    const hiddenMethod = document.getElementById('selected-method');
+    
+    methods.forEach(m => {
+        m.addEventListener('click', () => {
+            methods.forEach(btn => btn.classList.remove('selected'));
+            m.classList.add('selected');
+            hiddenMethod.value = m.getAttribute('data-method');
+        });
+    });
+    
+    // Simulate Payment Processing
+    document.getElementById('pay-button').addEventListener('click', function(e) {
+        const btn = this;
+        btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin" style="animation: spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg> Memproses...`;
+        btn.style.opacity = "0.8";
+        btn.disabled = true;
+        
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes spin { 100% { transform: rotate(360deg); } }`;
+        document.head.appendChild(style);
+        
+        setTimeout(() => {
+            btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Pembayaran Berhasil!`;
+            btn.style.background = "#10b981";
+            btn.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.3)";
+            clearInterval(timerInterval);
+            
+            setTimeout(() => {
+                btn.closest('form').submit();
+            }, 1200);
+        }, 2000);
+    });
+</script>
+{% endblock %}

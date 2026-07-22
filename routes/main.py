@@ -161,6 +161,10 @@ from flask import jsonify
 def api_hotels():
     city_id = request.args.get('city_id')
     page = request.args.get('page', 1, type=int)
+    min_price = request.args.get('min_price', type=int)
+    max_price = request.args.get('max_price', type=int)
+    sort_by = request.args.get('sort_by')
+    
     per_page = 14
     offset = (page - 1) * per_page
     
@@ -168,22 +172,41 @@ def api_hotels():
     cursor = conn.cursor(dictionary=True)
     
     base_query = """
-        SELECT h.*, c.city_name, p.province 
+        SELECT h.*, c.city_name, p.province, (SELECT MIN(price) FROM rooms WHERE hotel_id = h.id) as min_price
         FROM hotels h 
         LEFT JOIN cities c ON h.city_id = c.city_id 
         LEFT JOIN provinces p ON h.province_id = p.province_id
         WHERE h.city_id = %s
-        LIMIT %s OFFSET %s
+        HAVING 1=1
     """
-    cursor.execute(base_query, (city_id, per_page, offset))
+    params = [city_id]
+    
+    if min_price:
+        base_query += " AND min_price >= %s"
+        params.append(min_price)
+    if max_price:
+        base_query += " AND min_price <= %s"
+        params.append(max_price)
+        
+    if sort_by == 'cheapest':
+        base_query += " ORDER BY min_price ASC"
+    elif sort_by == 'expensive':
+        base_query += " ORDER BY min_price DESC"
+    else:
+        # Default sort by rating if available, or just ID
+        base_query += " ORDER BY h.rating DESC"
+        
+    base_query += " LIMIT %s OFFSET %s"
+    params.extend([per_page, offset])
+    
+    cursor.execute(base_query, tuple(params))
     hotels = cursor.fetchall()
     
     for hotel in hotels:
         cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel['id'],))
         hotel['images'] = [img['image_url'] for img in cursor.fetchall()]
-        cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s", (hotel['id'],))
-        res = cursor.fetchone()
-        hotel['min_price'] = res['min_price'] if res and res['min_price'] else 0
+        if not hotel.get('min_price'):
+            hotel['min_price'] = 0
         
     cursor.close()
     conn.close()
@@ -248,6 +271,28 @@ def hotel_rooms(hotel_id):
     if hotel:
         cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel_id,))
         hotel['images'] = [img['image_url'] for img in cursor.fetchall()]
+        
+        cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s", (hotel_id,))
+        res = cursor.fetchone()
+        hotel['min_price'] = res['min_price'] if res and res['min_price'] else 0
+        
+        cursor.execute("""
+            SELECT r.*, u.username as user_name 
+            FROM reviews r 
+            JOIN users u ON r.user_id = u.id 
+            WHERE r.hotel_id = %s 
+            ORDER BY r.created_at DESC
+        """, (hotel_id,))
+        reviews = cursor.fetchall()
+        
+        if reviews:
+            hotel['average_rating'] = round(sum(r['rating'] for r in reviews) / len(reviews), 1)
+            hotel['review_count'] = len(reviews)
+        else:
+            hotel['average_rating'] = hotel['rating']
+            hotel['review_count'] = 0
+    else:
+        reviews = []
     
     # Function to attach images to room list
     def attach_images(room_list):
@@ -266,4 +311,5 @@ def hotel_rooms(hotel_id):
                            check_in=check_in, check_out=check_out, 
                            min_price=min_price if min_price else '', 
                            max_price=max_price if max_price else '', 
-                           sort_by=sort_by)
+                           sort_by=sort_by,
+                           reviews=reviews)
