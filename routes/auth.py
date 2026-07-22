@@ -1,6 +1,9 @@
 import os
 import re
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+import secrets
+from datetime import datetime, timedelta
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
+from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
 from extensions import oauth
@@ -11,6 +14,113 @@ auth_bp = Blueprint('auth', __name__)
 
 def valid_email(address):
     return re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', address)
+
+
+def send_welcome_email(email, username):
+    """Send welcome email after successful registration"""
+    try:
+        html_content = f'''
+        <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f5f5f5;">
+            <div style="max-width: 600px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h2 style="color: #0a192f;">Selamat Datang di Antigravity Hotels! 🎉</h2>
+                <p style="color: #333; line-height: 1.6;">Halo <strong>{username}</strong>,</p>
+                
+                <p style="color: #333; line-height: 1.6;">Terima kasih telah mendaftar di platform kami. Akun Anda telah berhasil dibuat!</p>
+                
+                <div style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #e67e22; margin: 20px 0;">
+                    <p style="margin: 0; color: #333;"><strong>✓ Akun Anda siap digunakan</strong></p>
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">Username: {username}</p>
+                    <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Email: {email}</p>
+                </div>
+                
+                <p style="color: #333; line-height: 1.6;"><strong>Apa yang bisa Anda lakukan sekarang:</strong></p>
+                <ul style="color: #333; line-height: 1.8;">
+                    <li>Browse berbagai pilihan hotel eksklusif</li>
+                    <li>Buat reservasi dengan mudah dan cepat</li>
+                    <li>Manage booking Anda di "My Bookings"</li>
+                    <li>Dapatkan penawaran khusus dan diskon menarik</li>
+                </ul>
+                
+                <p style="margin-top: 30px; color: #333;">
+                    <a href="{url_for('main.index', _external=True)}" style="background-color: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                        Mulai Jelajahi Hotel
+                    </a>
+                </p>
+                
+                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="color: #999; font-size: 12px;">
+                    Pertanyaan? Hubungi kami di support@antigravityhotels.com<br>
+                    © 2026 Antigravity Hotels. All rights reserved.
+                </p>
+            </div>
+        </body>
+        </html>
+        '''
+        
+        msg = Message(
+            subject='Selamat Datang! Akun Anda Berhasil Dibuat - Antigravity Hotels',
+            recipients=[email],
+            html=html_content
+        )
+        current_app.extensions.get('mail').send(msg)
+        return True
+    except Exception as e:
+        print(f"Error sending welcome email to {email}: {str(e)}")
+        return False
+
+
+def send_login_notification(email, username, ip_address="Unknown"):
+    """Send login notification email"""
+    try:
+        login_time = datetime.now().strftime("%d %B %Y, %H:%M:%S")
+        
+        html_content = f'''
+        <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f5f5f5;">
+            <div style="max-width: 600px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h2 style="color: #0a192f;">Notifikasi Login - Antigravity Hotels 🔐</h2>
+                <p style="color: #333; line-height: 1.6;">Halo <strong>{username}</strong>,</p>
+                
+                <p style="color: #333; line-height: 1.6;">Akun Anda baru saja berhasil login.</p>
+                
+                <div style="background-color: #f0f8ff; padding: 20px; border-left: 4px solid #0a192f; margin: 20px 0;">
+                    <p style="margin: 0; color: #0a192f;"><strong>📍 Detail Login</strong></p>
+                    <p style="margin: 10px 0 0 0; color: #333; font-size: 14px;">Waktu: {login_time} WIB</p>
+                    <p style="margin: 5px 0 0 0; color: #333; font-size: 14px;">Perangkat: Browser</p>
+                    <p style="margin: 5px 0 0 0; color: #333; font-size: 14px;">IP Address: {ip_address}</p>
+                </div>
+                
+                <p style="color: #333; line-height: 1.6;">
+                    <strong>⚠️ Jika Anda tidak melakukan login ini,</strong> silakan amankan akun Anda sekarang dengan mengganti password.
+                </p>
+                
+                <p style="margin-top: 30px; color: #333;">
+                    <a href="{url_for('auth.profile', _external=True)}" style="background-color: #0a192f; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                        Manage Account
+                    </a>
+                </p>
+                
+                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="color: #999; font-size: 12px;">
+                    Pertanyaan atau kekhawatiran keamanan? Hubungi kami di support@antigravityhotels.com<br>
+                    © 2026 Antigravity Hotels. All rights reserved.
+                </p>
+            </div>
+        </body>
+        </html>
+        '''
+        
+        msg = Message(
+            subject=f'Login Terdeteksi - {username} - Antigravity Hotels',
+            recipients=[email],
+            html=html_content
+        )
+        current_app.extensions.get('mail').send(msg)
+        return True
+    except Exception as e:
+        print(f"Error sending login notification to {email}: {str(e)}")
+        return False
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -49,7 +159,11 @@ def register():
             cursor.execute("INSERT INTO users (username, password_hash, email, phone) VALUES (%s, %s, %s, %s)",
                            (username, hashed_password, email, phone))
             conn.commit()
-            flash("Registration successful. Please login.", "success")
+            
+            # Send welcome email
+            send_welcome_email(email, username)
+            
+            flash("Registration successful. Please check your email for welcome message. You can now login.", "success")
             return redirect(url_for('auth.login'))
         except Exception as err:
             flash(f"Error: {err}", "danger")
@@ -77,6 +191,13 @@ def login():
             session.permanent = remember_me
             session['user_id'] = user['id']
             session['username'] = user['username']
+            
+            # Get user IP address
+            user_ip = request.remote_addr or request.headers.get('X-Forwarded-For', 'Unknown')
+            
+            # Send login notification email
+            send_login_notification(user['email'], user['username'], user_ip)
+            
             flash("Berhasil masuk.", "success")
             
             role = user.get('role')
@@ -122,6 +243,7 @@ def authorize_google():
         
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
+        is_new_user = False
         
         if user:
             if 'google_id' in user and not user.get('google_id'):
@@ -130,6 +252,11 @@ def authorize_google():
             session.permanent = True
             session['user_id'] = user['id']
             session['username'] = user['username']
+            
+            # Send login notification for existing user
+            user_ip = request.remote_addr or request.headers.get('X-Forwarded-For', 'Unknown')
+            send_login_notification(user['email'], user['username'], user_ip)
+            
             flash(f"Welcome back, {user['username']}!", "success")
         else:
             base_username = name.replace(" ", "").lower() if name else email.split('@')[0]
@@ -149,11 +276,16 @@ def authorize_google():
             
             cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
             user = cursor.fetchone()
+            is_new_user = True
             
             session.permanent = True
             session['user_id'] = user['id']
             session['username'] = user['username']
-            flash("Account created successfully via Google!", "success")
+            
+            # Send welcome email for new Google user
+            send_welcome_email(email, username)
+            
+            flash("Account created successfully via Google! Check your email for welcome message.", "success")
             
         role = user.get('role', 'customer')
         cursor.close()
@@ -236,19 +368,90 @@ def forgot_password():
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT auth_provider FROM users WHERE email = %s", (email,))
+        cursor.execute("SELECT id, auth_provider FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
-        cursor.close()
-        conn.close()
 
         if user and user.get('auth_provider') == 'google':
-            flash("Akun ini terdaftar melalui Google. Silakan masuk dengan Google, atau gunakan pemulihan akun Google.", "info")
+            cursor.close()
+            conn.close()
+            flash("Akun ini terdaftar melalui Google. Silakan masuk dengan Google atau gunakan pemulihan akun Google.", "info")
             return redirect(url_for('auth.login'))
 
-        flash("If this email is registered, password reset instructions have been sent.", "info")
+        if user:
+            reset_token = secrets.token_urlsafe(32)
+            expires_at = datetime.utcnow() + timedelta(hours=1)
+            cursor.execute(
+                "UPDATE users SET password_reset_token = %s, password_reset_expires = %s WHERE id = %s",
+                (reset_token, expires_at, user['id'])
+            )
+            conn.commit()
+            
+            reset_link = url_for('auth.reset_password', token=reset_token, _external=True)
+            html_content = '<html><body style="font-family: Arial, sans-serif;"><div style="max-width: 600px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px;"><h2>Reset Password</h2><p>Klik link di bawah untuk reset password Anda:</p><p><a href="' + reset_link + '" style="background-color: #e67e22; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a></p><p>Link ini berlaku 1 jam.</p></div></body></html>'
+            
+            try:
+                msg = Message(
+                    subject='Reset Password - Antigravity Hotels',
+                    recipients=[email],
+                    html=html_content
+                )
+                current_app.extensions.get('mail').send(msg)
+                flash("Email reset password telah dikirim. Periksa inbox Anda.", "success")
+            except Exception as e:
+                flash("Gagal mengirim email. Coba lagi nanti.", "warning")
+        else:
+            flash("Jika email terdaftar, instruksi reset telah dikirim.", "info")
+        
+        cursor.close()
+        conn.close()
         return redirect(url_for('auth.login'))
 
     return render_template('forgot_password.html')
+
+
+@auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT id FROM users WHERE password_reset_token = %s AND password_reset_expires > %s",
+        (token, datetime.utcnow())
+    )
+    user = cursor.fetchone()
+    
+    if not user:
+        flash("Link reset password tidak valid atau sudah kadaluarsa.", "danger")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('auth.forgot_password'))
+    
+    if request.method == 'POST':
+        new_password = request.form.get('new_password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        if new_password != confirm_password:
+            flash("Password tidak cocok.", "danger")
+            return render_template('reset_password.html', token=token)
+        
+        if len(new_password) < 8:
+            flash("Password minimal 8 karakter.", "danger")
+            return render_template('reset_password.html', token=token)
+        
+        new_password_hash = generate_password_hash(new_password)
+        cursor.execute(
+            "UPDATE users SET password_hash = %s, password_reset_token = NULL, password_reset_expires = NULL WHERE id = %s",
+            (new_password_hash, user['id'])
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        flash("Password berhasil direset. Silakan login.", "success")
+        return redirect(url_for('auth.login'))
+    
+    cursor.close()
+    conn.close()
+    return render_template('reset_password.html', token=token)
 
 
 @auth_bp.route('/logout')

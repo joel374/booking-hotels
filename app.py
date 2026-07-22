@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from flask_session import Session
+from flask_mail import Mail
 from dotenv import load_dotenv
 
 # Import utilities and extensions
@@ -17,6 +18,15 @@ from datetime import date, datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
+
+# Flask-Mail Configuration
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True') == 'True'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', 'noreply@antigravityhotels.com')
+mail = Mail(app)
 
 @app.template_filter('format_date')
 def format_date(value):
@@ -40,7 +50,7 @@ os.makedirs(ROOM_UPLOAD_FOLDER, exist_ok=True)
 app.config['HOTEL_UPLOAD_FOLDER'] = HOTEL_UPLOAD_FOLDER
 app.config['ROOM_UPLOAD_FOLDER'] = ROOM_UPLOAD_FOLDER
 app.config['UPLOAD_FOLDER'] = HOTEL_UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB Limit
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 # Session Setup
 app.config["SESSION_PERMANENT"] = True
