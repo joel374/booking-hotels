@@ -13,7 +13,7 @@ from routes.booking import booking_bp
 load_dotenv()
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
@@ -43,8 +43,13 @@ app.config['UPLOAD_FOLDER'] = HOTEL_UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB Limit
 
 # Session Setup
-app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_PERMANENT"] = True
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=int(os.getenv('SESSION_LIFETIME_MINUTES', '60')))
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = os.getenv('FLASK_ENV', 'development') == 'production'
 app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_REFRESH_EACH_REQUEST"] = True
 Session(app)
 
 # Initialize OAuth

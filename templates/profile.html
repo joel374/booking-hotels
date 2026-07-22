@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 500px; margin: 4rem auto">
+  <div class="glass" style="padding: 2rem">
+    <h2 style="text-align: center; margin-bottom: 2rem">Profile Saya</h2>
+    <form method="POST" action="{{ url_for('auth.profile') }}">
+      <div style="margin-bottom: 1rem">
+        <label class="text-muted">Username</label>
+        <input type="text" name="username" class="form-control" value="{{ user.username }}" required />
+      </div>
+      <div style="margin-bottom: 1rem">
+        <label class="text-muted">Email</label>
+        <input type="email" name="email" class="form-control" value="{{ user.email }}" required />
+      </div>
+      <div style="margin-bottom: 1rem">
+        <label class="text-muted">Phone Number</label>
+        <input type="text" name="phone" class="form-control" value="{{ user.phone or '' }}" />
+      </div>
+
+      <p style="margin: 1.5rem 0; font-weight: 600; color: #475569">Change password (optional)</p>
+      <div style="margin-bottom: 1rem">
+        <label class="text-muted">Current Password</label>
+        <input type="password" name="current_password" class="form-control" />
+      </div>
+      <div style="margin-bottom: 1rem">
+        <label class="text-muted">New Password</label>
+        <input type="password" name="new_password" class="form-control" />
+      </div>
+      <div style="margin-bottom: 1.5rem">
+        <label class="text-muted">Confirm New Password</label>
+        <input type="password" name="confirm_password" class="form-control" />
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem">Update Profile</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

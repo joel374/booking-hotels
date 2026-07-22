@@ -2,14 +2,13 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from datetime import datetime, timedelta
 import mysql.connector
 from db import get_db_connection, cleanup_expired_bookings
+from utils import login_required
 
 booking_bp = Blueprint('booking', __name__)
 
 @booking_bp.route('/book/<int:room_id>', methods=['GET', 'POST'])
+@login_required
 def book_room(room_id):
-    if 'user_id' not in session:
-        flash("Please login to book a room.", "warning")
-        return redirect(url_for('auth.login'))
 
     check_in = request.args.get('check_in')
     check_out = request.args.get('check_out')
@@ -112,9 +111,8 @@ def book_room(room_id):
     return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out)
 
 @booking_bp.route('/pay/<int:booking_id>', methods=['GET', 'POST'])
+@login_required
 def pay(booking_id):
-    if 'user_id' not in session:
-        return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -181,9 +179,8 @@ def pay(booking_id):
     return render_template('pay.html', booking=booking_record, room=room, time_left_seconds=int(time_left_seconds))
 
 @booking_bp.route('/invoice/<int:booking_id>')
+@login_required
 def invoice(booking_id):
-    if 'user_id' not in session:
-        return redirect(url_for('auth.login'))
         
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -204,9 +201,8 @@ def invoice(booking_id):
     return render_template('invoice.html', booking=booking_record)
 
 @booking_bp.route('/my-bookings')
+@login_required
 def my_bookings():
-    if 'user_id' not in session:
-        return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -246,9 +242,8 @@ def my_bookings():
     return render_template('my_bookings.html', bookings=bookings, waiting_lists=waiting_lists)
 
 @booking_bp.route('/cancel/<int:booking_id>', methods=['POST'])
+@login_required
 def cancel_booking(booking_id):
-    if 'user_id' not in session:
-        return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -296,10 +291,8 @@ def cancel_booking(booking_id):
     return redirect(url_for('booking.my_bookings'))
 
 @booking_bp.route('/waitlist/<int:room_id>', methods=['POST'])
+@login_required
 def join_waitlist(room_id):
-    if 'user_id' not in session:
-        flash("Please login to join the waiting list.", "warning")
-        return redirect(url_for('auth.login'))
 
     check_in = request.form['check_in']
     check_out = request.form['check_out']
