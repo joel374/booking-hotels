@@ -1083,11 +1083,54 @@ span.flatpickr-weekday {
   color: var(--primary-color);
 }
 
+@media (max-width: 1024px) {
+  .hero-content h1 {
+    font-size: 2.8rem;
+  }
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  .search-group {
+    flex-wrap: wrap;
+  }
+  
+  /* Navbar Tablet Fixes */
+  .navbar {
+    padding: 1rem 2% !important;
+  }
+  .navbar-brand {
+    font-size: 1.3rem !important;
+  }
+  .nav-links {
+    gap: 0.8rem !important;
+  }
+  .nav-links.center-nav a {
+    font-size: 0.9rem;
+  }
+  .global-search-container input {
+    width: 160px !important;
+  }
+  .nav-actions {
+    gap: 0.5rem !important;
+  }
+  .nav-actions .btn, .nav-actions .login-btn {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.8rem !important;
+  }
+}
+
 @media (max-width: 768px) {
   .global-search-container {
     display: none !important; /* Hide global search on mobile since navbar is hidden */
   }
   .mobile-search-wrapper {
     display: block !important;
+  }
+  .hero-content h1 {
+    font-size: 2.2rem; /* Further scale down for mobile */
+  }
+  .container {
+    padding-top: 3rem;
   }
 }

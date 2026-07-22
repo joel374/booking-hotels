@@ -73,9 +73,10 @@
         </div>
         {% else %}
         <div style="padding: 4rem 2rem; text-align: center; background: white; border-radius: 16px; box-shadow: var(--shadow-soft);">
-            <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Belum ada pesanan</h3>
-            <p class="text-muted" style="margin-bottom: 2rem;">Anda belum melakukan pemesanan apa pun. Yuk temukan hotel impian Anda!</p>
-            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Cari Hotel</a>
+            <img src="{{ url_for('static', filename='img/empty_bookings.png') }}" alt="Belum ada pesanan" style="max-width: 250px; margin-bottom: 2rem;">
+            <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Koper Masih Kosong!</h3>
+            <p class="text-muted" style="margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">Sepertinya Anda belum menjadwalkan liburan apa pun. Yuk temukan hotel impian Anda sekarang dan mulai petualangan!</p>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary" style="padding: 0.8rem 2rem; font-weight: 600; border-radius: 50px;">Eksplor Hotel Sekarang</a>
         </div>
         {% endif %}
     </div>

@@ -65,6 +65,24 @@ Session(app)
 # Initialize OAuth
 init_oauth(app)
 
+import traceback
+from werkzeug.exceptions import HTTPException
+from flask import flash, redirect, url_for
+
+@app.errorhandler(Exception)
+def handle_global_error(e):
+    # Pass through standard HTTP errors like 404
+    if isinstance(e, HTTPException):
+        return e
+    
+    # Log the error for debugging
+    app.logger.error(f"Global Error: {str(e)}")
+    app.logger.error(traceback.format_exc())
+    
+    # Show user-friendly SweetAlert flash message instead of ugly debugger
+    flash("Terdapat masalah pada sistem atau tindakan tidak valid. Mohon coba beberapa saat lagi.", "danger")
+    return redirect(url_for('main.index'))
+
 # Register Blueprints
 app.register_blueprint(main_bp)
 app.register_blueprint(auth_bp)
