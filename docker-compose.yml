@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: booking_hotels_web
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY:-super_secret_docker_key_2026}
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD:-root_password}
+      - DB_NAME=hotel_booking
+      - MAIL_SERVER=${MAIL_SERVER:-smtp.gmail.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USE_TLS=${MAIL_USE_TLS:-True}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER:-noreply@antigravityhotels.com}
+    volumes:
+      - uploads_data:/app/static/uploads
+      - session_data:/app/flask_session
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: booking_hotels_db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD:-root_password}
+      - MYSQL_DATABASE=hotel_booking
+    volumes:
+      - db_data:/var/lib/mysql
+      # Auto-seed database structure and initial data on first start
+      - ./schema.sql:/docker-entrypoint-initdb.d/1_schema.sql
+      - ./seed_data.sql:/docker-entrypoint-initdb.d/2_seed_data.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      timeout: 10s
+      retries: 5
+
+volumes:
+  db_data:
+  uploads_data:
+  session_data:

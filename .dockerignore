@@ -1,0 +1,16 @@
+venv/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.git/
+.gitignore
+.agents/
+flask_session/
+static/uploads/
+AI_CONTEXT.md
