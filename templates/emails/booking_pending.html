@@ -36,7 +36,9 @@
                     <strong>Tipe Kamar:</strong> <span>{{ booking.room_type }}</span>
                 </div>
                 <div class="detail-row">
-                    <strong>Total Tagihan:</strong> <span style="font-weight: bold; color: #b45309;">Rp {{ "{:,.0f}".format(booking.price) }}</span>
+                    {% set nights = (booking.check_out - booking.check_in).days %}
+                    {% set nights = nights if nights > 0 else 1 %}
+                    <strong>Total Tagihan:</strong> <span style="font-weight: bold; color: #b45309;">Rp {{ "{:,.0f}".format(booking.price * nights) }}</span>
                 </div>
             </div>
 

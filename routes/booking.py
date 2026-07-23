@@ -38,6 +38,12 @@ def book_room(room_id):
     cursor.execute("SELECT * FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.id = %s", (room_id,))
     room = cursor.fetchone()
     
+    if not room:
+        cursor.close()
+        conn.close()
+        flash("Kamar tidak ditemukan atau tidak valid.", "danger")
+        return redirect(url_for('main.index'))
+        
     nights = (co_date - ci_date).days
     grand_total = room['price'] * nights
 

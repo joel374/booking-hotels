@@ -45,7 +45,9 @@
                     <strong>Check-out:</strong> <span>{{ booking.check_out.strftime('%d %b %Y') }}</span>
                 </div>
                 <div class="detail-row">
-                    <strong>Total Harga:</strong> <span style="font-weight: bold; color: #2563eb;">Rp {{ "{:,.0f}".format(booking.price) }}</span>
+                    {% set nights = (booking.check_out - booking.check_in).days %}
+                    {% set nights = nights if nights > 0 else 1 %}
+                    <strong>Total Harga:</strong> <span style="font-weight: bold; color: #2563eb;">Rp {{ "{:,.0f}".format(booking.price * nights) }}</span>
                 </div>
             </div>
 

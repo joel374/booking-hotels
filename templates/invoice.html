@@ -225,12 +225,14 @@
         <div class="invoice-header">
             <div>
                 <div class="invoice-brand">Booking Hotels</div>
-                <div class="status-badge">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    LUNAS
-                </div>
             </div>
             <div class="invoice-meta">
+                <div style="margin-bottom: 0.5rem; display: flex; justify-content: flex-end;">
+                    <div class="status-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        LUNAS
+                    </div>
+                </div>
                 <div class="invoice-id">INV-{{ booking.id }}-{{ booking.created_at.strftime('%Y') }}</div>
                 <div class="invoice-date">Diterbitkan: {{ booking.created_at.strftime('%d %b %Y') }}</div>
             </div>
