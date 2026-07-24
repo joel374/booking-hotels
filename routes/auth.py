@@ -7,7 +7,7 @@ from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
 from extensions import oauth
-from utils import login_required
+from utils import login_required, add_notification
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -192,6 +192,9 @@ def login():
             session['user_id'] = user['id']
             session['username'] = user['username']
             
+            cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user['id'],))
+            conn.commit()
+            
             # Get user IP address
             user_ip = request.remote_addr or request.headers.get('X-Forwarded-For', 'Unknown')
             
@@ -204,6 +207,11 @@ def login():
             cursor.close()
             conn.close()
             if role == 'admin':
+                add_notification(
+                    title="Admin Login",
+                    description=f"Admin {user['username']} logged in.",
+                    icon_type="login"
+                )
                 return redirect(url_for('admin.dashboard'))
             return redirect(url_for('main.index'))
 
@@ -253,6 +261,9 @@ def authorize_google():
             session['user_id'] = user['id']
             session['username'] = user['username']
             
+            cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user['id'],))
+            conn.commit()
+            
             # Send login notification for existing user
             user_ip = request.remote_addr or request.headers.get('X-Forwarded-For', 'Unknown')
             send_login_notification(user['email'], user['username'], user_ip)
@@ -282,6 +293,9 @@ def authorize_google():
             session['user_id'] = user['id']
             session['username'] = user['username']
             
+            cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user['id'],))
+            conn.commit()
+            
             # Send welcome email for new Google user
             send_welcome_email(email, username)
             
@@ -291,6 +305,11 @@ def authorize_google():
         cursor.close()
         conn.close()
         if role == 'admin':
+            add_notification(
+                title="Admin Login (Google)",
+                description=f"Admin {user['username']} logged in via Google.",
+                icon_type="login"
+            )
             return redirect(url_for('admin.dashboard'))
         return redirect(url_for('main.index'))
         

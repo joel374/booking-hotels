@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from datetime import datetime, timedelta
 import mysql.connector
 from db import get_db_connection, cleanup_expired_bookings
-from utils import login_required
+from utils import login_required, add_notification
 
 booking_bp = Blueprint('booking', __name__)
 
@@ -90,6 +90,13 @@ def book_room(room_id):
         cursor.execute(insert_query, (session['user_id'], room_id, guest_name, contact_number, check_in, check_out, payment_method))
         conn.commit()
         booking_id = cursor.lastrowid
+        
+        # Add Notification
+        add_notification(
+            title="Booking Baru Dibuat",
+            description=f"Guest {guest_name} membuat reservasi baru.",
+            icon_type="booking"
+        )
         
         # Kirim Email Pending
         cursor.execute("""

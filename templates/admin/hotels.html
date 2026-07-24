@@ -508,6 +508,53 @@
 </div>
 
 <script>
+function loadCities(provinceId, citySelectId, selectedCityId = null) {
+    const citySelect = document.getElementById(citySelectId);
+    citySelect.innerHTML = '<option value="">Loading...</option>';
+    citySelect.disabled = true;
+
+    if (!provinceId) {
+        citySelect.innerHTML = '<option value="">Select City...</option>';
+        return;
+    }
+
+    fetch(`/admin/api/cities/${provinceId}`)
+        .then(response => response.json())
+        .then(data => {
+            citySelect.innerHTML = '<option value="">Select City...</option>';
+            data.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.city_id;
+                option.textContent = city.city_name;
+                if (selectedCityId && city.city_id == selectedCityId) {
+                    option.selected = true;
+                }
+                citySelect.appendChild(option);
+            });
+            citySelect.disabled = false;
+        })
+        .catch(err => {
+            console.error(err);
+            citySelect.innerHTML = '<option value="">Error loading cities</option>';
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const addProvinceSelect = document.getElementById('province_id');
+    if (addProvinceSelect) {
+        addProvinceSelect.addEventListener('change', function() {
+            loadCities(this.value, 'city_id');
+        });
+    }
+
+    const editProvinceSelect = document.getElementById('edit_province_id');
+    if (editProvinceSelect) {
+        editProvinceSelect.addEventListener('change', function() {
+            loadCities(this.value, 'edit_city_id');
+        });
+    }
+});
+
 function openEditModal(id, name, province_id, city_id, location, description) {
     document.getElementById('editForm').action = `/admin/hotel/edit/${id}`;
     document.getElementById('edit_name').value = name;

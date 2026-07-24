@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS `hotels` (
   `rating`      DECIMAL(3,1) DEFAULT 0.0,
   `province_id` VARCHAR(255) DEFAULT NULL,
   `city_id`     VARCHAR(255) DEFAULT NULL,
+  `is_deleted`  TINYINT(1)   DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -93,6 +94,7 @@ CREATE TABLE IF NOT EXISTS `rooms` (
   `room_number` VARCHAR(10)     NOT NULL,
   `room_type`   VARCHAR(50)     NOT NULL,
   `price`       DECIMAL(10, 2)  NOT NULL,
+  `is_deleted`  TINYINT(1)      DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `hotel_id` (`hotel_id`),
   CONSTRAINT `rooms_ibfk_1` FOREIGN KEY (`hotel_id`)

@@ -4,6 +4,7 @@ from functools import wraps
 from flask import session, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 from db import get_db_connection
+from PIL import Image
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB Limit
@@ -28,10 +29,27 @@ def save_file(file, upload_folder, relative_upload_folder):
         raise ValueError('File is too large. Maximum size is 5 MB.')
 
     filename = secure_filename(file.filename)
-    unique_filename = f"{uuid.uuid4().hex}_{filename}"
+    base_name = filename.rsplit('.', 1)[0]
+    unique_filename = f"{uuid.uuid4().hex}_{base_name}.webp"
     os.makedirs(upload_folder, exist_ok=True)
     filepath = os.path.join(upload_folder, unique_filename)
-    file.save(filepath)
+    
+    try:
+        img = Image.open(file)
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+            
+        max_width = 1920
+        if img.width > max_width:
+            ratio = max_width / img.width
+            new_height = int(img.height * ratio)
+            img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
+            
+        img.save(filepath, format="WEBP", optimize=True, quality=80)
+    except Exception as e:
+        print(f"Error compressing image: {e}")
+        file.seek(0)
+        file.save(filepath)
 
     return f"/static/{relative_upload_folder}/{unique_filename}"
 
@@ -80,3 +98,17 @@ def login_required(f):
             return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
     return decorated_function
+
+def add_notification(title, description, icon_type='info'):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO notifications (title, description, icon_type) VALUES (%s, %s, %s)",
+            (title, description, icon_type)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error adding notification: {e}")

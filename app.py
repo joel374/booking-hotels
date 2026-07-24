@@ -83,6 +83,25 @@ def handle_global_error(e):
     flash("Terdapat masalah pada sistem atau tindakan tidak valid. Mohon coba beberapa saat lagi.", "danger")
     return redirect(url_for('main.index'))
 
+# Context Processor for global user data
+from flask import session
+from db import get_db_connection
+
+@app.context_processor
+def inject_user():
+    if 'user_id' in session:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+            current_user = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            return dict(current_user=current_user)
+        except Exception:
+            return dict(current_user=None)
+    return dict(current_user=None)
+
 # Register Blueprints
 app.register_blueprint(main_bp)
 app.register_blueprint(auth_bp)

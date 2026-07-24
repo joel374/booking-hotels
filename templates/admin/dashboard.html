@@ -11,12 +11,12 @@
         </div>
         <div class="welcome-actions">
             <a href="{{ url_for('admin.reports') }}" class="btn btn-primary" style="text-decoration: none;">Create Report</a>
-            <button class="btn btn-secondary">View Analytics</button>
+            <a href="{{ url_for('admin.analytics') }}" class="btn btn-secondary">View Analytics</a>
         </div>
     </div>
 </div>
 
-<div class="cards-grid">
+<div class="cards-grid" style="margin-bottom: 1.5rem;">
     <div class="stat-card revenue">
         <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none"><path d="M4 19H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 15L9 11L13 15L19 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -48,49 +48,6 @@
         <span class="stat-label">Recent Orders</span>
         <span class="stat-value">{{ recent_bookings|length }}</span>
         <span class="delta">Quick action ready</span>
-    </div>
-</div>
-
-<div class="stats-grid">
-    <div class="chart-card">
-        <header>
-            <span>📈</span>
-            <div>
-                <h3>Revenue Trend</h3>
-                <p>Monthly revenue growth</p>
-            </div>
-        </header>
-        <canvas id="chartRevenue"></canvas>
-    </div>
-    <div class="chart-card">
-        <header>
-            <span>📊</span>
-            <div>
-                <h3>Booking Performance</h3>
-                <p>Bookings per month</p>
-            </div>
-        </header>
-        <canvas id="chartBookings"></canvas>
-    </div>
-    <div class="chart-card">
-        <header>
-            <span>🏨</span>
-            <div>
-                <h3>Top Hotels</h3>
-                <p>Most booked hotel this quarter</p>
-            </div>
-        </header>
-        <canvas id="chartHotelBest"></canvas>
-    </div>
-    <div class="chart-card">
-        <header>
-            <span>🛏️</span>
-            <div>
-                <h3>Top Rooms</h3>
-                <p>Most popular room type</p>
-            </div>
-        </header>
-        <canvas id="chartRoomBest"></canvas>
     </div>
 </div>
 

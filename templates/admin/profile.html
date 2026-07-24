@@ -1,0 +1,103 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}My Profile{% endblock %}
+{% block page_description %}Manage your personal information and password.{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Profile Info -->
+    <div class="form-card">
+        <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Profile Information</h3>
+        <form method="POST" action="{{ url_for('admin.profile_edit') }}" enctype="multipart/form-data">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--border); margin: 0 auto; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #fff; font-weight: bold; margin-bottom: 1rem;">
+                    {% if user.photo_url %}
+                        <img src="{{ url_for('static', filename=user.photo_url) }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        {{ user.username[0]|upper }}
+                    {% endif %}
+                </div>
+                <label for="photo" class="btn btn-secondary" style="cursor: pointer;">Change Photo</label>
+                <input type="file" id="photo" name="photo" style="display: none;" accept="image/*">
+            </div>
+
+            <div class="input-group">
+                <div>
+                    <label for="username">Username</label>
+                    <input type="text" id="username" value="{{ user.username }}" disabled style="background: #f8fafc;">
+                </div>
+                <div>
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" value="{{ user.full_name or '' }}" required>
+                </div>
+                <div>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <div style="flex: 1;">
+                        <span style="font-size: 0.85rem; color: var(--subtext);">Joined Date</span>
+                        <div style="font-weight: 600;">{{ user.created_at.strftime('%d %B %Y') if user.created_at else 'Unknown' }}</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <span style="font-size: 0.85rem; color: var(--subtext);">Last Login</span>
+                        <div style="font-weight: 600;">{{ user.last_login.strftime('%d %B %Y, %H:%M') if user.last_login else 'Unknown' }}</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <span style="font-size: 0.85rem; color: var(--subtext);">Role</span>
+                        <div style="font-weight: 600; text-transform: capitalize;">{{ user.role }}</div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; text-align: right;">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Password Settings -->
+    <div class="form-card">
+        <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Change Password</h3>
+        <form method="POST" action="{{ url_for('admin.profile_password') }}">
+            <div class="input-group">
+                {% if user.password_hash %}
+                <div>
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password" required>
+                </div>
+                {% else %}
+                <div style="background: #fff3cd; padding: 1rem; border-radius: 12px; color: #856404; font-size: 0.9rem; margin-bottom: 1rem;">
+                    You are logged in via Google. You can set a password here to allow local login.
+                </div>
+                {% endif %}
+                <div>
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password" required minlength="8">
+                    <span style="font-size: 0.8rem; color: var(--subtext);">Minimum 8 characters.</span>
+                </div>
+                <div>
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required minlength="8">
+                </div>
+            </div>
+            <div style="margin-top: 2rem; text-align: right;">
+                <button type="submit" class="btn btn-secondary">Update Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Preview image on upload
+    document.getElementById('photo').addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgContainer = document.querySelector('.form-card:first-child .btn-secondary').previousElementSibling;
+                imgContainer.innerHTML = '<img src="' + e.target.result + '" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">';
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+</script>
+{% endblock %}
