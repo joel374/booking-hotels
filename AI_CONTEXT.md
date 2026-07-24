@@ -723,6 +723,21 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
 
 ---
 
-**Last Updated:** July 22, 2026  
-**Version:** 1.5  
+## 🚀 Deployment & CI/CD
+
+Proyek ini telah dikonfigurasi untuk rilis ke lingkungan *Production* (VPS) secara otomatis:
+
+1. **Dockerisasi:**
+   - Menggunakan `Dockerfile` berbasis `python:3.11-slim` dan Gunicorn.
+   - `docker-compose.yml` menggabungkan aplikasi Flask dan MySQL 8.0, serta memiliki sistem *Auto-Seeding* (mengeksekusi `schema.sql` dan `seed_data.sql` secara otomatis pada *build* awal).
+   - Penggunaan `.dockerignore` untuk mengecualikan _virtual environments_ dan aset lokal.
+
+2. **Auto-Redeploy (GitHub Actions):**
+   - Diatur melalui `.github/workflows/deploy.yml`.
+   - Setiap kali terjadi *push* ke *branch* `main` atau `master`, GitHub Actions akan menggunakan akses SSH untuk menarik (*pull*) kode terbaru ke VPS, menghentikan *container* lama, dan melakukan *build* ulang *container* baru di latar belakang.
+
+---
+
+**Last Updated:** July 23, 2026  
+**Version:** 1.6  
 **Status:** Active Development (Distributed to 3 Team Members)
