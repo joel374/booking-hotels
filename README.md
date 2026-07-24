@@ -1,172 +1,103 @@
-# 🏨 Booking Hotels
+# Booking Hotels Web Application
 
-A modern, responsive, and fully-featured Hotel Booking Web Application built with **Flask (Python)** and **MySQL**. This application provides a seamless experience for both customers (to browse and book rooms) and administrators (to manage hotel inventory, rooms, and bookings).
-
-## ✨ Features
-
-### 👤 Customer Facing
-*   **Dynamic Location Filter:** Easily find hotels based on Provinces and Cities across Indonesia.
-*   **Multiple Image Galleries:** View beautiful hotel and room images through intuitive, modern Carousel/Slider UI.
-*   **Real-time Availability:** Smart filtering logic ensures you only see rooms that are available for your selected check-in and check-out dates.
-*   **Waiting List / Booking System:** Secure a room or join a waiting list if rooms are currently occupied.
-*   **OAuth / Traditional Authentication:** Secure user registration and login system.
-
-### 🛡️ Admin Dashboard (MVP)
-*   **Inventory Management:** Add new hotels and rooms easily.
-*   **Modal Quick-Edit:** Edit hotel and room details instantly via pop-up modals without page reloads.
-*   **Advanced Image Handling:** Support for multiple image uploads per hotel and room. The backend automatically cleans up physical junk files when old images are replaced.
-*   **Booking Supervision:** View recent bookings, revenue, and cancel bookings if necessary.
+Aplikasi pemesanan hotel komprehensif berbasis web yang memungkinkan pengguna untuk mencari, memfilter, dan memesan kamar hotel secara *real-time*. Dilengkapi dengan sistem otentikasi aman, dasbor manajemen untuk admin, laporan dinamis, serta notifikasi email otomatis.
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Tech Stack
 
-*   **Backend:** Python 3.x, Flask, Flask-Session
-*   **Database:** MySQL (via `mysql-connector-python`)
-*   **Frontend:** HTML5, Vanilla CSS (Modern Design System with CSS Variables), Vanilla JavaScript (AJAX/Fetch API for dynamic locations)
-*   **Environment Management:** `python-dotenv`
+Aplikasi ini dibangun menggunakan arsitektur *Server-Side Rendering* (SSR) yang diperkaya dengan AJAX untuk interaktivitas dinamis. Teknologi yang digunakan:
 
----
-
-## 🚀 Getting Started
-
-**🎯 New to this project? Start here: [`START_HERE.md`](START_HERE.md)**
-
-For quick setup guide, see: [`QUICK_START.md`](QUICK_START.md)
-
-For detailed step-by-step guide, see: [`SETUP_GUIDE.md`](SETUP_GUIDE.md)
+- **Bahasa Pemrograman**: Python 3.11
+- **Web Framework**: Flask (lengkap dengan Blueprint routing)
+- **Database**: MySQL 8.0 (diakses menggunakan `mysql-connector-python`)
+- **Templating Engine**: Jinja2
+- **Frontend**: Vanilla HTML5, CSS3, dan JavaScript (tanpa framework berat, fokus pada performa)
+- **Authentication**: `Werkzeug.security` (hashing) dan `Authlib` (Google OAuth 2.0)
+- **Session Management**: `Flask-Session` (menyimpan sesi pengguna di sisi server)
+- **Email Service**: `Flask-Mail` (pengiriman SMTP otomatis)
+- **PDF Generation**: `html2pdf.js` (client-side) dan `reportlab` (server-side untuk admin)
+- **Deployment**: Docker & Docker Compose (`Gunicorn` HTTP server)
 
 ---
 
-Follow these instructions to set up the project locally on your machine.
+## 🗄️ Database Schema
 
-### 1. Prerequisites
-*   [Python 3.8+](https://www.python.org/downloads/)
-*   [MySQL Server](https://dev.mysql.com/downloads/mysql/) (XAMPP/Laragon is also fine)
-*   Virtual Environment module (`venv`)
+Sistem ini memiliki 9 entitas utama yang saling berelasi:
 
-### 2. Installation Steps
-
-1. **Clone or Open the Repository:**
-   ```bash
-   cd booking-hotels
-   ```
-
-2. **Set up Virtual Environment:**
-   ```bash
-   python -m venv venv
-   # Activate it (Windows):
-   .\venv\Scripts\activate
-   # Activate it (Mac/Linux):
-   source venv/bin/activate
-   ```
-
-3. **Install Dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Database Configuration:**
-   * Make sure MySQL server is running
-   * Copy the `.env.example` file to `.env`:
-     ```bash
-     copy .env.example .env    # Windows
-     cp .env.example .env      # Mac/Linux
-     ```
-   * Edit `.env` file and update your database credentials:
-     ```env
-     DB_HOST=localhost
-     DB_USER=root
-     DB_PASSWORD=your_mysql_password
-     DB_NAME=hotel_booking
-     SECRET_KEY=your_super_secret_key_change_this
-     ```
-
-5. **Initialize Database:**
-   
-   Run the initialization script to create database, tables, and insert master data (34 provinces & 489 cities):
-   
-   ```bash
-   python init_db.py
-   ```
-   
-   This will:
-   - Create `hotel_booking` database
-   - Create all required tables (users, hotels, rooms, bookings, provinces, cities, etc.)
-   - Insert 34 provinces and 489 cities data across Indonesia
-
-6. **Verify Setup (Recommended):**
-   
-   Run verification script to ensure everything is configured correctly:
-   
-   ```bash
-   python verify_setup.py
-   ```
-
-7. **Update Database Images (if migrating from old schema):**
-   
-   If you're migrating from an older version where images were stored as single fields:
-   
-   ```bash
-   python update_db_images.py
-   ```
-
-### 3. Running the Application
-
-Once everything is set up, start the development server:
-
-```bash
-python app.py
-```
-
-The application should now be running. Open your browser and navigate to:
-**`http://localhost:5000`**
-
-### 4. Default Admin Account (Optional)
-
-To access the admin dashboard, you can manually insert an admin user via MySQL:
-
-```sql
-USE hotel_booking;
-
-INSERT INTO users (username, password_hash, email, role) 
-VALUES (
-  'admin', 
-  'scrypt:32768:8:1$fCEQvj5TBnqpMRqK$1c85f8e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8f8e0f2e3c8',
-  'admin@example.com',
-  'admin'
-);
-```
-
-Login credentials:
-- Username: `admin`
-- Password: `admin123`
-
-Or register a normal user, then manually change the `role` to `'admin'` in the database.
-
-**Admin Dashboard:** `http://localhost:5000/admin/dashboard`
+1. **provinces & cities**: Master data lokasi untuk fitur *filtering* dinamis. (`cities.province_id` -> `provinces.province_id`)
+2. **users**: Menyimpan data akun pelanggan dan admin. Mendukung autentikasi lokal (dengan *password hash*) maupun Google OAuth.
+3. **hotels**: Informasi utama hotel (nama, alamat, rating, lokasi). Memiliki status *Soft Delete* (`is_deleted`).
+4. **hotel_images**: Relasi *One-to-Many* ke `hotels` untuk menyimpan multi-gambar galeri hotel.
+5. **rooms**: Menyimpan variasi kamar, harga, tipe kamar per hotel. (`rooms.hotel_id` -> `hotels.id`).
+6. **room_images**: Relasi *One-to-Many* ke `rooms` untuk menyimpan foto spesifik per tipe kamar.
+7. **bookings**: Tabel inti transaksi pemesanan. Berelasi dengan `users` dan `rooms`. Menyimpan tanggal inap, detail tamu, metode pembayaran, dan *Status* (`Pending`, `Booked`, `Cancelled`).
+8. **waiting_lists**: Menyimpan data antrean pengguna (*Waitlist*) yang ingin memesan kamar yang sedang penuh pada tanggal tertentu.
+9. **reviews**: Ulasan pengguna pasca-inap. Berisi *rating* 1-5 bintang dan komentar. Berelasi unik dengan `booking_id` untuk mencegah *double review*.
 
 ---
 
-## 📂 Project Structure
+## 🌐 Rute & API Endpoints
 
-```text
-booking-hotels/
-├── app.py                   # Main application entry point
-├── db.py                    # Database connection helpers
-├── utils.py                 # Helper functions (File uploads, cleanup, auth wrappers)
-├── routes/                  # Route definitions (Blueprints)
-│   ├── auth.py              # Authentication routes
-│   ├── main.py              # Public facing routes (Home, Search)
-│   ├── admin.py             # Admin Dashboard logic
-│   └── booking.py           # Booking transaction logic
-├── static/                  # Static assets (CSS, JS, Images)
-│   ├── css/
-│   │   └── style.css        # Main stylesheet
-│   └── uploads/             # Directory for uploaded hotel/room images
-└── templates/               # HTML templates (Jinja2)
-    ├── admin/               # Admin dashboard views
-    └── ...                  # Public pages (index, rooms, about, etc.)
-```
+Aplikasi ini dibagi menjadi beberapa Blueprint: `main`, `auth`, `booking`, dan `admin`.
+
+### **Main / Public Routes**
+- `GET /` : Halaman Beranda (Hero section, pencarian, dan rekomendasi awal).
+- `GET /city/<id>` : Halaman daftar hotel per-kota.
+- `GET /api/hotels` : Endpoint AJAX *Infinite Scroll* memuat daftar hotel berdasarkan kriteria filter & paginasi.
+- `GET /api/search` : Endpoint AJAX *Global Live Search Autocomplete* untuk mencari hotel berdasar *keyword*.
+- `GET /hotel/<id>` : Halaman Detail Hotel (menampilkan galeri Masonry, ulasan, daftar kamar yang tersedia).
+- `GET /about` & `GET /contact` : Halaman statis profil perusahaan dan form kontak.
+
+### **Authentication Routes (`/auth`)**
+- `GET, POST /login` & `/register` : Proses autentikasi standar (Sign up & Sign in).
+- `GET /login/google` & `/login/google/authorize` : Proses Single Sign-On (SSO) via Google OAuth.
+- `GET, POST /profile` : Dasbor manajemen profil pengguna dan pusat notifikasi personal.
+- `GET, POST /forgot-password` & `/reset-password/<token>` : Pemulihan kata sandi via token email.
+- `GET /logout` : Menghapus *session* pengguna.
+
+### **Booking & Transactions (`/booking`)**
+- `GET, POST /book/<room_id>` : Form *Checkout*. (Melakukan verifikasi ketersediaan kamar, mengunci baris DB).
+- `GET, POST /pay/<booking_id>` : Halaman simulasi *Payment Gateway* Midtrans Snap dengan timer 15-menit.
+- `GET /invoice/<booking_id>` : Generate Digital Invoice pasca pembayaran sukses.
+- `GET /my-bookings` : Halaman riwayat pemesanan pengguna.
+- `POST /cancel/<booking_id>` : Membatalkan pesanan dan otomatis memicu *Waitlist Broadcast Alert*.
+- `POST /waitlist/<room_id>` : Pengguna bergabung ke daftar antrean kamar penuh.
+- `POST /review/<booking_id>` : Form *submit* ulasan untuk hotel pasca *check-out*.
+
+### **Admin Dashboard (`/admin`)**
+- `GET /dashboard` & `/analytics` : Statistik ringkasan pendapatan, okupansi, dan grafik *chart*.
+- `GET, POST /hotels` & `/rooms` : Halaman manajemen CRUD Data Master (tambah, edit, *soft delete* hotel dan kamar) beserta upload *multi-image*.
+- `GET, POST /bookings` : Manajemen transaksi dari semua pelanggan.
+- `GET /reports`, `POST /api/reports/preview` : Modul pembuatan Laporan Keuangan Dinamis.
+- `POST /api/reports/download_pdf` & `/api/reports/send_email` : Endpoint untuk mengekspor Laporan ke PDF dan mengirimnya via Email.
 
 ---
+
+## 🔄 Alur Aplikasi (Application Flow)
+
+Berikut adalah *Business Logic* murni berdasarkan eksekusi sistem dari sisi *Customer*:
+
+### 1. Pencarian dan Filter
+- Pengguna tiba di `main.index` (`/`). Mereka dapat mengetikkan kata kunci pencarian di *navbar* (menembak `/api/search` secara *real-time*) atau memilih Provinsi & Kota secara hierarkis (AJAX mengubah Kota saat Provinsi dipilih).
+- Saat di-submit, pengguna diarahkan ke `/city/<id>` dan sistem akan melakukan *Infinite Scroll* ke `/api/hotels` untuk memuat daftar hotel di kota tersebut seiring *scroll* ke bawah (*Intersection Observer* + *Skeleton Loader*).
+
+### 2. Memilih Kamar
+- Pengguna membuka halaman Detail Hotel (`/hotel/<id>`). Sistem mengambil data `hotel_images` dan merendernya dalam Galeri Masonry.
+- Sistem juga melakukan *query availability* yang kompleks: Semua kamar hotel tersebut di-cek terhadap tabel `bookings` untuk memastikan tidak ada rentang tanggal `check_in` & `check_out` yang *overlap* dengan pesanan berstatus `Booked`. Kamar yang lolos akan tampil dengan tombol "Booking".
+
+### 3. Eksekusi Pemesanan (Checkout & Row Locking)
+- Pengguna menekan *Booking* dan diarahkan ke `/book/<room_id>?check_in=X&check_out=Y`.
+- **Validasi Kritis:** Sistem (`routes/booking.py`) memvalidasi tanggal (tidak boleh *check-out* mendahului *check-in*, atau mundur ke masa lalu). Jika *room_id* diubah secara iseng di URL, sistem mendeteksi 404.
+- **Race Condition Prevention:** Saat form disubmit, sistem melakukan `SELECT ... FOR UPDATE` pada tabel kamar. Ini "mengunci" kamar sepersekian detik untuk mencegah dua orang mendaftar di kamar yang sama secara paralel (*Double Booking*).
+- Jika aman, status berubah menjadi `Pending` dan pengguna menerima email "Menunggu Pembayaran".
+
+### 4. Proses Pembayaran
+- Pengguna dialihkan ke `/pay/<booking_id>`. Layar ini menampilkan UI Mockup *Snap Payment Gateway*.
+- Terdapat fungsi *Timer Countdown* (15 menit). Jika kedaluwarsa, sistem otomatis (`cleanup_expired_bookings`) menandai pesanan sebagai `Cancelled`.
+- Jika pembayaran berhasil disimulasikan, status berubah menjadi `Booked` dan email "Konfirmasi Pemesanan (Lunas)" terkirim. Pengguna diarahkan untuk mengunduh Invoice PDF (`/invoice/<booking_id>`).
+
+### 5. Pasca-Inap (Review & Waiting List)
+- Di dasbor `/my-bookings`, pengguna dapat membatalkan pesanan.
+- **Sistem Waitlist Otomatis:** Jika pengguna A membatalkan pesanan, fungsi `cancel_booking` mencari pengguna B di tabel `waiting_lists` yang mengantre untuk tanggal yang bersinggungan di kamar tersebut. Jika ada, pengguna B akan menerima Email otomatis bahwa "Kamar Telah Tersedia Kembali".
+- Setelah tanggal *check-out* berlalu, fungsi `submit_review` akan membuka gembok proteksi dan mengizinkan pengguna untuk memberi Bintang dan Ulasan pada pesanan tersebut, yang kemudian terakumulasi menjadi *rating* hotel keseluruhan.
