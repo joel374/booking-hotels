@@ -30,8 +30,8 @@ services:
     image: mysql:8.0
     container_name: booking_hotels_db
     restart: unless-stopped
-    ports:
-      - "3306:3306"
+    # ports:
+    #   - "3306:3306"  # Commented out to prevent conflict with other projects on VPS
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD:-root_password}
       - MYSQL_DATABASE=hotel_booking
