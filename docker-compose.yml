@@ -8,8 +8,8 @@ services:
     environment:
       - FLASK_ENV=production
       - SECRET_KEY=${SECRET_KEY:-super_secret_docker_key_2026}
-      # Kita membiarkan file .env menimpa environment DB ini
-      - DB_HOST=${DB_HOST:-global_mysql}
+      # Arahkan DB_HOST ke nama container database di bawah
+      - DB_HOST=${DB_HOST:-booking_hotels_db}
       - DB_USER=${DB_USER:-root}
       - DB_PASSWORD=${DB_PASSWORD:-root_password}
       - DB_NAME=${DB_NAME:-hotel_booking}
@@ -25,6 +25,20 @@ services:
     networks:
       - shared_network
 
+  # Ini container yang akan jadi "Global MySQL" lu
+  db:
+    image: mysql:8.0
+    container_name: booking_hotels_db
+    restart: unless-stopped
+    # Port sengaja gak diekspos ke host biar aman, cukup diakses via internal network
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password  # Pastikan sama dengan password lu sebelumnya
+      MYSQL_DATABASE: hotel_booking
+    volumes:
+      - booking_db_data:/var/lib/mysql
+    networks:
+      - shared_network
+
 networks:
   shared_network:
     external: true
@@ -32,3 +46,4 @@ networks:
 volumes:
   uploads_data:
   session_data:
+  booking_db_data:  # Wajib ada biar data base gak hilang pas container mati
