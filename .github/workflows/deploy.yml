@@ -17,9 +17,8 @@ jobs:
 
       - name: Rebuild and Restart Docker Containers
         run: |
-          # The runner executes this directly inside the VPS!
-          # We just need to copy the .env file if we keep it outside the git directory,
-          # or assume it's already in the runner's work directory.
+          # Kopi file .env rahasia dari brankas VPS ke folder proyek ini
+          cp /var/www/secrets/booking-hotels.env .env
           
           # Takedown old containers
           docker compose down
