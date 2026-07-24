@@ -6,3 +6,4 @@ Werkzeug
 authlib
 reportlab
 Flask-Mail
+requests
