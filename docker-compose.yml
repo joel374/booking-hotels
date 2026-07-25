@@ -32,7 +32,7 @@ services:
     restart: unless-stopped
     # Port sengaja gak diekspos ke host biar aman, cukup diakses via internal network
     environment:
-      MYSQL_ROOT_PASSWORD: root_password  # Pastikan sama dengan password lu sebelumnya
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root_password}  
       MYSQL_DATABASE: hotel_booking
     volumes:
       - booking_db_data:/var/lib/mysql
