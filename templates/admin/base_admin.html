@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,7 +30,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
         }
 
@@ -46,7 +48,10 @@
             text-decoration: none;
         }
 
-        button, input, textarea, select {
+        button,
+        input,
+        textarea,
+        select {
             font: inherit;
         }
 
@@ -176,11 +181,12 @@
             grid-template-columns: 1fr auto;
             gap: 1rem;
             align-items: center;
-            padding: 1rem 1.25rem;
+            padding: 0.75rem 1rem;
             border-radius: 24px;
             background: #fff;
             border: 1px solid var(--border);
             box-shadow: var(--shadow-soft);
+            margin-bottom: 1.5rem;
         }
 
         .header-left {
@@ -465,29 +471,43 @@
             font-weight: 700;
         }
 
-        .alert-card.success { border-left: 4px solid var(--success); }
-        .alert-card.danger { border-left: 4px solid var(--danger); }
-        .alert-card.warning { border-left: 4px solid var(--warning); }
-        .alert-card.info { border-left: 4px solid var(--secondary); }
+        .alert-card.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-card.danger {
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-card.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .alert-card.info {
+            border-left: 4px solid var(--secondary);
+        }
 
         .admin-content {
             display: grid;
-            gap: 1.5rem;
+            gap: 1.25rem;
         }
 
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1rem;
         }
 
         .stat-card {
             background: #fff;
             border-radius: 24px;
             border: 1px solid rgba(226, 232, 240, 0.85);
-            padding: 1.6rem;
+            padding: 1.25rem;
             box-shadow: var(--shadow-soft);
             transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .stat-card:hover {
@@ -496,19 +516,30 @@
         }
 
         .stat-card .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 18px;
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
             display: grid;
             place-items: center;
-            margin-bottom: 1.15rem;
+            margin-bottom: 0.85rem;
             color: #fff;
         }
 
-        .stat-card .stat-icon.revenue { background: linear-gradient(135deg, #2563EB, #0F172A); }
-        .stat-card .stat-icon.bookings { background: linear-gradient(135deg, #F59E0B, #F59E0B); }
-        .stat-card .stat-icon.users { background: linear-gradient(135deg, #10B981, #0F172A); }
-        .stat-card .stat-icon.inventory { background: linear-gradient(135deg, rgba(37,99,235,0.85), rgba(15,23,42,0.95)); }
+        .stat-card .stat-icon.revenue {
+            background: linear-gradient(135deg, #2563EB, #0F172A);
+        }
+
+        .stat-card .stat-icon.bookings {
+            background: linear-gradient(135deg, #F59E0B, #F59E0B);
+        }
+
+        .stat-card .stat-icon.users {
+            background: linear-gradient(135deg, #10B981, #0F172A);
+        }
+
+        .stat-card .stat-icon.inventory {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(15, 23, 42, 0.95));
+        }
 
         .stat-card .stat-label {
             display: block;
@@ -518,7 +549,7 @@
         }
 
         .stat-card .stat-value {
-            font-size: 2rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: var(--primary);
             line-height: 1;
@@ -526,9 +557,10 @@
 
         .stat-card .delta {
             display: block;
-            margin-top: 0.9rem;
+            margin-top: auto;
+            padding-top: 0.5rem;
             color: var(--subtext);
-            font-size: 0.88rem;
+            font-size: 0.85rem;
         }
 
         .card-panel {
@@ -536,16 +568,15 @@
             border-radius: 24px;
             border: 1px solid rgba(226, 232, 240, 0.85);
             box-shadow: var(--shadow-soft);
-            padding: 1.75rem;
+            padding: 1.25rem 1.5rem;
         }
 
         .welcome-banner {
             background: linear-gradient(135deg, rgba(79, 70, 229, 0.14), rgba(14, 165, 233, 0.08));
             border: 1px solid rgba(79, 70, 229, 0.16);
-            border-radius: 28px;
-            padding: 1.75rem 2rem;
+            border-radius: 24px;
+            padding: 1.25rem 1.5rem;
             box-shadow: var(--shadow-soft);
-            margin-bottom: 1.5rem;
         }
 
         .welcome-grid {
@@ -556,8 +587,8 @@
         }
 
         .welcome-copy h2 {
-            margin: 0 0 0.5rem;
-            font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+            margin: 0 0 0.35rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: var(--primary);
         }
@@ -602,8 +633,7 @@
             color: var(--subtext);
         }
 
-        .toolbar-input,
-        .toolbar-select {
+        .toolbar-input {
             min-width: 220px;
             padding: 0.95rem 1rem;
             border-radius: 16px;
@@ -611,6 +641,18 @@
             background: #fff;
             color: var(--text);
             transition: var(--transition);
+        }
+
+        .toolbar-select {
+            min-width: 220px;
+            padding: 0.95rem 2.75rem 0.95rem 1rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") no-repeat right 1.15rem center / 16px;
+            appearance: none;
+            color: var(--text);
+            transition: var(--transition);
+            cursor: pointer;
         }
 
         .toolbar-input:focus,
@@ -638,7 +680,7 @@
             font-size: 0.82rem;
             text-transform: uppercase;
             letter-spacing: 0.12em;
-            padding: 1rem 1.2rem;
+            padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--border);
         }
 
@@ -652,7 +694,7 @@
         }
 
         .data-table td {
-            padding: 1rem 1.2rem;
+            padding: 0.75rem 1rem;
             color: var(--primary);
             border-bottom: 1px solid rgba(226, 232, 240, 0.85);
             vertical-align: middle;
@@ -680,11 +722,26 @@
             white-space: nowrap;
         }
 
-        .badge.pending { background: #F59E0B; }
-        .badge.booked { background: #10B981; }
-        .badge.cancelled { background: #EF4444; }
-        .badge.completed { background: #2563EB; }
-        .badge.neutral { background: rgba(15, 23, 42, 0.1); color: var(--text); }
+        .badge.pending {
+            background: #F59E0B;
+        }
+
+        .badge.booked {
+            background: #10B981;
+        }
+
+        .badge.cancelled {
+            background: #EF4444;
+        }
+
+        .badge.completed {
+            background: #2563EB;
+        }
+
+        .badge.neutral {
+            background: rgba(15, 23, 42, 0.1);
+            color: var(--text);
+        }
 
         .btn {
             display: inline-flex;
@@ -692,10 +749,11 @@
             justify-content: center;
             gap: 0.55rem;
             border: none;
-            border-radius: 14px;
-            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            padding: 0.65rem 0.85rem;
             cursor: pointer;
-            font-weight: 700;
+            font-size: 0.9rem;
+            font-weight: 600;
             transition: var(--transition);
             text-align: center;
         }
@@ -981,9 +1039,20 @@
             border: 1px solid var(--border);
         }
 
-        .status-pill.booked { background: rgba(16, 185, 129, 0.12); color: var(--success); }
-        .status-pill.pending { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
-        .status-pill.cancelled { background: rgba(239, 68, 68, 0.12); color: var(--danger); }
+        .status-pill.booked {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+        }
+
+        .status-pill.pending {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--warning);
+        }
+
+        .status-pill.cancelled {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+        }
 
         .entity-card-actions {
             display: flex;
@@ -1291,6 +1360,7 @@
             .admin-shell {
                 grid-template-columns: 1fr;
             }
+
             .admin-sidebar {
                 position: fixed;
                 inset: 0 auto auto 0;
@@ -1298,21 +1368,26 @@
                 transform: translateX(-100%);
                 z-index: 30;
             }
+
             .admin-sidebar.open {
                 transform: translateX(0);
             }
+
             .admin-main {
                 padding: 1rem;
             }
+
             .header {
                 margin-bottom: 1rem;
             }
+
             .cards-grid,
             .stats-grid,
             .content-grid,
             .grid-2 {
                 grid-template-columns: 1fr;
             }
+
             .sidebar-toggle {
                 display: inline-flex;
             }
@@ -1323,20 +1398,23 @@
                 padding: 1rem;
                 border-radius: 20px;
             }
+
             .sidebar-link {
                 border-radius: 16px;
             }
+
             .btn,
             .toolbar-input,
             .toolbar-select {
                 width: 100%;
             }
         }
-        
+
         /* Notification Center Styles */
         .notification-wrapper {
             position: relative;
         }
+
         .notif-badge {
             position: absolute;
             top: -2px;
@@ -1349,6 +1427,7 @@
             border-radius: 10px;
             display: none;
         }
+
         .notif-dropdown {
             position: absolute;
             top: 100%;
@@ -1356,7 +1435,7 @@
             width: 320px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             border: 1px solid var(--border);
             margin-top: 10px;
             z-index: 100;
@@ -1364,9 +1443,11 @@
             flex-direction: column;
             overflow: hidden;
         }
+
         .notif-dropdown.show {
             display: flex;
         }
+
         .notif-header {
             padding: 15px;
             border-bottom: 1px solid var(--border);
@@ -1375,21 +1456,25 @@
             align-items: center;
             background: #f8fafc;
         }
+
         .notif-header h4 {
             margin: 0;
             font-size: 1rem;
             color: var(--primary);
         }
+
         .notif-header a {
             font-size: 0.8rem;
             color: #3498db;
             text-decoration: none;
             cursor: pointer;
         }
+
         .notif-body {
             max-height: 350px;
             overflow-y: auto;
         }
+
         .notif-item {
             padding: 12px 15px;
             border-bottom: 1px solid var(--border);
@@ -1399,12 +1484,15 @@
             cursor: pointer;
             transition: background 0.2s;
         }
+
         .notif-item:hover {
             background: #f8fafc;
         }
+
         .notif-item.unread {
             background: #f0f7ff;
         }
+
         .notif-icon {
             width: 36px;
             height: 36px;
@@ -1416,17 +1504,39 @@
             flex-shrink: 0;
             color: white;
         }
-        .notif-icon.hotel { background: #3498db; }
-        .notif-icon.room { background: #2ecc71; }
-        .notif-icon.booking { background: #9b59b6; }
-        .notif-icon.cancel { background: #e74c3c; }
-        .notif-icon.report { background: #f39c12; }
-        .notif-icon.login { background: #34495e; }
-        .notif-icon.info { background: #95a5a6; }
-        
+
+        .notif-icon.hotel {
+            background: #3498db;
+        }
+
+        .notif-icon.room {
+            background: #2ecc71;
+        }
+
+        .notif-icon.booking {
+            background: #9b59b6;
+        }
+
+        .notif-icon.cancel {
+            background: #e74c3c;
+        }
+
+        .notif-icon.report {
+            background: #f39c12;
+        }
+
+        .notif-icon.login {
+            background: #34495e;
+        }
+
+        .notif-icon.info {
+            background: #95a5a6;
+        }
+
         .notif-content {
             flex: 1;
         }
+
         .notif-title {
             margin: 0 0 4px 0;
             font-size: 0.9rem;
@@ -1435,16 +1545,19 @@
             display: flex;
             justify-content: space-between;
         }
+
         .notif-desc {
             margin: 0 0 5px 0;
             font-size: 0.8rem;
             color: var(--subtext);
             line-height: 1.4;
         }
+
         .notif-time {
             font-size: 0.75rem;
             color: #999;
         }
+
         .notif-dot {
             width: 8px;
             height: 8px;
@@ -1452,7 +1565,7 @@
             border-radius: 50%;
             display: inline-block;
         }
-        
+
         #profileDropdown {
             position: absolute;
             top: 100%;
@@ -1460,7 +1573,7 @@
             width: 220px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             border: 1px solid var(--border);
             margin-top: 10px;
             z-index: 100;
@@ -1468,9 +1581,11 @@
             flex-direction: column;
             overflow: hidden;
         }
+
         #profileDropdown.show {
             display: flex !important;
         }
+
         #profileDropdown a {
             padding: 12px 15px;
             color: var(--text);
@@ -1482,22 +1597,154 @@
             transition: background 0.2s;
             font-size: 0.9rem;
         }
+
         #profileDropdown a:hover {
             background: #f8fafc;
         }
+
         #profileDropdown a:last-child {
             border-bottom: none;
             color: #e74c3c;
         }
-        
+
         @media (max-width: 760px) {
             .notif-dropdown {
                 width: 280px;
                 right: -50px;
             }
         }
+
+        /* Search Modal Styles */
+        .search-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 10vh;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .search-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .search-modal-content {
+            background: var(--surface);
+            width: 100%;
+            max-width: 600px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(-20px) scale(0.98);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .search-modal.active .search-modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .search-modal-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-modal-header svg {
+            color: var(--subtext);
+        }
+
+        .search-modal-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1.1rem;
+            color: var(--text);
+            background: transparent;
+        }
+
+        .search-modal-body {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .search-result-group {
+            padding: 0 1rem 1rem;
+        }
+
+        .search-result-group-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--subtext);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            padding: 0 0.5rem;
+        }
+
+        .search-result-item {
+            display: flex;
+            flex-direction: column;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .search-result-item:hover,
+        .search-result-item.selected {
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        .search-result-item-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .search-result-item-subtitle {
+            font-size: 0.85rem;
+            color: var(--subtext);
+            margin-top: 0.2rem;
+        }
+
+        .search-modal-footer {
+            padding: 0.75rem 1.25rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface-soft);
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--subtext);
+            justify-content: center;
+        }
+
+        .search-modal-footer kbd {
+            background: #e2e8f0;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--text);
+        }
     </style>
 </head>
+
 <body>
     <div class="admin-shell">
         <aside class="admin-sidebar" id="adminSidebar">
@@ -1509,28 +1756,57 @@
                 </div>
             </div>
             <nav class="sidebar-nav">
-                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 11V20H9V14H15V20H20V11L12 4L4 11Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <a href="{{ url_for('admin.dashboard') }}"
+                    class="sidebar-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M4 11V20H9V14H15V20H20V11L12 4L4 11Z" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
                     Dashboard
                 </a>
-                <a href="{{ url_for('admin.hotels') }}" class="sidebar-link {% if request.endpoint == 'admin.hotels' %}active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M3 10.5V20H21V10.5L12 3L3 10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 20V13H16V20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <a href="{{ url_for('admin.hotels') }}"
+                    class="sidebar-link {% if request.endpoint == 'admin.hotels' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M3 10.5V20H21V10.5L12 3L3 10.5Z" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M8 20V13H16V20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
                     Hotels
                 </a>
-                <a href="{{ url_for('admin.rooms') }}" class="sidebar-link {% if request.endpoint == 'admin.rooms' %}active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M3 10H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <a href="{{ url_for('admin.rooms') }}"
+                    class="sidebar-link {% if request.endpoint == 'admin.rooms' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8" />
+                        <path d="M3 10H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
                     Rooms
                 </a>
-                <a href="{{ url_for('admin.bookings') }}" class="sidebar-link {% if request.endpoint == 'admin.bookings' %}active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M3 7H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 7V19H19V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <a href="{{ url_for('admin.bookings') }}"
+                    class="sidebar-link {% if request.endpoint == 'admin.bookings' and not request.args.get('view') %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M3 7H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        <path d="M5 7V19H19V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        <path d="M8 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        <path d="M16 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
                     Bookings
                 </a>
-                <a href="{{ url_for('admin.bookings', view='audit') }}" class="sidebar-link {% if request.endpoint == 'admin.bookings' and request.args.get('view') == 'audit' %}active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 6H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 10V18H19V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 10V6H10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <a href="{{ url_for('admin.bookings', view='audit') }}"
+                    class="sidebar-link {% if request.endpoint == 'admin.bookings' and request.args.get('view') == 'audit' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M4 6H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        <path d="M5 10V18H19V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        <path d="M7 10V6H10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
                     Audit
                 </a>
-                <a href="{{ url_for('admin.reports') }}" class="sidebar-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M9 17v-2m4 2v-4m4 4v-6m-4-7a9 9 0 1 1-9 9 9.01 9.01 0 0 1 9-9z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <a href="{{ url_for('admin.reports') }}"
+                    class="sidebar-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M9 17v-2m4 2v-4m4 4v-6m-4-7a9 9 0 1 1-9 9 9.01 9.01 0 0 1 9-9z" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
                     Reports
                 </a>
             </nav>
@@ -1545,18 +1821,36 @@
                 <div class="header-left">
                     <div class="breadcrumb">
                         <span>Dashboard</span>
-                        <span>{% if request.endpoint == 'admin.dashboard' %}Overview{% elif request.endpoint == 'admin.hotels' %}Hotels{% elif request.endpoint == 'admin.rooms' %}Rooms{% elif request.endpoint == 'admin.bookings' and request.args.get('view') == 'audit' %}Audit{% elif request.endpoint == 'admin.bookings' %}Bookings{% elif request.endpoint == 'admin.reports' %}Reports{% else %}Admin{% endif %}</span>
+                        <span>{% if request.endpoint == 'admin.dashboard' %}Overview{% elif request.endpoint ==
+                            'admin.hotels' %}Hotels{% elif request.endpoint == 'admin.rooms' %}Rooms{% elif
+                            request.endpoint == 'admin.bookings' and request.args.get('view') == 'audit' %}Audit{% elif
+                            request.endpoint == 'admin.bookings' %}Bookings{% elif request.endpoint == 'admin.reports'
+                            %}Reports{% else %}Admin{% endif %}</span>
                     </div>
                     <h1 class="header-title">{{ self.title() }}</h1>
-                    <p class="header-description">{% block page_description %}Manage your admin operations with confidence.{% endblock %}</p>
+                    <p class="header-description">{% block page_description %}Manage your admin operations with
+                        confidence.{% endblock %}</p>
                 </div>
                 <div class="header-meta">
-                    <button class="icon-button" title="Search" type="button">
-                        <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M16.6569 16.6569L21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    <button class="icon-button" title="Search" type="button" id="btnGlobalSearch">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8" />
+                            <path d="M16.6569 16.6569L21 21" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" />
+                        </svg>
                     </button>
                     <div class="notification-wrapper">
                         <button class="icon-button" title="Notifications" type="button" id="btnNotifications">
-                            <svg viewBox="0 0 24 24" fill="none"><path d="M18 8C18 5.23858 15.7614 3 13 3C10.2386 3 8 5.23858 8 8V11C8 12.1046 7.10457 13 6 13H5C4.44772 13 4 13.4477 4 14V15C4 16.1046 4.89543 17 6 17H18C19.1046 17 20 16.1046 20 15V14C20 13.4477 19.5523 13 19 13H18C16.8954 13 16 12.1046 16 11V8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.73 21C13.5544 21.3031 13.2941 21.5544 12.9734 21.7243C12.6527 21.8941 12.2832 21.9787 11.9085 21.9702C11.5337 21.9617 11.1662 21.8602 10.8386 21.672C10.511 21.4839 10.2336 21.2146 10.0291 20.8886C9.82455 20.5627 9.69833 20.191 9.66427 19.8044" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M18 8C18 5.23858 15.7614 3 13 3C10.2386 3 8 5.23858 8 8V11C8 12.1046 7.10457 13 6 13H5C4.44772 13 4 13.4477 4 14V15C4 16.1046 4.89543 17 6 17H18C19.1046 17 20 16.1046 20 15V14C20 13.4477 19.5523 13 19 13H18C16.8954 13 16 12.1046 16 11V8Z"
+                                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path
+                                    d="M13.73 21C13.5544 21.3031 13.2941 21.5544 12.9734 21.7243C12.6527 21.8941 12.2832 21.9787 11.9085 21.9702C11.5337 21.9617 11.1662 21.8602 10.8386 21.672C10.511 21.4839 10.2336 21.2146 10.0291 20.8886C9.82455 20.5627 9.69833 20.191 9.66427 19.8044"
+                                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
                             <span id="notifBadge" class="notif-badge"></span>
                         </button>
                         <div id="notifDropdown" class="notif-dropdown">
@@ -1572,30 +1866,73 @@
                     <div class="avatar-group" id="btnProfileDropdown" style="cursor: pointer; position: relative;">
                         <div class="avatar" style="overflow: hidden;">
                             {% if current_user and current_user.photo_url %}
-                                <img src="{{ current_user.photo_url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img src="{{ current_user.photo_url }}" alt="Profile"
+                                style="width: 100%; height: 100%; object-fit: cover;">
                             {% else %}
-                                {{ session.username[0]|upper if session.username else 'A' }}
+                            {{ session.username[0]|upper if session.username else 'A' }}
                             {% endif %}
                         </div>
                         <div>
-                            <div style="font-size:0.95rem;font-weight:700;">{{ current_user.full_name or session.username or 'Admin' }}</div>
+                            <div style="font-size:0.95rem;font-weight:700;">{{ current_user.full_name or
+                                session.username or 'Admin' }}</div>
                             <div style="font-size:0.85rem;color:var(--subtext);">Hotel Administrator</div>
                         </div>
                         <div id="profileDropdown" class="profile-dropdown">
                             <a href="{{ url_for('admin.profile') }}">
-                                <svg width="18" viewBox="0 0 24 24" fill="none"><path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <svg width="18" viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                    <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
                                 My Profile
                             </a>
                             <a href="{{ url_for('admin.settings') }}">
-                                <svg width="18" viewBox="0 0 24 24" fill="none"><path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.4 15A1.65 1.65 0 0 0 19 15.65C18.667 15.8972 18.4239 16.2415 18.3079 16.6322C18.192 17.0229 18.2091 17.4385 18.356 17.815C18.4144 17.9547 18.4116 18.1102 18.3484 18.2479C18.2852 18.3855 18.1668 18.4946 18.02 18.55L16.2 19.34C16.0645 19.3976 15.9126 19.3982 15.7766 19.3418C15.6406 19.2854 15.5313 19.1764 15.47 19.04L15.35 18.73A1.65 1.65 0 0 0 14.7 18.35C14.3315 18.2327 13.9392 18.2033 13.5559 18.2646C13.1725 18.326 12.8093 18.4764 12.496 18.704L12.246 18.914C12.1158 19.0118 11.9546 19.0526 11.7947 19.0289C11.6347 19.0051 11.4878 18.9185 11.383 18.786L10.193 17.156C10.1118 17.0381 10.0759 16.8929 10.0924 16.7486C10.1089 16.6043 10.1766 16.4712 10.282 16.375L10.5 16.145A1.65 1.65 0 0 0 10.85 15.5C10.963 15.111 10.9859 14.6953 10.9161 14.3005C10.8463 13.9056 10.6865 13.5478 10.456 13.268L10.176 12.988C10.0528 12.8719 9.97022 12.7188 9.94279 12.5551C9.91535 12.3914 9.94487 12.2275 10.026 12.083L11.026 10.353C11.0963 10.222 11.2132 10.123 11.3537 10.0766C11.4942 10.0302 11.6481 10.0402 11.784 10.104L12.064 10.224A1.65 1.65 0 0 0 12.714 10.35C13.1037 10.4578 13.5186 10.4578 13.9083 10.3501C14.298 10.2423 14.6517 10.0322 14.942 9.736L15.172 9.486C15.275 9.37887 15.4191 9.31758 15.5724 9.31599C15.7258 9.31439 15.8752 9.37262 15.988 9.477L17.518 10.867C17.6253 10.9654 17.6881 11.1017 17.6934 11.2464C17.6987 11.391 17.646 11.5323 17.546 11.64L17.336 11.89C17.1065 12.1691 16.9472 12.5255 16.8781 12.9184C16.809 13.3113 16.8335 13.7251 16.948 14.11C17.027 14.3644 17.1706 14.5935 17.365 14.776L17.585 14.996C17.7011 15.109 17.7718 15.2638 17.7847 15.4304C17.7975 15.597 17.7515 15.7643 17.655 15.901C17.4764 16.2736 17.2023 16.5915 16.861 16.822C16.5198 17.0526 16.1242 17.187 15.716 17.212L15.346 17.212C14.9497 17.2057 14.5601 17.0858 14.2188 16.8647C13.8774 16.6437 13.5969 16.3298 13.405 15.955L13.255 15.655C13.1856 15.5109 13.0617 15.3996 12.906 15.3421C12.7502 15.2845 12.5732 15.2845 12.417 15.3421L12.027 15.482C11.6436 15.6033 11.2374 15.591 10.8624 15.447C10.4874 15.3031 10.1616 15.0347 9.92705 14.678L9.73705 14.408C9.64676 14.2755 9.50856 14.1834 9.34969 14.149C9.19082 14.1147 9.0227 14.1408 8.87705 14.223L7.14705 15.223C7.00902 15.3005 6.90159 15.421 6.83842 15.5688C6.77524 15.7166 6.75924 15.8845 6.79205 16.05L7.20205 17.85A1.65 1.65 0 0 0 7.76205 18.57C8.10649 18.8251 8.52309 18.966 8.95105 18.974C9.379 18.9819 9.797 18.8566 10.147 18.614L10.427 18.424C10.7431 18.2045 11.1118 18.0673 11.4984 18.0267C11.885 17.9861 12.2773 18.0435 12.637 18.194L12.987 18.334C13.1362 18.394 13.2625 18.4988 13.3486 18.634C13.4347 18.7692 13.4764 18.9284 13.467 19.09L13.427 19.46C13.3951 19.8559 13.4735 20.2541 13.6548 20.6127C13.8362 20.9714 14.1142 21.2773 14.46 21.499L16.2 22.569C16.3262 22.6465 16.4741 22.6841 16.6247 22.6775C16.7753 22.6708 16.9219 22.6202 17.046 22.532L18.476 21.532C18.8202 21.2941 19.0768 20.9575 19.2132 20.5645C19.3496 20.1714 19.3598 19.7402 19.243 19.324L19.083 18.844C18.9554 18.4828 18.9234 18.0863 18.9904 17.7088C19.0573 17.3314 19.22 16.9912 19.458 16.735L19.688 16.475C19.7891 16.3686 19.8519 16.2334 19.8687 16.0886C19.8856 15.9439 19.8556 15.797 19.783 15.669C19.702 15.529 19.562 15.409 19.4 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <svg width="18" viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                    <path
+                                        d="M19.4 15A1.65 1.65 0 0 0 19 15.65C18.667 15.8972 18.4239 16.2415 18.3079 16.6322C18.192 17.0229 18.2091 17.4385 18.356 17.815C18.4144 17.9547 18.4116 18.1102 18.3484 18.2479C18.2852 18.3855 18.1668 18.4946 18.02 18.55L16.2 19.34C16.0645 19.3976 15.9126 19.3982 15.7766 19.3418C15.6406 19.2854 15.5313 19.1764 15.47 19.04L15.35 18.73A1.65 1.65 0 0 0 14.7 18.35C14.3315 18.2327 13.9392 18.2033 13.5559 18.2646C13.1725 18.326 12.8093 18.4764 12.496 18.704L12.246 18.914C12.1158 19.0118 11.9546 19.0526 11.7947 19.0289C11.6347 19.0051 11.4878 18.9185 11.383 18.786L10.193 17.156C10.1118 17.0381 10.0759 16.8929 10.0924 16.7486C10.1089 16.6043 10.1766 16.4712 10.282 16.375L10.5 16.145A1.65 1.65 0 0 0 10.85 15.5C10.963 15.111 10.9859 14.6953 10.9161 14.3005C10.8463 13.9056 10.6865 13.5478 10.456 13.268L10.176 12.988C10.0528 12.8719 9.97022 12.7188 9.94279 12.5551C9.91535 12.3914 9.94487 12.2275 10.026 12.083L11.026 10.353C11.0963 10.222 11.2132 10.123 11.3537 10.0766C11.4942 10.0302 11.6481 10.0402 11.784 10.104L12.064 10.224A1.65 1.65 0 0 0 12.714 10.35C13.1037 10.4578 13.5186 10.4578 13.9083 10.3501C14.298 10.2423 14.6517 10.0322 14.942 9.736L15.172 9.486C15.275 9.37887 15.4191 9.31758 15.5724 9.31599C15.7258 9.31439 15.8752 9.37262 15.988 9.477L17.518 10.867C17.6253 10.9654 17.6881 11.1017 17.6934 11.2464C17.6987 11.391 17.646 11.5323 17.546 11.64L17.336 11.89C17.1065 12.1691 16.9472 12.5255 16.8781 12.9184C16.809 13.3113 16.8335 13.7251 16.948 14.11C17.027 14.3644 17.1706 14.5935 17.365 14.776L17.585 14.996C17.7011 15.109 17.7718 15.2638 17.7847 15.4304C17.7975 15.597 17.7515 15.7643 17.655 15.901C17.4764 16.2736 17.2023 16.5915 16.861 16.822C16.5198 17.0526 16.1242 17.187 15.716 17.212L15.346 17.212C14.9497 17.2057 14.5601 17.0858 14.2188 16.8647C13.8774 16.6437 13.5969 16.3298 13.405 15.955L13.255 15.655C13.1856 15.5109 13.0617 15.3996 12.906 15.3421C12.7502 15.2845 12.5732 15.2845 12.417 15.3421L12.027 15.482C11.6436 15.6033 11.2374 15.591 10.8624 15.447C10.4874 15.3031 10.1616 15.0347 9.92705 14.678L9.73705 14.408C9.64676 14.2755 9.50856 14.1834 9.34969 14.149C9.19082 14.1147 9.0227 14.1408 8.87705 14.223L7.14705 15.223C7.00902 15.3005 6.90159 15.421 6.83842 15.5688C6.77524 15.7166 6.75924 15.8845 6.79205 16.05L7.20205 17.85A1.65 1.65 0 0 0 7.76205 18.57C8.10649 18.8251 8.52309 18.966 8.95105 18.974C9.379 18.9819 9.797 18.8566 10.147 18.614L10.427 18.424C10.7431 18.2045 11.1118 18.0673 11.4984 18.0267C11.885 17.9861 12.2773 18.0435 12.637 18.194L12.987 18.334C13.1362 18.394 13.2625 18.4988 13.3486 18.634C13.4347 18.7692 13.4764 18.9284 13.467 19.09L13.427 19.46C13.3951 19.8559 13.4735 20.2541 13.6548 20.6127C13.8362 20.9714 14.1142 21.2773 14.46 21.499L16.2 22.569C16.3262 22.6465 16.4741 22.6841 16.6247 22.6775C16.7753 22.6708 16.9219 22.6202 17.046 22.532L18.476 21.532C18.8202 21.2941 19.0768 20.9575 19.2132 20.5645C19.3496 20.1714 19.3598 19.7402 19.243 19.324L19.083 18.844C18.9554 18.4828 18.9234 18.0863 18.9904 17.7088C19.0573 17.3314 19.22 16.9912 19.458 16.735L19.688 16.475C19.7891 16.3686 19.8519 16.2334 19.8687 16.0886C19.8856 15.9439 19.8556 15.797 19.783 15.669C19.702 15.529 19.562 15.409 19.4 15Z"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
                                 Settings
                             </a>
                             <a href="{{ url_for('admin.profile') }}">
-                                <svg width="18" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12V9C15 8.20435 14.6839 7.44129 14.1213 6.87868C13.5587 6.31607 12.7956 6 12 6C11.2044 6 10.4413 6.31607 9.87868 6.87868C9.31607 7.44129 9 8.20435 9 9V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 16V14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 12H8C7.44772 12 7 12.4477 7 13V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V13C17 12.4477 16.5523 12 16 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <svg width="18" viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                    <path
+                                        d="M15 12V9C15 8.20435 14.6839 7.44129 14.1213 6.87868C13.5587 6.31607 12.7956 6 12 6C11.2044 6 10.4413 6.31607 9.87868 6.87868C9.31607 7.44129 9 8.20435 9 9V12"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                    <path d="M12 16V14" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                    <path
+                                        d="M16 12H8C7.44772 12 7 12.4477 7 13V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V13C17 12.4477 16.5523 12 16 12Z"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
                                 Change Password
                             </a>
                             <a href="{{ url_for('auth.logout') }}">
-                                <svg width="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <svg width="18" viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                    <path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
                                 Logout
                             </a>
                         </div>
@@ -1604,14 +1941,14 @@
             </section>
 
             <section class="admin-content">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    <div id="flashMessages" style="display:none;">
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <span data-category="{{ category }}">{{ message }}</span>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                <div id="flashMessages" style="display:none;">
+                    {% if messages %}
+                    {% for category, message in messages %}
+                    <span data-category="{{ category }}">{{ message }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
                 {% endwith %}
                 {% block content %}{% endblock %}
             </section>
@@ -1632,7 +1969,7 @@
                 timer: 2800,
                 timerProgressBar: true,
                 background: '#fff',
-                customClass: {popup: 'swal2-toast-popup'}
+                customClass: { popup: 'swal2-toast-popup' }
             });
         }
 
@@ -1855,16 +2192,16 @@
             });
         }
 
-        
+
         function initNotifications() {
             const btn = document.getElementById('btnNotifications');
             const dropdown = document.getElementById('notifDropdown');
             const badge = document.getElementById('notifBadge');
             const body = document.getElementById('notifBody');
             const markAllBtn = document.getElementById('btnMarkAllRead');
-            
+
             if (!btn || !dropdown) return;
-            
+
             // Toggle dropdown
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1873,14 +2210,14 @@
                     loadNotifications();
                 }
             });
-            
+
             // Close dropdown when clicking outside
             document.addEventListener('click', (e) => {
                 if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
                     dropdown.classList.remove('show');
                 }
             });
-            
+
             // Load Notifications from API
             function loadNotifications() {
                 fetch('/admin/api/notifications')
@@ -1891,7 +2228,7 @@
                     })
                     .catch(err => console.error('Error loading notifications:', err));
             }
-            
+
             // Render Notification Items
             function renderNotifications(notifs) {
                 body.innerHTML = '';
@@ -1899,11 +2236,11 @@
                     body.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">No notifications yet.</div>';
                     return;
                 }
-                
+
                 notifs.forEach(n => {
                     const item = document.createElement('div');
                     item.className = `notif-item ${!n.is_read ? 'unread' : ''}`;
-                    
+
                     item.innerHTML = `
                         <div class="notif-icon ${n.icon_type}">
                             ${getIconSvg(n.icon_type)}
@@ -1917,44 +2254,44 @@
                             <span class="notif-time">${formatTimeAgo(n.created_at)}</span>
                         </div>
                     `;
-                    
+
                     if (!n.is_read) {
                         item.addEventListener('click', () => markAsRead(n.id, item));
                     }
-                    
+
                     body.appendChild(item);
                 });
             }
-            
+
             // Mark Single Read
             function markAsRead(id, element) {
                 fetch(`/admin/api/notifications/read/${id}`, { method: 'POST' })
                     .then(res => res.json())
                     .then(data => {
-                        if(data.status === 'success') {
+                        if (data.status === 'success') {
                             element.classList.remove('unread');
                             const dot = element.querySelector('.notif-dot');
-                            if(dot) dot.remove();
+                            if (dot) dot.remove();
                             // decrement badge
                             let currentCount = parseInt(badge.textContent) || 0;
                             updateBadge(currentCount - 1);
                         }
                     });
             }
-            
+
             // Mark All Read
             if (markAllBtn) {
                 markAllBtn.addEventListener('click', () => {
                     fetch('/admin/api/notifications/read_all', { method: 'POST' })
                         .then(res => res.json())
                         .then(data => {
-                            if(data.status === 'success') {
+                            if (data.status === 'success') {
                                 loadNotifications(); // reload completely
                             }
                         });
                 });
             }
-            
+
             function updateBadge(count) {
                 if (count > 0) {
                     badge.textContent = count > 99 ? '99+' : count;
@@ -1963,20 +2300,20 @@
                     badge.style.display = 'none';
                 }
             }
-            
+
             function formatTimeAgo(dateString) {
                 const date = new Date(dateString.replace(' ', 'T'));
                 const now = new Date();
                 const seconds = Math.floor((now - date) / 1000);
-                
+
                 if (seconds < 60) return 'Just now';
-                if (seconds < 3600) return Math.floor(seconds/60) + 'm ago';
-                if (seconds < 86400) return Math.floor(seconds/3600) + 'h ago';
-                return Math.floor(seconds/86400) + 'd ago';
+                if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+                if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+                return Math.floor(seconds / 86400) + 'd ago';
             }
-            
+
             function getIconSvg(type) {
-                switch(type) {
+                switch (type) {
                     case 'booking': return '<svg width="18" viewBox="0 0 24 24" fill="none"><path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
                     case 'hotel': return '<svg width="18" viewBox="0 0 24 24" fill="none"><path d="M3 21H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 21V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H17C17.5304 3 18.0391 3.21071 18.4142 3.58579C18.7893 3.96086 19 4.46957 19 5V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 11H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 15H11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
                     case 'room': return '<svg width="18" viewBox="0 0 24 24" fill="none"><path d="M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10V20C5 20.5304 5.21071 21.0391 5.58579 21.4142C5.96086 21.7893 6.46957 22 7 22H17C17.5304 22 18.0391 21.7893 18.4142 21.4142C18.7893 21.0391 19 20.5304 19 20V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6C8 5.20435 8.31607 4.44129 8.87868 3.87868C9.44129 3.31607 10.2044 3 11 3H13C13.7956 3 14.5587 3.31607 15.1213 3.87868C15.6839 4.44129 16 5.20435 16 6V10H8V6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -1986,9 +2323,111 @@
                     default: return '<svg width="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
                 }
             }
-            
+
             // initial load of unread count
             loadNotifications();
+        }
+
+        function initGlobalSearch() {
+            const modal = document.getElementById('globalSearchModal');
+            const input = document.getElementById('globalSearchInput');
+            const resultsBox = document.getElementById('globalSearchResults');
+            const btnSearch = document.getElementById('btnGlobalSearch');
+            let debounceTimer;
+
+            function openSearch() {
+                modal.classList.add('active');
+                input.value = '';
+                resultsBox.innerHTML = '';
+                setTimeout(() => input.focus(), 100);
+            }
+
+            function closeSearch() {
+                modal.classList.remove('active');
+                input.blur();
+            }
+
+            if (btnSearch) btnSearch.addEventListener('click', openSearch);
+
+            modal.addEventListener('click', e => {
+                if (e.target === modal) closeSearch();
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', e => {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === '/')) {
+                    e.preventDefault();
+                    openSearch();
+                }
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeSearch();
+                }
+
+                if (modal.classList.contains('active')) {
+                    const items = Array.from(resultsBox.querySelectorAll('.search-result-item'));
+                    if (items.length === 0) return;
+
+                    let currentIndex = items.findIndex(item => item.classList.contains('selected'));
+
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        if (currentIndex >= 0) items[currentIndex].classList.remove('selected');
+                        currentIndex = (currentIndex + 1) % items.length;
+                        items[currentIndex].classList.add('selected');
+                        items[currentIndex].scrollIntoView({ block: 'nearest' });
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        if (currentIndex >= 0) items[currentIndex].classList.remove('selected');
+                        currentIndex = currentIndex <= 0 ? items.length - 1 : currentIndex - 1;
+                        items[currentIndex].classList.add('selected');
+                        items[currentIndex].scrollIntoView({ block: 'nearest' });
+                    } else if (e.key === 'Enter' && currentIndex >= 0) {
+                        e.preventDefault();
+                        items[currentIndex].click();
+                    }
+                }
+            });
+
+            if (input) {
+                input.addEventListener('input', e => {
+                    clearTimeout(debounceTimer);
+                    const query = e.target.value.trim();
+
+                    if (query.length < 2) {
+                        resultsBox.innerHTML = '';
+                        return;
+                    }
+
+                    debounceTimer = setTimeout(() => {
+                        fetch('/admin/search?q=' + encodeURIComponent(query))
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.length === 0) {
+                                    resultsBox.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--subtext);">No results found for "' + query + '"<br><small style="margin-top: 5px; display: block;">Try searching using another keyword.</small></div>';
+                                    return;
+                                }
+
+                                let html = '';
+                                data.forEach(group => {
+                                    html += `<div class="search-result-group">
+                                        <div class="search-result-group-title">${group.category}</div>`;
+                                    group.items.forEach((item, index) => {
+                                        html += `<a href="${item.url}" class="search-result-item ${index === 0 && html.indexOf('selected') === -1 ? 'selected' : ''}">
+                                            <div class="search-result-item-title">${item.title}</div>
+                                            <div class="search-result-item-subtitle">${item.subtitle}</div>
+                                        </a>`;
+                                    });
+                                    html += `</div>`;
+                                });
+                                resultsBox.innerHTML = html;
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                resultsBox.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--danger);">Error fetching results.</div>';
+                            });
+                    }, 300);
+                });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -2002,6 +2441,7 @@
             setupLoadingButtons();
             processFlashMessages();
             initNotifications();
+            initGlobalSearch();
 
             // Profile Dropdown Setup
             const btnProfile = document.getElementById('btnProfileDropdown');
@@ -2011,7 +2451,7 @@
                     if (profileDropdown.contains(e.target)) return;
                     e.stopPropagation();
                     profileDropdown.classList.toggle('show');
-                    
+
                     // close notif if open
                     const notifDropdown = document.getElementById('notifDropdown');
                     if (notifDropdown && notifDropdown.classList.contains('show')) {
@@ -2034,5 +2474,28 @@
             }
         });
     </script>
+    <!-- Global Search Modal -->
+    <div id="globalSearchModal" class="search-modal">
+        <div class="search-modal-content">
+            <div class="search-modal-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="globalSearchInput" class="search-modal-input"
+                    placeholder="Search hotels, rooms, guests, bookings..." autocomplete="off" spellcheck="false">
+                <kbd>ESC</kbd>
+            </div>
+            <div id="globalSearchResults" class="search-modal-body">
+                <!-- Search results injected here -->
+            </div>
+            <div class="search-modal-footer">
+                <span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+                <span><kbd>ENTER</kbd> to select</span>
+            </div>
+        </div>
+    </div>
 </body>
+
 </html>

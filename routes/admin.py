@@ -237,6 +237,58 @@ def get_cities(province_id):
     cursor.close()
     conn.close()
     return jsonify(cities)
+
+
+@admin_bp.route('/search', methods=['GET'])
+@admin_required
+def search():
+    query = request.args.get('q', '').strip()
+    if len(query) < 2:
+        return jsonify([])
+        
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    results = []
+    
+    # 1. Search Hotels
+    cursor.execute("SELECT id, name, location FROM hotels WHERE name LIKE %s OR location LIKE %s LIMIT 5", (f"%{query}%", f"%{query}%"))
+    hotels = cursor.fetchall()
+    if hotels:
+        items = [{'title': h['name'], 'subtitle': h['location'] or 'Hotel', 'url': url_for('admin.hotels') + f"?q={h['name']}"} for h in hotels]
+        results.append({'category': 'Hotels', 'items': items})
+        
+    # 2. Search Rooms
+    cursor.execute("SELECT r.id, r.room_number, r.room_type, h.name as hotel_name FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.room_number LIKE %s OR r.room_type LIKE %s LIMIT 5", (f"%{query}%", f"%{query}%"))
+    rooms = cursor.fetchall()
+    if rooms:
+        items = [{'title': f"Room {r['room_number']} ({r['room_type']})", 'subtitle': r['hotel_name'], 'url': url_for('admin.rooms') + f"?q={r['room_number']}"} for r in rooms]
+        results.append({'category': 'Rooms', 'items': items})
+        
+    # 3. Search Bookings
+    cursor.execute("SELECT b.id, b.guest_name, b.status, r.room_number, h.name as hotel_name FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE b.guest_name LIKE %s OR b.id LIKE %s LIMIT 5", (f"%{query}%", f"%{query}%"))
+    bookings = cursor.fetchall()
+    if bookings:
+        items = [{'title': f"Booking #{b['id']} - {b['guest_name']}", 'subtitle': f"{b['hotel_name']} • Room {b['room_number']} ({b['status']})", 'url': url_for('admin.bookings')} for b in bookings]
+        results.append({'category': 'Bookings', 'items': items})
+        
+    # 4. Search Guests / Users
+    cursor.execute("SELECT id, username, email, full_name, role FROM users WHERE username LIKE %s OR email LIKE %s OR full_name LIKE %s LIMIT 5", (f"%{query}%", f"%{query}%", f"%{query}%"))
+    users = cursor.fetchall()
+    
+    guests = [u for u in users if u['role'] == 'customer']
+    admins = [u for u in users if u['role'] == 'admin']
+    
+    if guests:
+        items = [{'title': u['full_name'] or u['username'], 'subtitle': u['email'], 'url': url_for('admin.bookings')} for u in guests] # Typically guests relate to bookings
+        results.append({'category': 'Guests', 'items': items})
+        
+    if admins:
+        items = [{'title': u['full_name'] or u['username'], 'subtitle': f"Admin • {u['email']}", 'url': url_for('admin.dashboard')} for u in admins]
+        results.append({'category': 'Users', 'items': items})
+        
+    cursor.close()
+    conn.close()
+    return jsonify(results)
     
 @admin_bp.route('/rooms', methods=['GET', 'POST'])
 @admin_required
