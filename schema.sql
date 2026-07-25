@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `last_login`               DATETIME      DEFAULT NULL,
   `password_reset_token`     VARCHAR(255)  DEFAULT NULL,
   `password_reset_expires`   DATETIME      DEFAULT NULL,
+  `created_at`               DATETIME      DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username`  (`username`),
   UNIQUE KEY `email`     (`email`),
