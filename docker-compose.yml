@@ -33,7 +33,8 @@ services:
     image: mysql:8.0
     container_name: booking_hotels_db
     restart: unless-stopped
-    # Port sengaja gak diekspos ke host biar aman, cukup diakses via internal network
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root_password}  
       MYSQL_DATABASE: hotel_booking
