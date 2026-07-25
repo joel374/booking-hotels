@@ -6,7 +6,29 @@
     .booking-form-card {
         margin-left: 0 !important;
         margin-right: 0 !important;
+        padding: 1.5rem !important;
     }
+    .btn-action-group {
+        flex-direction: column-reverse;
+    }
+    .btn-action-group .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+.input-invalid {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+.input-valid {
+    border-color: #22c55e !important;
+    background-color: #f0fdf4 !important;
+}
+.error-msg {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    display: none;
 }
 </style>
 <div class="card container-sm booking-form-card">
@@ -35,12 +57,14 @@
 
         <div class="form-group">
             <label for="guest_name" class="form-label">Nama Lengkap Tamu</label>
-            <input type="text" id="guest_name" name="guest_name" class="form-control" required minlength="3" pattern="[a-zA-Z\s\.'\-]+" title="Hanya huruf dan spasi yang diizinkan (minimal 3 karakter)" placeholder="Sesuai KTP" oninput="this.value = this.value.replace(/[^a-zA-Z\s\.'\-]/g, '')">
+            <input type="text" id="guest_name" name="guest_name" class="form-control" required minlength="3" pattern="[a-zA-Z\s\.'\-]+" title="Hanya huruf dan spasi yang diizinkan (minimal 3 karakter)" placeholder="Sesuai KTP" oninput="this.value = this.value.replace(/[^a-zA-Z\s\.'\-]/g, ''); validateName()">
+            <div id="name-error" class="error-msg">Nama harus terdiri dari minimal 3 karakter huruf.</div>
         </div>
 
         <div class="form-group">
             <label for="contact_number" class="form-label">Nomor WhatsApp / HP</label>
-            <input type="tel" id="contact_number" name="contact_number" class="form-control" required pattern="[\d\+\-\(\)\s]{9,15}" title="Masukkan nomor telepon yang valid (9-15 digit angka)" placeholder="08123456789" oninput="this.value = this.value.replace(/[^\d\+\-\(\)\s]/g, '')">
+            <input type="tel" id="contact_number" name="contact_number" class="form-control" required pattern="[\d\+\-\(\)\s]{9,15}" title="Masukkan nomor telepon yang valid (9-15 digit angka)" placeholder="08123456789" oninput="this.value = this.value.replace(/[^\d\+\-\(\)\s]/g, ''); validatePhone()">
+            <div id="phone-error" class="error-msg">Nomor HP harus terdiri dari 9 hingga 15 digit angka.</div>
         </div>
 
         <div class="form-group">
@@ -52,10 +76,70 @@
             </select>
         </div>
 
-        <div style="display: flex; gap: 1rem;" class="mt-4">
+        <div style="display: flex; gap: 1rem;" class="mt-4 btn-action-group">
             <a href="javascript:history.back()" class="btn" style="background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color);">Kembali</a>
-            <button type="submit" class="btn btn-primary" style="flex: 1;">Lanjutkan ke Pembayaran</button>
+            <button type="submit" id="btn-submit" class="btn btn-primary" style="flex: 1;" disabled>Lanjutkan ke Pembayaran</button>
         </div>
     </form>
 </div>
+
+<script>
+    const guestName = document.getElementById('guest_name');
+    const contactNumber = document.getElementById('contact_number');
+    const btnSubmit = document.getElementById('btn-submit');
+    const nameError = document.getElementById('name-error');
+    const phoneError = document.getElementById('phone-error');
+
+    function validateName() {
+        const val = guestName.value.trim();
+        const isValid = val.length >= 3 && /^[a-zA-Z\s\.'\-]+$/.test(val);
+        if(val.length > 0) {
+            if(isValid) {
+                guestName.classList.remove('input-invalid');
+                guestName.classList.add('input-valid');
+                nameError.style.display = 'none';
+            } else {
+                guestName.classList.remove('input-valid');
+                guestName.classList.add('input-invalid');
+                nameError.style.display = 'block';
+            }
+        } else {
+            guestName.classList.remove('input-valid', 'input-invalid');
+            nameError.style.display = 'none';
+        }
+        checkForm();
+        return isValid;
+    }
+
+    function validatePhone() {
+        const val = contactNumber.value.trim();
+        const isValid = /^[\d\+\-\(\)\s]{9,15}$/.test(val);
+        if(val.length > 0) {
+            if(isValid) {
+                contactNumber.classList.remove('input-invalid');
+                contactNumber.classList.add('input-valid');
+                phoneError.style.display = 'none';
+            } else {
+                contactNumber.classList.remove('input-valid');
+                contactNumber.classList.add('input-invalid');
+                phoneError.style.display = 'block';
+            }
+        } else {
+            contactNumber.classList.remove('input-valid', 'input-invalid');
+            phoneError.style.display = 'none';
+        }
+        checkForm();
+        return isValid;
+    }
+
+    function checkForm() {
+        const nValid = guestName.value.trim().length >= 3 && /^[a-zA-Z\s\.'\-]+$/.test(guestName.value.trim());
+        const pValid = /^[\d\+\-\(\)\s]{9,15}$/.test(contactNumber.value.trim());
+        if(nValid && pValid) {
+            btnSubmit.disabled = false;
+        } else {
+            btnSubmit.disabled = true;
+        }
+    }
+</script>
 {% endblock %}
