@@ -24,6 +24,7 @@ services:
     volumes:
       - uploads_data:/app/static/uploads
       - session_data:/app/flask_session
+    command: sh -c "python run_migrations.py && gunicorn --workers 3 --bind 0.0.0.0:5000 app:app"
     networks:
       - shared_network
 
