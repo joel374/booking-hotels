@@ -45,6 +45,9 @@ CREATE TABLE IF NOT EXISTS `users` (
   `google_id`                VARCHAR(100)  DEFAULT NULL,
   `auth_provider`            VARCHAR(50)   DEFAULT 'local',       -- 'local' | 'google'
   `role`                     ENUM('customer','admin') DEFAULT 'customer',
+  `full_name`                VARCHAR(100)  DEFAULT NULL,
+  `photo_url`                VARCHAR(255)  DEFAULT NULL,
+  `last_login`               DATETIME      DEFAULT NULL,
   `password_reset_token`     VARCHAR(255)  DEFAULT NULL,
   `password_reset_expires`   DATETIME      DEFAULT NULL,
   PRIMARY KEY (`id`),
