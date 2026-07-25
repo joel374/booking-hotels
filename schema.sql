@@ -181,3 +181,17 @@ CREATE TABLE IF NOT EXISTS `reviews` (
   CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `reviews_ibfk_3` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- Tabel: notifications
+-- Admin notifications
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `notifications` (
+  `id`          INT          NOT NULL AUTO_INCREMENT,
+  `title`       VARCHAR(100) NOT NULL,
+  `description` TEXT         NOT NULL,
+  `icon_type`   VARCHAR(50)  DEFAULT 'info',
+  `is_read`     TINYINT(1)   DEFAULT 0,
+  `created_at`  DATETIME     DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
