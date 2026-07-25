@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS `bookings` (
   `check_in`       DATE         NOT NULL,
   `check_out`      DATE         NOT NULL,
   `payment_method` VARCHAR(50)  NOT NULL,
-  `status`         ENUM('Pending','Booked','Cancelled') DEFAULT 'Pending',
+  `status`         ENUM('Booked', 'Checked In', 'Checked Out', 'Cancelled') DEFAULT 'Booked',
   `created_at`     DATETIME     DEFAULT CURRENT_TIMESTAMP,
   `cancel_reason`  TEXT         DEFAULT NULL,
   PRIMARY KEY (`id`),

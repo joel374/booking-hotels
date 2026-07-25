@@ -1,0 +1,37 @@
+{% for booking in bookings %}
+<tr>
+    <td><strong>#{{ booking.id }}</strong></td>
+    <td>
+        <strong style="color: var(--text);">{{ booking.guest_name }}</strong><br>
+        <span style="color: var(--subtext); font-size:0.85rem;">{{ booking.username }}</span>
+    </td>
+    <td style="color: var(--text);">{{ booking.hotel_name }}</td>
+    <td style="color: var(--subtext);">
+        <strong style="color: var(--text);">{{ booking.room_type }}</strong><br>
+        <span style="font-size:0.85rem;">#{{ booking.room_number }}</span>
+    </td>
+    <td style="white-space: nowrap; color: var(--text);">{{ booking.check_in }}</td>
+    <td style="white-space: nowrap; color: var(--text);">{{ booking.check_out }}</td>
+    <td style="white-space: nowrap;"><strong>{{ 'Rp ' ~ ('{:,}'.format(booking.total_price).replace(',', '.') if booking.total_price else '-') }}</strong></td>
+    <td>
+        <span class="badge {{ booking.status|lower|replace(' ', '-') }}">{{ booking.status }}</span>
+    </td>
+    <td style="text-align: center;">
+        <div class="action-menu">
+            <button type="button" class="btn btn-secondary action-toggle">⋮</button>
+            <div class="action-dropdown">
+                <button type="button" class="action-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.05 12c1.4-4.08 5-7 9.95-7s8.55 2.92 9.95 7c-1.4 4.08-5 7-9.95 7S3.45 16.08 2.05 12Z"/><circle cx="12" cy="12" r="3"/></svg>Detail</button>
+                {% if booking.status == 'Booked' %}
+                <button type="button" class="action-cancel" data-id="{{ booking.id }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>Cancel Booking</button>
+                {% endif %}
+                <button type="button" class="action-delete" data-id="{{ booking.id }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>Delete</button>
+            </div>
+        </div>
+        <form method="POST" action="{{ url_for('admin.bookings') }}" class="booking-cancel-form" data-id="{{ booking.id }}" style="display:none;">
+            <input type="hidden" name="booking_id" value="{{ booking.id }}">
+            <input type="hidden" name="cancel_reason" class="cancel-reason-input" value="">
+        </form>
+        <form method="POST" action="{{ url_for('admin.delete_booking', id=booking.id) }}" class="booking-delete-form" data-id="{{ booking.id }}" style="display:none;"></form>
+    </td>
+</tr>
+{% endfor %}

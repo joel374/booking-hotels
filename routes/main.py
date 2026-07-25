@@ -14,7 +14,7 @@ def get_available_rooms(hotel_id, check_in, check_out, min_price=None, max_price
         SELECT r.* FROM rooms r
         WHERE r.hotel_id = %s AND r.is_deleted = 0 AND r.id NOT IN (
             SELECT b.room_id FROM bookings b
-            WHERE b.status IN ('Booked', 'Pending') 
+            WHERE b.status IN ('Booked', 'Checked In') 
             AND (b.check_in < %s AND b.check_out > %s)
         )
     """
@@ -47,7 +47,7 @@ def get_booked_rooms(hotel_id, check_in, check_out):
         SELECT r.* FROM rooms r
         WHERE r.hotel_id = %s AND r.is_deleted = 0 AND r.id IN (
             SELECT b.room_id FROM bookings b
-            WHERE b.status IN ('Booked', 'Pending') 
+            WHERE b.status IN ('Booked', 'Checked In') 
             AND (b.check_in < %s AND b.check_out > %s)
         )
     """

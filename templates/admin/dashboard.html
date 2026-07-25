@@ -62,7 +62,8 @@
             <select id="bookings-filter" class="toolbar-select">
                 <option value="">All status</option>
                 <option value="booked">Booked</option>
-                <option value="pending">Pending</option>
+                <option value="checked in">Checked In</option>
+                <option value="checked out">Checked Out</option>
                 <option value="cancelled">Cancelled</option>
             </select>
         </div>
@@ -90,7 +91,7 @@
                     <small style="color: var(--subtext);">Room {{ booking.room_number }}</small>
                 </td>
                 <td>
-                    <span class="badge {% if booking.status == 'Booked' %}booked{% elif booking.status == 'Pending' %}pending{% elif booking.status == 'Cancelled' %}cancelled{% else %}neutral{% endif %}">{{ booking.status }}</span>
+                    <span class="badge {% if booking.status == 'Booked' %}booked{% elif booking.status == 'Checked In' %}checked-in{% elif booking.status == 'Checked Out' %}checked-out{% elif booking.status == 'Cancelled' %}cancelled{% else %}neutral{% endif %}">{{ booking.status }}</span>
                 </td>
                 <td style="color: var(--subtext);">{{ booking.created_at.strftime('%Y-%m-%d') }}</td>
             </tr>

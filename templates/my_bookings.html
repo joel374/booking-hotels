@@ -14,10 +14,15 @@
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         BOOKED
                     </div>
-                {% elif booking.status == 'Pending' %}
-                    <div class="status-badge warning">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                        PENDING
+                {% elif booking.status == 'Checked In' %}
+                    <div class="status-badge info" style="background: #e0f2fe; color: #0284c7;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                        CHECKED IN
+                    </div>
+                {% elif booking.status == 'Checked Out' %}
+                    <div class="status-badge secondary" style="background: #f1f5f9; color: #64748b;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        CHECKED OUT
                     </div>
                 {% else %}
                     <div class="status-badge danger">
@@ -43,19 +48,15 @@
                     {% endif %}
 
                     <div style="display: flex; gap: 0.75rem;">
-                        {% if booking.status == 'Pending' %}
-                            <a href="{{ url_for('booking.pay', booking_id=booking.id) }}" class="btn btn-warning" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 40px;">Bayar Sekarang</a>
+                        {% if booking.status in ['Booked', 'Checked In', 'Checked Out'] %}
+                            <a href="{{ url_for('booking.invoice', booking_id=booking.id) }}" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 40px;">Lihat Invoice</a>
                         {% endif %}
                         
-                        {% if booking.status == 'Booked' %}
-                            <a href="{{ url_for('booking.invoice', booking_id=booking.id) }}" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 40px;">Lihat Invoice</a>
-                            
-                            {% if booking.has_reviewed == 0 and booking.can_review %}
+                        {% if booking.status == 'Checked Out' and booking.has_reviewed == 0 and booking.can_review %}
                             <button type="button" class="btn btn-primary" onclick="openReviewModal({{ booking.id }}, '{{ booking.hotel_name | escape }}')" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 40px; background: var(--bg-color); color: var(--primary-color); border: 1px solid var(--primary-color);">Tulis Ulasan</button>
-                            {% endif %}
                         {% endif %}
 
-                        {% if booking.status in ['Booked', 'Pending'] %}
+                        {% if booking.status == 'Booked' %}
                             {% if booking.can_cancel %}
                             <form action="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" method="POST" style="flex: 1; margin: 0;" class="cancel-booking-form">
                                 <button type="submit" class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 6px; text-align: center; margin: 0; min-height: 40px;">Batal</button>

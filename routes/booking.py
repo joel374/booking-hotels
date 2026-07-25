@@ -77,7 +77,7 @@ def book_room(room_id):
         
         query = """
             SELECT COUNT(*) as count FROM bookings 
-            WHERE room_id = %s AND status IN ('Booked', 'Pending')
+            WHERE room_id = %s AND status IN ('Booked', 'Checked In')
             AND (check_in < %s AND check_out > %s)
         """
         cursor.execute(query, (room_id, check_out, check_in))
@@ -89,7 +89,7 @@ def book_room(room_id):
 
         insert_query = """
             INSERT INTO bookings (user_id, room_id, guest_name, contact_number, check_in, check_out, payment_method, status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending')
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 'Booked')
         """
         cursor.execute(insert_query, (session['user_id'], room_id, guest_name, contact_number, check_in, check_out, payment_method))
         conn.commit()
@@ -102,7 +102,7 @@ def book_room(room_id):
             icon_type="booking"
         )
         
-        # Kirim Email Pending
+        # Kirim Email Konfirmasi (Karena tidak ada Pending lagi)
         cursor.execute("""
             SELECT b.*, r.room_number, r.room_type, r.price, h.name as hotel_name, u.email as user_email
             FROM bookings b 
@@ -117,14 +117,15 @@ def book_room(room_id):
             from services.email_service import send_email
 
             
-            html_content = render_template('emails/booking_pending.html', booking=booking_data)
-            subject = f"Menunggu Pembayaran - {booking_data['hotel_name']}"
+            html_content = render_template('emails/booking_confirmation.html', booking=booking_data)
+            subject = f"Konfirmasi Pemesanan - {booking_data['hotel_name']} (INV-{booking_data['id']})"
             send_email(booking_data['user_email'], subject, html_content)
             
         cursor.close()
         conn.close()
         
-        return redirect(url_for('booking.pay', booking_id=booking_id))
+        flash("Pemesanan berhasil! Kamar telah dibooking.", "success")
+        return redirect(url_for('booking.invoice', booking_id=booking_id))
 
     cursor.close()
     conn.close()
@@ -262,7 +263,7 @@ def my_bookings():
     
     now_date = datetime.now().date()
     for b in bookings:
-        b['can_review'] = (b['status'] == 'Booked' and now_date >= b['check_out'])
+        b['can_review'] = (b['status'] == 'Checked Out')
         b['can_cancel'] = (now_date < b['check_in'])
         
     return render_template('my_bookings.html', bookings=bookings, waiting_lists=waiting_lists)

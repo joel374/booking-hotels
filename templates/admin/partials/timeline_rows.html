@@ -1,0 +1,15 @@
+{% for booking in bookings %}
+{% set status = booking.status %}
+{% set event_label = 'Booking ' + status %}
+{% set badge_class = 'success' if status == 'Booked' else 'info' if status == 'Checked In' else 'secondary' if status == 'Checked Out' else 'danger' %}
+<li class="timeline-item {{ badge_class }}">
+    <span class="timeline-marker"></span>
+    <div class="timeline-meta">
+        <span>{{ booking.created_at.strftime('%d %b %Y, %H:%M') if booking.created_at else '-' }}</span>
+        <span class="timeline-actor">Oleh: {{ booking.username or 'Admin' }}</span>
+    </div>
+    <h3 class="timeline-title">{{ event_label }}</h3>
+    <p class="timeline-description">{{ booking.guest_name or 'Guest' }} - {{ booking.hotel_name }} &bull; {{
+        booking.room_type }} #{{ booking.room_number }}.</p>
+</li>
+{% endfor %}

@@ -78,7 +78,7 @@ def dashboard():
     cursor.execute("SELECT COUNT(*) as count FROM bookings")
     total_bookings = cursor.fetchone()['count']
     
-    cursor.execute("SELECT IFNULL(SUM(r.price), 0) as revenue FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.status = 'Booked'")
+    cursor.execute("SELECT IFNULL(SUM(r.price), 0) as revenue FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out')")
     revenue = cursor.fetchone()['revenue']
     
     cursor.execute("SELECT COUNT(*) as count FROM users WHERE role = 'customer'")
@@ -437,7 +437,7 @@ def bookings():
         booking_id = request.form.get('booking_id')
         cancel_reason = request.form.get('cancel_reason')
         if booking_id and cancel_reason:
-            cursor.execute("UPDATE bookings SET status = 'Cancelled', cancel_reason = %s WHERE id = %s", 
+            cursor.execute("UPDATE bookings SET status = 'Cancelled', cancel_reason = %s WHERE id = %s AND status = 'Booked'", 
                           (cancel_reason, booking_id))
             conn.commit()
             add_notification(
@@ -449,7 +449,8 @@ def bookings():
         return redirect(url_for('admin.bookings'))
         
     cursor.execute("""
-        SELECT b.*, u.username, u.email, r.room_type, r.room_number, h.name as hotel_name 
+        SELECT b.*, u.username, u.email, r.room_type, r.room_number, h.name as hotel_name,
+               (r.price * GREATEST(1, DATEDIFF(b.check_out, b.check_in))) as total_price
         FROM bookings b 
         JOIN users u ON b.user_id = u.id 
         JOIN rooms r ON b.room_id = r.id
@@ -457,9 +458,106 @@ def bookings():
         ORDER BY b.created_at DESC
     """)
     booking_list = cursor.fetchall()
+    
+    # Format total_price to be an integer (remove decimals)
+    for booking in booking_list:
+        if booking.get('total_price'):
+            booking['total_price'] = int(booking['total_price'])
+
     cursor.close()
     conn.close()
     return render_template('admin/bookings.html', bookings=booking_list)
+
+@admin_bp.route('/booking/delete/<int:id>', methods=['POST'])
+@admin_required
+def delete_booking(id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("DELETE FROM bookings WHERE id = %s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash('Booking deleted successfully.', 'success')
+    return redirect(url_for('admin.bookings'))
+
+@admin_bp.route('/api/bookings/filter', methods=['GET'])
+@admin_required
+def api_bookings_filter():
+    search = request.args.get('search', '').strip()
+    status = request.args.get('status', '').strip()
+    date_filter = request.args.get('date', '').strip()
+    sort_filter = request.args.get('sort', 'newest').strip()
+    user_filter = request.args.get('user', '').strip()
+    view = request.args.get('view', '').strip()
+
+    query = """
+        SELECT b.*, u.username, u.email, r.room_type, r.room_number, h.name as hotel_name,
+               (r.price * GREATEST(1, DATEDIFF(b.check_out, b.check_in))) as total_price
+        FROM bookings b 
+        JOIN users u ON b.user_id = u.id 
+        JOIN rooms r ON b.room_id = r.id
+        JOIN hotels h ON r.hotel_id = h.id
+        WHERE 1=1
+    """
+    params = []
+
+    if search:
+        query += " AND (b.guest_name LIKE %s OR b.id LIKE %s OR u.username LIKE %s OR r.room_number LIKE %s OR h.name LIKE %s)"
+        search_term = '%' + search + '%'
+        params.extend([search_term, search_term, search_term, search_term, search_term])
+    
+    if user_filter:
+        query += " AND u.username = %s"
+        params.append(user_filter)
+    
+    if status:
+        query += " AND b.status = %s"
+        params.append(status)
+
+    if date_filter == 'today':
+        query += " AND DATE(b.created_at) = CURDATE()"
+    elif date_filter == 'yesterday':
+        query += " AND DATE(b.created_at) = CURDATE() - INTERVAL 1 DAY"
+    elif date_filter == 'week':
+        query += " AND b.created_at >= CURDATE() - INTERVAL 7 DAY"
+    elif date_filter == 'month' or date_filter == 'this_month':
+        query += " AND YEAR(b.created_at) = YEAR(CURDATE()) AND MONTH(b.created_at) = MONTH(CURDATE())"
+    elif date_filter == 'last_30':
+        query += " AND b.created_at >= CURDATE() - INTERVAL 30 DAY"
+
+    if sort_filter == 'oldest':
+        query += " ORDER BY b.created_at ASC"
+    elif sort_filter == 'guest_asc':
+        query += " ORDER BY b.guest_name ASC"
+    elif sort_filter == 'guest_desc':
+        query += " ORDER BY b.guest_name DESC"
+    elif sort_filter == 'checkin_new':
+        query += " ORDER BY b.check_in DESC"
+    elif sort_filter == 'checkin_old':
+        query += " ORDER BY b.check_in ASC"
+    elif sort_filter == 'price_desc':
+        query += " ORDER BY total_price DESC"
+    elif sort_filter == 'price_asc':
+        query += " ORDER BY total_price ASC"
+    else: # newest
+        query += " ORDER BY b.created_at DESC"
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(query, tuple(params))
+    booking_list = cursor.fetchall()
+    
+    for booking in booking_list:
+        if booking.get('total_price'):
+            booking['total_price'] = int(booking['total_price'])
+
+    cursor.close()
+    conn.close()
+
+    if view == 'audit':
+        return render_template('admin/partials/timeline_rows.html', bookings=booking_list)
+    else:
+        return render_template('admin/partials/booking_rows.html', bookings=booking_list)
 
 
 @admin_bp.route('/reports', methods=['GET'])
@@ -468,16 +566,24 @@ def reports():
     return render_template('admin/reports.html')
 
 
-def get_report_data(report_type, period):
+def get_report_data(report_type, period, search_term='', sort_by=''):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
+    import datetime
     now = datetime.datetime.now()
     start_date = None
     end_date = now
     
     if period == 'Today':
         start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    elif period == 'Yesterday':
+        start_date = (now - datetime.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        end_date = start_date + datetime.timedelta(days=1) - datetime.timedelta(microseconds=1)
+    elif period == 'Last 7 Days':
+        start_date = now - datetime.timedelta(days=7)
+    elif period == 'Last 30 Days':
+        start_date = now - datetime.timedelta(days=30)
     elif period == 'This Week':
         start_date = now - datetime.timedelta(days=now.weekday())
         start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -485,79 +591,91 @@ def get_report_data(report_type, period):
         start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     elif period == 'This Year':
         start_date = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-        
+    elif ' to ' in period:
+        try:
+            parts = period.split(' to ')
+            start_date = datetime.datetime.strptime(parts[0], '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(parts[1], '%Y-%m-%d').replace(hour=23, minute=59, second=59)
+        except ValueError:
+            pass
+            
     cursor.execute("SELECT COUNT(*) as total FROM hotels WHERE is_deleted = 0")
     total_hotels = cursor.fetchone()['total']
+    
     cursor.execute("SELECT COUNT(*) as total FROM rooms WHERE is_deleted = 0")
     total_rooms = cursor.fetchone()['total']
-    cursor.execute("SELECT COUNT(*) as total FROM bookings")
+    
+    query_b = "SELECT COUNT(*) as total FROM bookings WHERE 1=1"
+    params_b = []
+    if start_date:
+        query_b += " AND created_at >= %s AND created_at <= %s"
+        params_b.extend([start_date, end_date])
+    cursor.execute(query_b, params_b)
     total_bookings = cursor.fetchone()['total']
-    cursor.execute("SELECT IFNULL(SUM(r.price), 0) as revenue FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.status = 'Booked'")
+    
+    query_r = "SELECT IFNULL(SUM(r.price * GREATEST(1, DATEDIFF(b.check_out, b.check_in))), 0) as revenue FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out')"
+    params_r = []
+    if start_date:
+        query_r += " AND b.created_at >= %s AND b.created_at <= %s"
+        params_r.extend([start_date, end_date])
+    cursor.execute(query_r, params_r)
     total_revenue = float(cursor.fetchone()['revenue'])
+    
+    query_s = "SELECT status, COUNT(*) as cnt FROM bookings WHERE 1=1"
+    params_s = []
+    if start_date:
+        query_s += " AND created_at >= %s AND created_at <= %s"
+        params_s.extend([start_date, end_date])
+    query_s += " GROUP BY status"
+    cursor.execute(query_s, params_s)
+    status_counts = {'Booked': 0, 'Checked In': 0, 'Checked Out': 0, 'Cancelled': 0}
+    for row in cursor.fetchall():
+        if row['status'] in status_counts:
+            status_counts[row['status']] = row['cnt']
+            
+    occupancy_rate = 0.0
+    if total_rooms > 0:
+        occupancy_rate = ((status_counts['Booked'] + status_counts['Checked In']) / total_rooms) * 100
     
     summary = {
         'total_hotels': total_hotels,
         'total_rooms': total_rooms,
         'total_bookings': total_bookings,
-        'total_revenue': total_revenue
+        'total_revenue': total_revenue,
+        'status_booked': status_counts['Booked'],
+        'status_checked_in': status_counts['Checked In'],
+        'status_checked_out': status_counts['Checked Out'],
+        'status_cancelled': status_counts['Cancelled'],
+        'occupancy_rate': round(occupancy_rate, 1)
     }
     
     details = []
-    if report_type == 'Hotels':
-        query = """
-            SELECT h.name as hotel, CONCAT(IFNULL(c.city_name, ''), ', ', IFNULL(p.province, '')) as location,
-                   (SELECT COUNT(*) FROM rooms r WHERE r.hotel_id = h.id AND r.is_deleted = 0) as rooms,
-                   'Active' as status
-            FROM hotels h
-            LEFT JOIN cities c ON h.city_id = c.city_id
-            LEFT JOIN provinces p ON h.province_id = p.province_id
-            WHERE h.is_deleted = 0
-        """
-        cursor.execute(query)
-        details = cursor.fetchall()
-    elif report_type == 'Rooms':
-        query = """
-            SELECT r.room_type as room, h.name as hotel, r.room_number, r.price, 'Available' as status
-            FROM rooms r
-            JOIN hotels h ON r.hotel_id = h.id
-            WHERE r.is_deleted = 0 AND h.is_deleted = 0
-        """
-        cursor.execute(query)
-        details = cursor.fetchall()
-        for d in details:
-            d['price'] = float(d['price'])
-    elif report_type == 'Bookings':
-        query = """
-            SELECT b.id as booking_id, b.guest_name as guest, h.name as hotel, 
-                   b.created_at as date, b.status
-            FROM bookings b
-            JOIN rooms r ON b.room_id = r.id
-            JOIN hotels h ON r.hotel_id = h.id
-        """
-        params = []
-        if start_date:
-            query += " WHERE b.created_at >= %s AND b.created_at <= %s"
-            params = [start_date, end_date]
-        query += " ORDER BY b.created_at DESC"
-            
-        cursor.execute(query, params)
-        details = cursor.fetchall()
-        for d in details:
-            d['date'] = d['date'].strftime('%Y-%m-%d')
+    # Temporary hold for other reports until Dashboard Summary is approved
             
     cursor.close()
     conn.close()
     return summary, details
 
 
+
+
 @admin_bp.route('/api/reports/preview', methods=['POST'])
 @admin_required
 def api_reports_preview():
+    print("Preview endpoint called")
     data = request.json
     report_type = data.get('type', 'Dashboard Summary')
     period = data.get('period', 'This Month')
+    search_term = data.get('search', '').strip()
+    sort_by = data.get('sort', '').strip()
     
-    summary, details = get_report_data(report_type, period)
+    print(f"report_type: {report_type}")
+    print(f"period: {period}")
+    print(f"search: {search_term}")
+    print(f"sort: {sort_by}")
+    
+    summary, details = get_report_data(report_type, period, search_term, sort_by)
+    print("Summary data returned from get_report_data:", summary)
     return jsonify({
         'summary': summary,
         'details': details
@@ -682,6 +800,16 @@ def generate_pdf_bytes(report_type, period, summary, details):
             table_data = [headers]
             for row in details:
                 table_data.append([str(row['booking_id']), row['guest'], row['hotel'], row['date'], row['status']])
+        elif report_type == 'Revenue Report':
+            headers = ['Hotel', 'Room Type', 'Bookings', 'Total Revenue']
+            table_data = [headers]
+            for row in details:
+                table_data.append([row['hotel'], row['room_type'], str(row['total_bookings']), f"Rp {row['total_revenue']:,.0f}".replace(',', '.')])
+        elif report_type == 'Audit Report':
+            headers = ['Booking ID', 'Guest', 'Admin', 'Action/Status', 'Date']
+            table_data = [headers]
+            for row in details:
+                table_data.append([str(row['booking_id']), row['guest'], row['admin'], row['action'], row['date']])
                 
         t_details = Table(table_data)
         t_details.setStyle(TableStyle([
@@ -716,8 +844,10 @@ def generate_pdf_bytes(report_type, period, summary, details):
 def api_reports_download_pdf():
     report_type = request.form.get('type', 'Dashboard Summary')
     period = request.form.get('period', 'This Month')
+    search_term = request.form.get('search', '').strip()
+    sort_by = request.form.get('sort', '').strip()
     
-    summary, details = get_report_data(report_type, period)
+    summary, details = get_report_data(report_type, period, search_term, sort_by)
     pdf_bytes = generate_pdf_bytes(report_type, period, summary, details)
     
     add_notification(
@@ -739,6 +869,8 @@ def api_reports_send_email():
     data = request.json
     report_type = data.get('type', 'Dashboard Summary')
     period = data.get('period', 'This Month')
+    search_term = data.get('search', '').strip()
+    sort_by = data.get('sort', '').strip()
     email = data.get('email')
     subject = data.get('subject', 'Bhineka Hotels Report')
     message_body = data.get('message', '')
@@ -746,7 +878,7 @@ def api_reports_send_email():
     if not email:
         return jsonify({'error': 'Recipient email is required.'}), 400
         
-    summary, details = get_report_data(report_type, period)
+    summary, details = get_report_data(report_type, period, search_term, sort_by)
     pdf_bytes = generate_pdf_bytes(report_type, period, summary, details)
     
     try:

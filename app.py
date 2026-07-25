@@ -108,6 +108,23 @@ def inject_user():
             return dict(current_user=None)
     return dict(current_user=None)
 
+@app.before_request
+def auto_update_booking_statuses():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # If today is >= check_in and status is Booked -> Checked In
+        cursor.execute("UPDATE bookings SET status = 'Checked In' WHERE status = 'Booked' AND check_in <= CURDATE() AND check_out > CURDATE()")
+        # If today is >= check_out and status is Checked In -> Checked Out
+        cursor.execute("UPDATE bookings SET status = 'Checked Out' WHERE status = 'Checked In' AND check_out <= CURDATE()")
+        # Edge case: If today is >= check_out and status is still Booked (guest never checked in/out) -> Checked Out
+        cursor.execute("UPDATE bookings SET status = 'Checked Out' WHERE status = 'Booked' AND check_out <= CURDATE()")
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        app.logger.error(f"Error auto-updating statuses: {e}")
+
 # Register Blueprints
 app.register_blueprint(main_bp)
 app.register_blueprint(auth_bp)

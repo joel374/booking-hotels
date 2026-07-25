@@ -32,7 +32,7 @@
 
         html,
         body {
-            height: 100%;
+            min-height: 100%;
         }
 
         body {
@@ -59,7 +59,6 @@
             display: grid;
             grid-template-columns: 250px minmax(0, 1fr);
             min-height: 100vh;
-            overflow-x: hidden;
             background: var(--background);
         }
 
@@ -76,6 +75,15 @@
             border-right: 1px solid var(--border);
             min-width: 250px;
             height: 100vh;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
         }
 
         .sidebar-brand {
@@ -722,8 +730,8 @@
             white-space: nowrap;
         }
 
-        .badge.pending {
-            background: #F59E0B;
+        .badge.checked-in {
+            background: #0284c7;
         }
 
         .badge.booked {
@@ -734,8 +742,8 @@
             background: #EF4444;
         }
 
-        .badge.completed {
-            background: #2563EB;
+        .badge.checked-out {
+            background: #64748b;
         }
 
         .badge.neutral {
@@ -1044,14 +1052,19 @@
             color: var(--success);
         }
 
-        .status-pill.pending {
-            background: rgba(245, 158, 11, 0.12);
-            color: var(--warning);
+        .status-pill.checked-in {
+            background: rgba(2, 132, 199, 0.12);
+            color: #0284c7;
         }
 
         .status-pill.cancelled {
             background: rgba(239, 68, 68, 0.12);
             color: var(--danger);
+        }
+
+        .status-pill.checked-out {
+            background: rgba(100, 116, 139, 0.12);
+            color: #64748b;
         }
 
         .entity-card-actions {

@@ -63,10 +63,5 @@ def init_db_schema():
         print(f"[Warning] Auto-schema check failed: {e}")
 
 def cleanup_expired_bookings(cursor):
-    """Marks 'Pending' bookings older than 15 minutes as 'Cancelled'."""
-    query = """
-        UPDATE bookings 
-        SET status = 'Cancelled' 
-        WHERE status = 'Pending' AND created_at < NOW() - INTERVAL 15 MINUTE
-    """
-    cursor.execute(query)
+    """Legacy: No longer used since 'Pending' status is removed."""
+    pass
