@@ -23,7 +23,7 @@ def send_welcome_email(email, username):
         <html>
         <body style="font-family: Arial, sans-serif; background-color: #f5f5f5;">
             <div style="max-width: 600px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <h2 style="color: #0a192f;">Selamat Datang di Antigravity Hotels! 🎉</h2>
+                <h2 style="color: #0a192f;">Selamat Datang di Bhineka Hotels! 🎉</h2>
                 <p style="color: #333; line-height: 1.6;">Halo <strong>{username}</strong>,</p>
                 
                 <p style="color: #333; line-height: 1.6;">Terima kasih telah mendaftar di platform kami. Akun Anda telah berhasil dibuat!</p>
@@ -50,8 +50,8 @@ def send_welcome_email(email, username):
                 
                 <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
                 <p style="color: #999; font-size: 12px;">
-                    Pertanyaan? Hubungi kami di support@antigravityhotels.com<br>
-                    © 2026 Antigravity Hotels. All rights reserved.
+                    Pertanyaan? Hubungi kami di support@bhinekahotels.com<br>
+                    © 2026 Bhineka Hotels. All rights reserved.
                 </p>
             </div>
         </body>
@@ -59,7 +59,7 @@ def send_welcome_email(email, username):
         '''
         
         msg = Message(
-            subject='Selamat Datang! Akun Anda Berhasil Dibuat - Antigravity Hotels',
+            subject='Selamat Datang! Akun Anda Berhasil Dibuat - Bhineka Hotels',
             recipients=[email],
             html=html_content
         )
@@ -79,7 +79,7 @@ def send_login_notification(email, username, ip_address="Unknown"):
         <html>
         <body style="font-family: Arial, sans-serif; background-color: #f5f5f5;">
             <div style="max-width: 600px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <h2 style="color: #0a192f;">Notifikasi Login - Antigravity Hotels 🔐</h2>
+                <h2 style="color: #0a192f;">Notifikasi Login - Bhineka Hotels 🔐</h2>
                 <p style="color: #333; line-height: 1.6;">Halo <strong>{username}</strong>,</p>
                 
                 <p style="color: #333; line-height: 1.6;">Akun Anda baru saja berhasil login.</p>
@@ -103,8 +103,8 @@ def send_login_notification(email, username, ip_address="Unknown"):
                 
                 <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
                 <p style="color: #999; font-size: 12px;">
-                    Pertanyaan atau kekhawatiran keamanan? Hubungi kami di support@antigravityhotels.com<br>
-                    © 2026 Antigravity Hotels. All rights reserved.
+                    Pertanyaan atau kekhawatiran keamanan? Hubungi kami di support@bhinekahotels.com<br>
+                    © 2026 Bhineka Hotels. All rights reserved.
                 </p>
             </div>
         </body>
@@ -112,7 +112,7 @@ def send_login_notification(email, username, ip_address="Unknown"):
         '''
         
         msg = Message(
-            subject=f'Login Terdeteksi - {username} - Antigravity Hotels',
+            subject=f'Login Terdeteksi - {username} - Bhineka Hotels',
             recipients=[email],
             html=html_content
         )
@@ -410,7 +410,7 @@ def forgot_password():
             
             try:
                 msg = Message(
-                    subject='Reset Password - Antigravity Hotels',
+                    subject='Reset Password - Bhineka Hotels',
                     recipients=[email],
                     html=html_content
                 )

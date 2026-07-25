@@ -1,4 +1,4 @@
-# Email Notifications System - Antigravity Hotels
+# Email Notifications System - Bhineka Hotels
 
 ## Overview
 
@@ -94,7 +94,7 @@ MAIL_PORT=587
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=xxxx xxxx xxxx xxxx
 MAIL_USE_TLS=True
-MAIL_DEFAULT_SENDER=noreply@antigravityhotels.com
+MAIL_DEFAULT_SENDER=noreply@bhinekahotels.com
 ```
 
 ### Configure untuk Gmail

@@ -538,7 +538,7 @@ def generate_pdf_bytes(report_type, period, summary, details):
     )
     
     # --- HEADER ---
-    elements.append(Paragraph("ANTIGRAVITY HOTELS", title_style))
+    elements.append(Paragraph("BHINEKA HOTELS", title_style))
     elements.append(Paragraph("Property Management System", subtitle_style))
     
     # Separator Line
@@ -649,7 +649,7 @@ def generate_pdf_bytes(report_type, period, summary, details):
         
     elements.append(Spacer(1, 40))
     elements.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#E2E8F0'), spaceBefore=10, spaceAfter=10))
-    elements.append(Paragraph("Generated automatically by Antigravity Hotels Property Management System", ParagraphStyle(
+    elements.append(Paragraph("Generated automatically by Bhineka Hotels Property Management System", ParagraphStyle(
         'Footer', parent=styles['Italic'], fontName='Helvetica-Oblique', fontSize=8, textColor=colors.HexColor('#94A3B8'), alignment=1
     )))
     
@@ -688,7 +688,7 @@ def api_reports_send_email():
     report_type = data.get('type', 'Dashboard Summary')
     period = data.get('period', 'This Month')
     email = data.get('email')
-    subject = data.get('subject', 'Antigravity Hotels Report')
+    subject = data.get('subject', 'Bhineka Hotels Report')
     message_body = data.get('message', '')
     
     if not email:
@@ -700,7 +700,7 @@ def api_reports_send_email():
     try:
         msg = EmailMessage()
         msg['Subject'] = subject
-        msg['From'] = os.getenv('MAIL_USERNAME', 'no-reply@antigravityhotels.com')
+        msg['From'] = os.getenv('MAIL_USERNAME', 'no-reply@bhinekahotels.com')
         msg['To'] = email
         msg.set_content(message_body)
         

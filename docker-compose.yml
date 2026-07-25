@@ -18,7 +18,7 @@ services:
       - MAIL_USE_TLS=${MAIL_USE_TLS:-True}
       - MAIL_USERNAME=${MAIL_USERNAME:-}
       - MAIL_PASSWORD=${MAIL_PASSWORD:-}
-      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER:-noreply@antigravityhotels.com}
+      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER:-noreply@bhinekahotels.com}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     volumes:
