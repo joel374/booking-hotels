@@ -19,6 +19,8 @@ services:
       - MAIL_USERNAME=${MAIL_USERNAME:-}
       - MAIL_PASSWORD=${MAIL_PASSWORD:-}
       - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER:-noreply@antigravityhotels.com}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     volumes:
       - uploads_data:/app/static/uploads
       - session_data:/app/flask_session
