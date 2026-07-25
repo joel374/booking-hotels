@@ -35,7 +35,7 @@ def book_room(room_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    cursor.execute("SELECT * FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.id = %s", (room_id,))
+    cursor.execute("SELECT * FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.id = %s AND r.is_deleted = 0 AND h.is_deleted = 0", (room_id,))
     room = cursor.fetchone()
     
     if not room:
@@ -68,8 +68,12 @@ def book_room(room_id):
         cleanup_expired_bookings(cursor)
         
         # LOCK THE ROOM ROW to prevent race conditions (Double Booking)
-        cursor.execute("SELECT id FROM rooms WHERE id = %s FOR UPDATE", (room_id,))
-        cursor.fetchone() # Clear the unread result from the buffer
+        cursor.execute("SELECT id FROM rooms WHERE id = %s AND is_deleted = 0 FOR UPDATE", (room_id,))
+        locked_room = cursor.fetchone() # Clear the unread result from the buffer
+        
+        if not locked_room:
+            flash("Mohon maaf, kamar ini baru saja dihapus atau tidak tersedia lagi.", "danger")
+            return redirect(url_for('main.index'))
         
         query = """
             SELECT COUNT(*) as count FROM bookings 
