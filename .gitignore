@@ -19,8 +19,10 @@ data_export.json
 # Uploads (keep directory structure but not files)
 static/uploads/hotels/*
 static/uploads/rooms/*
+static/uploads/users/*
 !static/uploads/hotels/.gitkeep
 !static/uploads/rooms/.gitkeep
+!static/uploads/users/.gitkeep
 
 # Session
 flask_session/
