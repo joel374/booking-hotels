@@ -569,7 +569,7 @@ def delete_hotel(hotel_id):
 - ✅ Use `login_required` and `admin_required` decorators
 - ✅ Follow existing template structure (extend base.html)
 - ✅ **ALWAYS update this AI_CONTEXT.md file** after completing a task or preparing a commit, so the context is always fresh.
-- ✅ **ALWAYS update `schema.sql`** whenever there is a change to the database structure (adding tables, altering columns) so the team stays synced.
+- ✅ **ALWAYS update `schema.sql`** AND create a new `.sql` file in the `migrations/` folder whenever there is a change to the database structure (adding tables, altering columns). The `run_migrations.py` script will automatically execute new migrations sequentially when Docker starts, keeping production environments synced.
 
 ### **DON'T:**
 

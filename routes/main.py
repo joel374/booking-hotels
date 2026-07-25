@@ -12,7 +12,7 @@ def get_available_rooms(hotel_id, check_in, check_out, min_price=None, max_price
     
     query = """
         SELECT r.* FROM rooms r
-        WHERE r.hotel_id = %s AND r.id NOT IN (
+        WHERE r.hotel_id = %s AND r.is_deleted = 0 AND r.id NOT IN (
             SELECT b.room_id FROM bookings b
             WHERE b.status IN ('Booked', 'Pending') 
             AND (b.check_in < %s AND b.check_out > %s)
@@ -45,7 +45,7 @@ def get_booked_rooms(hotel_id, check_in, check_out):
     
     query = """
         SELECT r.* FROM rooms r
-        WHERE r.hotel_id = %s AND r.id IN (
+        WHERE r.hotel_id = %s AND r.is_deleted = 0 AND r.id IN (
             SELECT b.room_id FROM bookings b
             WHERE b.status IN ('Booked', 'Pending') 
             AND (b.check_in < %s AND b.check_out > %s)
@@ -78,13 +78,13 @@ def index():
     """
     
     # 1. Rekomendasi (Top 14 Rating)
-    cursor.execute(base_query + " ORDER BY h.rating DESC LIMIT 14")
+    cursor.execute(base_query + " WHERE h.is_deleted = 0 ORDER BY h.rating DESC LIMIT 14")
     rekomendasi = cursor.fetchall()
     
     for hotel in rekomendasi:
         cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel['id'],))
         hotel['images'] = [img['image_url'] for img in cursor.fetchall()]
-        cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s", (hotel['id'],))
+        cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s AND is_deleted = 0", (hotel['id'],))
         res = cursor.fetchone()
         hotel['min_price'] = res['min_price'] if res and res['min_price'] else 0
         
@@ -94,18 +94,19 @@ def index():
         FROM hotels h 
         JOIN cities c ON h.city_id = c.city_id 
         JOIN provinces p ON h.province_id = p.province_id
+        WHERE h.is_deleted = 0
         ORDER BY c.city_name
     """)
     available_cities = cursor.fetchall()
     
     city_groups = []
     for city in available_cities:
-        cursor.execute(base_query + " WHERE h.city_id = %s LIMIT 14", (city['city_id'],))
+        cursor.execute(base_query + " WHERE h.is_deleted = 0 AND h.city_id = %s LIMIT 14", (city['city_id'],))
         city_hotels = cursor.fetchall()
         for hotel in city_hotels:
             cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel['id'],))
             hotel['images'] = [img['image_url'] for img in cursor.fetchall()]
-            cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s", (hotel['id'],))
+            cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s AND is_deleted = 0", (hotel['id'],))
             res = cursor.fetchone()
             hotel['min_price'] = res['min_price'] if res and res['min_price'] else 0
         
@@ -138,6 +139,7 @@ def city_hotels(city_id):
         FROM hotels h 
         JOIN cities c ON h.city_id = c.city_id 
         JOIN provinces p ON h.province_id = p.province_id
+        WHERE h.is_deleted = 0
         ORDER BY c.city_name
     """)
     available_cities = cursor.fetchall()
@@ -166,11 +168,11 @@ def api_hotels():
     cursor = conn.cursor(dictionary=True)
     
     base_query = """
-        SELECT h.*, c.city_name, p.province, (SELECT MIN(price) FROM rooms WHERE hotel_id = h.id) as min_price
+        SELECT h.*, c.city_name, p.province, (SELECT MIN(price) FROM rooms WHERE hotel_id = h.id AND is_deleted = 0) as min_price
         FROM hotels h 
         LEFT JOIN cities c ON h.city_id = c.city_id 
         LEFT JOIN provinces p ON h.province_id = p.province_id
-        WHERE h.city_id = %s
+        WHERE h.city_id = %s AND h.is_deleted = 0
         HAVING 1=1
     """
     params = [city_id]
@@ -222,7 +224,7 @@ def live_search():
         FROM hotels h
         LEFT JOIN cities c ON h.city_id = c.city_id
         LEFT JOIN provinces p ON h.province_id = p.province_id
-        WHERE h.name LIKE %s
+        WHERE h.name LIKE %s AND h.is_deleted = 0
         LIMIT 5
     """, (f'%{query}%',))
     hotels = cursor.fetchall()
@@ -296,7 +298,7 @@ def hotel_rooms(hotel_id):
         FROM hotels h 
         LEFT JOIN cities c ON h.city_id = c.city_id 
         LEFT JOIN provinces p ON h.province_id = p.province_id
-        WHERE h.id = %s
+        WHERE h.id = %s AND h.is_deleted = 0
     """, (hotel_id,))
     hotel = cursor.fetchone()
     
@@ -304,7 +306,7 @@ def hotel_rooms(hotel_id):
         cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel_id,))
         hotel['images'] = [img['image_url'] for img in cursor.fetchall()]
         
-        cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s", (hotel_id,))
+        cursor.execute("SELECT MIN(price) as min_price FROM rooms WHERE hotel_id = %s AND is_deleted = 0", (hotel_id,))
         res = cursor.fetchone()
         hotel['min_price'] = res['min_price'] if res and res['min_price'] else 0
         
