@@ -1004,7 +1004,7 @@ def profile_edit():
     photo_url = None
     if file and file.filename != '':
         try:
-            photo_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/users')
+            photo_url = save_file(file, current_app.config['USER_UPLOAD_FOLDER'], 'uploads/users')
             cursor.execute("SELECT photo_url FROM users WHERE id = %s", (session['user_id'],))
             old_photo = cursor.fetchone().get('photo_url')
             if old_photo:
