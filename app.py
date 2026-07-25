@@ -88,7 +88,10 @@ def handle_global_error(e):
 
 # Context Processor for global user data
 from flask import session
-from db import get_db_connection
+from db import get_db_connection, init_db_schema
+
+# Ensure database schema is initialized and tables exist
+init_db_schema()
 
 @app.context_processor
 def inject_user():
