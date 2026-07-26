@@ -191,6 +191,8 @@ def login():
             session.permanent = remember_me
             session['user_id'] = user['id']
             session['username'] = user['username']
+            session['theme'] = user.get('theme', 'light')
+            session['language'] = user.get('language', 'id')
             
             cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user['id'],))
             conn.commit()
@@ -260,6 +262,8 @@ def authorize_google():
             session.permanent = True
             session['user_id'] = user['id']
             session['username'] = user['username']
+            session['theme'] = user.get('theme', 'light')
+            session['language'] = user.get('language', 'id')
             
             cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user['id'],))
             conn.commit()
@@ -287,11 +291,12 @@ def authorize_google():
             
             cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
             user = cursor.fetchone()
-            is_new_user = True
             
             session.permanent = True
             session['user_id'] = user['id']
             session['username'] = user['username']
+            session['theme'] = 'light'
+            session['language'] = 'id'
             
             cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user['id'],))
             conn.commit()
