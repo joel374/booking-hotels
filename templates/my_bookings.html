@@ -3,24 +3,24 @@
 {% block content %}
 <div class="pt-4">
     <div style="margin-bottom: 4rem;">
-        <h1 class="section-title" style="color: var(--primary-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 2rem; font-family: 'Playfair Display', serif;">Pesanan Saya</h1>
+        <h1 class="section-title" style="color: var(--primary-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 2rem; font-family: 'Playfair Display', serif;">{{ _('Pesanan Saya') }}</h1>
         
         {% if bookings %}
         <div class="grid">
             {% for booking in bookings %}
-            <div class="room-card" style="padding: 1.5rem; position: relative; overflow: hidden; border: 1px solid #e2e8f0;">
+            <div class="room-card" style="padding: 1.5rem; position: relative; overflow: hidden; border: 1px solid var(--border-color, #e2e8f0);">
                 {% if booking.status == 'Booked' %}
                     <div class="status-badge success">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         BOOKED
                     </div>
                 {% elif booking.status == 'Checked In' %}
-                    <div class="status-badge info" style="background: #e0f2fe; color: #0284c7;">
+                    <div class="status-badge info">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
                         CHECKED IN
                     </div>
                 {% elif booking.status == 'Checked Out' %}
-                    <div class="status-badge secondary" style="background: #f1f5f9; color: #64748b;">
+                    <div class="status-badge secondary">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                         CHECKED OUT
                     </div>
@@ -35,21 +35,21 @@
                 <p class="text-muted" style="margin-bottom: 1rem;">{{ booking.room_type }} (Kamar {{ booking.room_number }})</p>
                 
                 <div class="booking-summary-box">
-                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-in:</strong> {{ booking.check_in | format_date }}</p>
-                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>Check-out:</strong> {{ booking.check_out | format_date }}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>{{ _('Check-in') }}:</strong> {{ booking.check_in | format_date }}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.95rem;"><strong>{{ _('Check-out') }}:</strong> {{ booking.check_out | format_date }}</p>
                     <p style="margin-top: 0.75rem; font-weight: 700; color: var(--accent-color); font-size: 1.1rem;">Rp {{ "{:,.0f}".format(booking.price) }}</p>
                 </div>
 
                 <div style="margin-top: auto; display: flex; gap: 0.5rem; flex-direction: column;">
                     {% if booking.status == 'Cancelled' and booking.cancel_reason %}
-                        <div style="margin-bottom: 10px; padding: 8px; background: #fff5f5; border: 1px dashed #fc8181; border-radius: 6px;">
-                            <p style="color: #c53030; font-size: 0.85rem; margin: 0;"><strong>Reason:</strong> {{ booking.cancel_reason }}</p>
+                        <div style="margin-bottom: 10px; padding: 8px; background: rgba(239, 68, 68, 0.1); border: 1px dashed #ef4444; border-radius: 6px;">
+                            <p style="color: #ef4444; font-size: 0.85rem; margin: 0;"><strong>Reason:</strong> {{ booking.cancel_reason }}</p>
                         </div>
                     {% endif %}
 
                     <div style="display: flex; gap: 0.75rem;">
                         {% if booking.status in ['Booked', 'Checked In', 'Checked Out'] %}
-                            <a href="{{ url_for('booking.invoice', booking_id=booking.id) }}" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 40px;">Lihat Invoice</a>
+                            <a href="{{ url_for('booking.invoice', booking_id=booking.id) }}" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 40px;">{{ _('Lihat Invoice') }}</a>
                         {% endif %}
                         
                         {% if booking.status == 'Checked Out' and booking.has_reviewed == 0 and booking.can_review %}
@@ -62,7 +62,7 @@
                                 <button type="submit" class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 6px; text-align: center; margin: 0; min-height: 40px;">Batal</button>
                             </form>
                             {% else %}
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; background: #f1f5f9; color: #94a3b8; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; margin: 0; min-height: 40px; cursor: not-allowed;" title="Batas waktu pembatalan sudah lewat">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; background: var(--bg-color); color: var(--text-muted); border: 1px solid var(--border-color, #cbd5e1); border-radius: 6px; text-align: center; margin: 0; min-height: 40px; cursor: not-allowed;" title="Batas waktu pembatalan sudah lewat">
                                 Batal
                             </div>
                             {% endif %}
@@ -73,7 +73,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <div style="padding: 4rem 2rem; text-align: center; background: white; border-radius: 16px; box-shadow: var(--shadow-soft);">
+        <div style="padding: 4rem 2rem; text-align: center; background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow-soft);">
             <img src="{{ url_for('static', filename='img/empty_bookings.png') }}" alt="Belum ada pesanan" style="max-width: 250px; margin-bottom: 2rem;">
             <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Koper Masih Kosong!</h3>
             <p class="text-muted" style="margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">Sepertinya Anda belum menjadwalkan liburan apa pun. Yuk temukan hotel impian Anda sekarang dan mulai petualangan!</p>
@@ -105,7 +105,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <div style="padding: 3rem 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1px dashed #cbd5e1;">
+        <div style="padding: 3rem 2rem; text-align: center; background: var(--card-bg); border-radius: 16px; border: 1px dashed var(--border-color, #cbd5e1);">
             <p class="text-muted">Anda tidak sedang mengantre di kamar mana pun.</p>
         </div>
         {% endif %}
@@ -114,7 +114,7 @@
 
 <!-- Review Modal -->
 <div id="review-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-    <div style="background: white; width: 90%; max-width: 500px; border-radius: 16px; padding: 2.5rem; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: modalSlideUp 0.3s ease-out forwards;">
+    <div style="background: var(--card-bg); width: 90%; max-width: 500px; border-radius: 16px; padding: 2.5rem; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: modalSlideUp 0.3s ease-out forwards;">
         <button type="button" onclick="closeReviewModal()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; padding: 0;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">&times;</button>
         <h3 style="margin-top: 0; color: var(--primary-color);">Tulis Ulasan</h3>
         <p class="text-muted" style="margin-bottom: 1.5rem;">Bagikan pengalaman Anda menginap di <strong id="modal-hotel-name"></strong>.</p>
@@ -164,15 +164,28 @@ document.querySelectorAll('.cancel-booking-form').forEach(form => {
         e.preventDefault();
         Swal.fire({
             title: 'Batalkan Pesanan?',
-            text: "Apakah Anda yakin ingin membatalkan pesanan ini? Tindakan ini tidak dapat dibatalkan.",
+            text: "Mohon beri tahu kami alasan Anda membatalkan pesanan ini:",
+            input: 'textarea',
+            inputPlaceholder: 'Misal: Berubah pikiran, salah tanggal, dll.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#94a3b8',
             confirmButtonText: 'Ya, Batalkan!',
-            cancelButtonText: 'Tutup'
+            cancelButtonText: 'Tutup',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Anda harus memberikan alasan pembatalan!'
+                }
+            }
         }).then((result) => {
             if (result.isConfirmed) {
+                // Add hidden input for cancel_reason
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'cancel_reason';
+                hiddenInput.value = result.value;
+                form.appendChild(hiddenInput);
                 form.submit();
             }
         });

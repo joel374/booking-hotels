@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_language }}" data-theme="{{ current_theme }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,31 +8,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
 </head>
 <body>
     <nav class="navbar {% if request.endpoint != 'main.index' %}scrolled{% endif %}" id="navbar">
         <a href="{{ url_for('main.index') }}" class="navbar-brand">Bhineka Hotels</a>
         
         <div class="nav-links center-nav" id="navLinks">
-            <a href="{{ url_for('main.index') }}">Home</a>
-            <a href="{{ url_for('main.about') }}">About Us</a>
-            <a href="{{ url_for('main.contact') }}">Contact</a>
+            <a href="{{ url_for('main.index') }}">{{ _('Beranda') }}</a>
+            <a href="{{ url_for('main.about') }}">{{ _('Tentang Kami') }}</a>
+            <a href="{{ url_for('main.contact') }}">{{ _('Kontak') }}</a>
             
             <div class="global-search-container" style="position: relative; margin-left: 1rem; display: flex; align-items: center;">
-                <input type="text" id="globalSearchInput" placeholder="Cari Hotel / Kota..." autocomplete="off" style="padding: 0.4rem 1rem; border-radius: 20px; border: 1px solid #e2e8f0; outline: none; background: rgba(255,255,255,0.9); color: #333; font-family: 'Inter', sans-serif; font-size: 0.9rem; width: 220px; transition: width 0.3s ease;">
+                <input type="text" id="globalSearchInput" placeholder="{{ _('Cari Hotel / Kota...') }}" autocomplete="off" style="padding: 0.4rem 1rem; border-radius: 20px; border: 1px solid var(--border-color, #e2e8f0); outline: none; background: var(--card-bg); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 0.9rem; width: 220px; transition: width 0.3s ease;">
                 <div id="globalSearchResults" class="suggestions-box" style="display: none;"></div>
             </div>
         </div>
 
         <div class="nav-actions">
+            <div style="display: flex; gap: 0.5rem; align-items: center; margin-right: 1rem;">
+                <button id="theme-toggle" class="btn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.2rem; color: var(--text-main);">
+                    {% if current_theme == 'dark' %}🌙{% else %}☀️{% endif %}
+                </button>
+                <select id="lang-toggle" class="custom-select-native" style="padding: 0.3rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: 500; font-size: 0.85rem; cursor: pointer; outline: none;">
+                    <option value="id" {% if current_language == 'id' %}selected{% endif %}>ID</option>
+                    <option value="en" {% if current_language == 'en' %}selected{% endif %}>EN</option>
+                </select>
+            </div>
+
             {% if session.get('user_id') %}
                 <a href="{{ url_for('auth.profile') }}" class="login-btn">Profile</a>
-                <a href="{{ url_for('booking.my_bookings') }}" class="login-btn">My Bookings</a>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">Logout</a>
+                <a href="{{ url_for('booking.my_bookings') }}" class="login-btn">{{ _('Pesanan Saya') }}</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">{{ _('Keluar') }}</a>
             {% else %}
-                <a href="{{ url_for('auth.login') }}" class="login-btn">Login</a>
-                <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">Register</a>
+                <a href="{{ url_for('auth.login') }}" class="login-btn">{{ _('Masuk') }}</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">{{ _('Daftar') }}</a>
             {% endif %}
             
             <button class="mobile-menu-btn" id="mobileMenuBtn">
@@ -63,6 +73,35 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 
     <script>
+        // Theme and Language Logic
+        document.getElementById('theme-toggle').addEventListener('click', async function() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            this.innerText = newTheme === 'dark' ? '🌙' : '☀️';
+            
+            try {
+                await fetch('/api/set-theme', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({theme: newTheme})
+                });
+            } catch (e) { console.error('Error saving theme', e); }
+        });
+
+        document.getElementById('lang-toggle').addEventListener('change', async function() {
+            const newLang = this.value;
+            try {
+                await fetch('/api/set-language', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({language: newLang})
+                });
+                window.location.reload();
+            } catch (e) { console.error('Error saving language', e); }
+        });
+
         // SweetAlert2 for Flash Messages
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -289,5 +328,109 @@
         </a>
         {% endif %}
     </nav>
+    <!-- Image Preview Lightbox -->
+    <div id="custom-lightbox" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.95); z-index: 9999; flex-direction: column; justify-content: center; align-items: center;">
+        <button id="lightbox-close" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 2.5rem; cursor: pointer; padding: 10px; line-height: 1; z-index: 10000;">&times;</button>
+        <button id="lightbox-prev" style="position: absolute; left: 20px; background: none; border: none; color: white; font-size: 3rem; cursor: pointer; padding: 20px; z-index: 10000;">&#10094;</button>
+        <img id="lightbox-img" style="max-height: 85vh; max-width: 90vw; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <button id="lightbox-next" style="position: absolute; right: 20px; background: none; border: none; color: white; font-size: 3rem; cursor: pointer; padding: 20px; z-index: 10000;">&#10095;</button>
+    </div>
+    
+    <script>
+        const lightbox = document.getElementById('custom-lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxClose = document.getElementById('lightbox-close');
+        const lightboxPrev = document.getElementById('lightbox-prev');
+        const lightboxNext = document.getElementById('lightbox-next');
+        let currentImages = [];
+        let currentIndex = 0;
+
+        function updateLightboxImage() {
+            if (currentImages.length > 0) {
+                lightboxImg.src = currentImages[currentIndex];
+                lightboxPrev.style.display = currentImages.length > 1 ? 'block' : 'none';
+                lightboxNext.style.display = currentImages.length > 1 ? 'block' : 'none';
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'IMG' && (
+                e.target.classList.contains('masonry-img') || 
+                e.target.closest('.room-image-carousel')
+            )) {
+                if (e.target.closest('.navbar') || e.target.closest('.auth-container') || e.target.closest('.mobile-bottom-nav')) return;
+                
+                // Find container to get all images for gallery
+                let container = e.target.closest('.hotel-gallery-grid, .masonry-grid, .horizontal-scroll-container, .rooms-grid') || document.body;
+                
+                // Query all valid images in container
+                let imgElements = Array.from(container.querySelectorAll('img.masonry-img, .room-image-carousel img'))
+                    .filter(img => !img.closest('.navbar') && !img.closest('.auth-container'));
+                
+                if (imgElements.length === 0) imgElements = [e.target];
+                
+                // Extract unique src
+                currentImages = Array.from(new Set(imgElements.map(img => img.src)));
+                currentIndex = currentImages.indexOf(e.target.src);
+                if (currentIndex === -1) currentIndex = 0;
+                
+                updateLightboxImage();
+                lightbox.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        });
+
+        lightboxClose.addEventListener('click', () => {
+            lightbox.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        lightboxPrev.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentIndex = (currentIndex > 0) ? currentIndex - 1 : currentImages.length - 1;
+            updateLightboxImage();
+        });
+
+        lightboxNext.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentIndex = (currentIndex < currentImages.length - 1) ? currentIndex + 1 : 0;
+            updateLightboxImage();
+        });
+
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                lightbox.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (lightbox.style.display === 'flex') {
+                if (e.key === 'Escape') lightboxClose.click();
+                if (e.key === 'ArrowLeft') lightboxPrev.click();
+                if (e.key === 'ArrowRight') lightboxNext.click();
+            }
+        });
+
+        // Mobile swipe support
+        let touchstartX = 0;
+        let touchendX = 0;
+        
+        lightbox.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+        
+        lightbox.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            if (currentImages.length <= 1) return;
+            if (touchendX < touchstartX - 50) lightboxNext.click(); // Swipe left -> Next
+            if (touchendX > touchstartX + 50) lightboxPrev.click(); // Swipe right -> Prev
+        }, {passive: true});
+    </script>
+    <style>
+        .masonry-img, .room-image-carousel img { cursor: zoom-in; transition: opacity 0.2s; }
+        .masonry-img:hover, .room-image-carousel img:hover { opacity: 0.9; }
+        #lightbox-prev:hover, #lightbox-next:hover, #lightbox-close:hover { opacity: 0.7; }
+    </style>
 </body>
 </html>

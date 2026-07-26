@@ -290,7 +290,9 @@ def cancel_booking(booking_id):
         flash("Pesanan tidak dapat dibatalkan karena sudah melewati batas waktu (24 jam sebelum check-in).", "danger")
         return redirect(url_for('booking.my_bookings'))
 
-    cursor.execute("UPDATE bookings SET status = 'Cancelled' WHERE id = %s AND user_id = %s", (booking_id, session['user_id']))
+    cancel_reason = request.form.get('cancel_reason', 'Dibatalkan oleh Pengguna')
+    
+    cursor.execute("UPDATE bookings SET status = 'Cancelled', cancel_reason = %s WHERE id = %s AND user_id = %s", (cancel_reason, booking_id, session['user_id']))
     conn.commit()
     
     # Kirim Email Cancelled
@@ -413,6 +415,13 @@ def submit_review(booking_id):
             INSERT INTO reviews (hotel_id, user_id, booking_id, rating, comment)
             VALUES (%s, %s, %s, %s, %s)
         """, (booking['hotel_id'], session['user_id'], booking_id, rating, comment))
+        
+        # Update hotel average rating
+        cursor.execute("SELECT AVG(rating) as avg_rating FROM reviews WHERE hotel_id = %s", (booking['hotel_id'],))
+        result = cursor.fetchone()
+        avg_rating = result['avg_rating'] if result and result['avg_rating'] else 0.0
+        cursor.execute("UPDATE hotels SET rating = %s WHERE id = %s", (avg_rating, booking['hotel_id']))
+        
         conn.commit()
         flash("Thank you for your review!", "success")
     except mysql.connector.IntegrityError:

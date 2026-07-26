@@ -15,6 +15,8 @@ load_dotenv()
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 from datetime import date, datetime, timedelta
+from translations import TRANSLATIONS
+from flask import session
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
@@ -41,6 +43,21 @@ def format_date(value):
         return f"{dt.day} {months_id[dt.month]}"
     except Exception:
         return value
+
+@app.context_processor
+def inject_globals():
+    # Translation function
+    def translate(text):
+        lang = session.get('language', 'id')
+        if lang == 'en':
+            return TRANSLATIONS.get(text, text)
+        return text
+    
+    return dict(
+        _ = translate,
+        current_theme = session.get('theme', 'light'),
+        current_language = session.get('language', 'id')
+    )
 
 # Setup File Uploads
 HOTEL_UPLOAD_FOLDER = os.path.join('static', 'uploads', 'hotels')

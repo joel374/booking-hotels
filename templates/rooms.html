@@ -118,7 +118,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        background: white;
+        background: var(--card-bg);
         padding: 1rem;
         box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
         z-index: 100;
@@ -131,7 +131,7 @@
 
 <!-- Header -->
 <div class="hotel-details-header" style="margin-bottom: 1.5rem;">
-    <a href="{{ url_for('main.index', check_in=check_in, check_out=check_out) }}" class="desktop-back-link" style="color: var(--accent-color); text-decoration: none; font-weight: 600; font-size: 0.95rem;">&larr; Kembali ke Pencarian</a>
+    <a href="{{ url_for('main.index', check_in=check_in, check_out=check_out) }}" class="desktop-back-link" style="color: var(--accent-color); text-decoration: none; font-weight: 600; font-size: 0.95rem;">&larr; {{ _('Kembali') }}</a>
     
     <h1 style="font-size: 2.2rem; font-weight: 700; margin: 1rem 0 0.5rem 0;">{{ hotel.name }}</h1>
     
@@ -186,7 +186,7 @@
                     {% for img in room.images %}
                     <img src="{{ img }}" alt="{{ room.room_type }}">
                     {% else %}
-                    <div style="flex: 0 0 100%; width: 100%; height: 100%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #94a3b8;">Tidak ada foto</div>
+                    <div style="flex: 0 0 100%; width: 100%; height: 100%; background: var(--bg-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">{{ _('Tidak ada foto') }}</div>
                     {% endfor %}
                 </div>
                 
@@ -206,7 +206,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <div style="padding: 3rem; text-align: center; background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
+        <div style="padding: 3rem; text-align: center; background: var(--card-bg); border-radius: 12px; border: 1px dashed var(--border-color, #cbd5e1);">
             <p class="text-muted" style="font-size: 1.1rem;">Maaf, tidak ada kamar yang tersedia untuk tanggal tersebut.</p>
         </div>
         {% endif %}
@@ -220,7 +220,7 @@
                     {% for img in room.images %}
                     <img src="{{ img }}" alt="{{ room.room_type }}">
                     {% else %}
-                    <div style="flex: 0 0 100%; width: 100%; height: 100%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #94a3b8;">Tidak ada foto</div>
+                    <div style="flex: 0 0 100%; width: 100%; height: 100%; background: var(--bg-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">{{ _('Tidak ada foto') }}</div>
                     {% endfor %}
                 </div>
                 
@@ -264,8 +264,8 @@
             {% endfor %}
         </div>
         {% else %}
-        <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
-            <p class="text-muted" style="margin: 0;">Belum ada ulasan untuk penginapan ini.</p>
+        <div style="padding: 2rem; text-align: center; background: var(--bg-color); border-radius: 12px; border: 1px dashed var(--border-color, #cbd5e1);">
+            <p class="text-muted" style="margin: 0;">{{ _('Belum ada ulasan untuk penginapan ini.') }}</p>
         </div>
         {% endif %}
     </div>
@@ -273,15 +273,15 @@
     <!-- Right Column (Sidebar) -->
     <div class="hotel-sidebar">
         <div class="sticky-sidebar">
-            <h3 style="margin-top: 0; font-size: 1.2rem;">Atur Perjalanan</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Ubah tanggal atau saring harga untuk menemukan kamar yang tepat.</p>
+            <h3 style="margin-top: 0; font-size: 1.4rem;">{{ _('Fasilitas Hotel') }}</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">{{ _('Ubah tanggal atau saring harga untuk menemukan kamar yang tepat.') }}</p>
             
             <form method="GET" action="{{ url_for('main.hotel_rooms', hotel_id=hotel.id) }}">
                 <div class="filter-group" style="margin-bottom: 1rem;">
                     <label for="check_in" class="form-label" style="font-size: 0.9rem; font-weight: 600;">Check-in</label>
                     <div class="input-with-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        <input type="text" id="check_in" name="check_in" class="form-control" placeholder="Pilih tanggal" value="{{ check_in }}" required>
+                        <input type="text" id="check_in" name="check_in" class="form-control" placeholder="{{ _('Pilih tanggal') }}" value="{{ check_in }}" required>
                     </div>
                 </div>
                 
@@ -289,30 +289,30 @@
                     <label for="check_out" class="form-label" style="font-size: 0.9rem; font-weight: 600;">Check-out</label>
                     <div class="input-with-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        <input type="text" id="check_out" name="check_out" class="form-control" placeholder="Pilih tanggal" value="{{ check_out }}" required>
+                        <input type="text" id="check_out" name="check_out" class="form-control" placeholder="{{ _('Pilih tanggal') }}" value="{{ check_out }}" required>
                     </div>
                 </div>
                 
                 <div class="filter-group" style="margin-bottom: 1rem;">
-                    <label for="min_price" class="form-label" style="font-size: 0.9rem; font-weight: 600;">Harga Min (Rp)</label>
+                    <label for="min_price" class="form-label" style="font-size: 0.9rem; font-weight: 600;">{{ _('Harga Min (Rp)') }}</label>
                     <input type="number" id="min_price" name="min_price" class="form-control" value="{{ min_price }}" placeholder="0" min="0" step="10000">
                 </div>
                 
                 <div class="filter-group" style="margin-bottom: 1rem;">
-                    <label for="max_price" class="form-label" style="font-size: 0.9rem; font-weight: 600;">Harga Max (Rp)</label>
+                    <label for="max_price" class="form-label" style="font-size: 0.9rem; font-weight: 600;">{{ _('Harga Max (Rp)') }}</label>
                     <input type="number" id="max_price" name="max_price" class="form-control" value="{{ max_price }}" placeholder="10000000" min="0" step="10000">
                 </div>
                 
                 <div class="filter-group" style="margin-bottom: 1.5rem;">
-                    <label for="sort_by" class="form-label" style="font-size: 0.9rem; font-weight: 600;">Urutkan</label>
+                    <label for="sort_by" class="form-label" style="font-size: 0.9rem; font-weight: 600;">{{ _('Urutkan') }}</label>
                     <select id="sort_by" name="sort_by" class="form-control custom-select-native">
-                        <option value="">Rekomendasi</option>
-                        <option value="cheapest" {% if sort_by == 'cheapest' %}selected{% endif %}>Harga Termurah</option>
-                        <option value="expensive" {% if sort_by == 'expensive' %}selected{% endif %}>Harga Termahal</option>
+                        <option value="">{{ _('Rekomendasi') }}</option>
+                        <option value="cheapest" {% if sort_by == 'cheapest' %}selected{% endif %}>{{ _('Harga Termurah') }}</option>
+                        <option value="expensive" {% if sort_by == 'expensive' %}selected{% endif %}>{{ _('Harga Termahal') }}</option>
                     </select>
                 </div>
                 
-                <button type="submit" class="btn btn-primary" style="padding: 0.8rem; width: 100%; font-weight: 600;">Cari Kamar Tersedia</button>
+                <button type="submit" class="btn btn-primary" style="padding: 0.8rem; font-size: 0.9rem; font-weight: 600; width: 100%;">{{ _('Pesan Sekarang') }}</button>
             </form>
         </div>
     </div>

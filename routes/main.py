@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from datetime import datetime, timedelta
 from db import get_db_connection, cleanup_expired_bookings
 
@@ -347,3 +347,29 @@ def hotel_rooms(hotel_id):
                            max_price=max_price if max_price else '', 
                            sort_by=sort_by,
                            reviews=reviews)
+
+@main_bp.route('/api/set-theme', methods=['POST'])
+def set_theme():
+    theme = request.json.get('theme', 'light')
+    session['theme'] = theme
+    if 'user_id' in session:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET theme = %s WHERE id = %s", (theme, session['user_id']))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    return {"status": "success", "theme": theme}
+
+@main_bp.route('/api/set-language', methods=['POST'])
+def set_language():
+    language = request.json.get('language', 'id')
+    session['language'] = language
+    if 'user_id' in session:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET language = %s WHERE id = %s", (language, session['user_id']))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    return {"status": "success", "language": language}
