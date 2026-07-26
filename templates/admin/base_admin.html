@@ -55,6 +55,20 @@
             font: inherit;
         }
 
+
+        .theme-dark {
+            --primary: #f8fafc;
+            --secondary: #6366f1;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --surface-soft: #334155;
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f1f5f9;
+            --subtext: #94a3b8;
+            --shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+            --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.4);
+        }
+
         .admin-shell {
             display: grid;
             grid-template-columns: 250px minmax(0, 1fr);
@@ -63,8 +77,8 @@
         }
 
         .admin-sidebar {
-            background: #ffffff;
-            color: var(--text);
+            background: var(--surface);
+color: var(--text);
             padding: 1.75rem 1.25rem;
             display: flex;
             flex-direction: column;
@@ -191,8 +205,8 @@
             align-items: center;
             padding: 0.75rem 1rem;
             border-radius: 24px;
-            background: #fff;
-            border: 1px solid var(--border);
+            background: var(--surface);
+border: 1px solid var(--border);
             box-shadow: var(--shadow-soft);
             margin-bottom: 1.5rem;
         }
@@ -248,8 +262,8 @@
             padding: 0.8rem 1rem 0.8rem 3rem;
             border-radius: 14px;
             border: 1px solid var(--border);
-            background: #fff;
-            color: var(--text);
+            background: var(--surface);
+color: var(--text);
             box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
         }
 
@@ -266,8 +280,8 @@
             height: 44px;
             border-radius: 14px;
             border: 1px solid var(--border);
-            background: #fff;
-            display: grid;
+            background: var(--surface);
+display: grid;
             place-items: center;
             color: var(--secondary);
             cursor: pointer;
@@ -285,8 +299,8 @@
             gap: 0.75rem;
             padding: 0.75rem 1rem;
             border-radius: 16px;
-            background: #fff;
-            border: 1px solid var(--border);
+            background: var(--surface);
+border: 1px solid var(--border);
             box-shadow: var(--shadow-soft);
             cursor: pointer;
         }
@@ -314,8 +328,8 @@
             height: 48px;
             border-radius: 16px;
             border: 1px solid rgba(15, 23, 42, 0.08);
-            background: #fff;
-            color: var(--primary);
+            background: var(--surface);
+color: var(--primary);
             display: grid;
             place-items: center;
             cursor: pointer;
@@ -333,8 +347,8 @@
             gap: 0.5rem;
             border-radius: 999px;
             padding: 0.85rem 1rem;
-            background: #fff;
-            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: var(--surface);
+border: 1px solid rgba(15, 23, 42, 0.08);
             color: var(--text);
             font-size: 0.92rem;
             box-shadow: var(--shadow-soft);
@@ -346,8 +360,8 @@
             gap: 0.85rem;
             padding: 0.75rem 1rem;
             border-radius: 18px;
-            background: #fff;
-            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: var(--surface);
+border: 1px solid rgba(15, 23, 42, 0.08);
             box-shadow: var(--shadow-soft);
         }
 
@@ -373,8 +387,8 @@
             padding: 0.95rem 1rem 0.95rem 3rem;
             border-radius: 16px;
             border: 1px solid var(--border);
-            background: #fff;
-            color: var(--text);
+            background: var(--surface);
+color: var(--text);
             transition: var(--transition);
             box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06);
         }
@@ -406,8 +420,8 @@
             height: 44px;
             border-radius: 16px;
             border: 1px solid rgba(15, 23, 42, 0.12);
-            background: #fff;
-            color: var(--text);
+            background: var(--surface);
+color: var(--text);
             display: grid;
             place-items: center;
             cursor: pointer;
@@ -427,8 +441,8 @@
             gap: 0.85rem;
             padding: 0.75rem 1rem;
             border-radius: 999px;
-            background: #fff;
-            border: 1px solid rgba(229, 231, 235, 0.95);
+            background: var(--surface);
+border: 1px solid rgba(229, 231, 235, 0.95);
             box-shadow: var(--shadow-soft);
             color: var(--text);
             cursor: pointer;
@@ -466,8 +480,8 @@
         }
 
         .alert-card {
-            background: #fff;
-            border-radius: 18px;
+            background: var(--surface);
+border-radius: 18px;
             border: 1px solid var(--border);
             padding: 1rem 1.15rem;
             box-shadow: var(--shadow-soft);
@@ -507,8 +521,8 @@
         }
 
         .stat-card {
-            background: #fff;
-            border-radius: 24px;
+            background: var(--surface);
+border-radius: 24px;
             border: 1px solid rgba(226, 232, 240, 0.85);
             padding: 1.25rem;
             box-shadow: var(--shadow-soft);
@@ -572,8 +586,8 @@
         }
 
         .card-panel {
-            background: #fff;
-            border-radius: 24px;
+            background: var(--surface);
+border-radius: 24px;
             border: 1px solid rgba(226, 232, 240, 0.85);
             box-shadow: var(--shadow-soft);
             padding: 1.25rem 1.5rem;
@@ -646,8 +660,8 @@
             padding: 0.95rem 1rem;
             border-radius: 16px;
             border: 1px solid var(--border);
-            background: #fff;
-            color: var(--text);
+            background: var(--surface);
+color: var(--text);
             transition: var(--transition);
         }
 
@@ -674,8 +688,8 @@
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            background: #fff;
-            border-radius: 24px;
+            background: var(--surface);
+border-radius: 24px;
             overflow: hidden;
             box-shadow: var(--shadow-soft);
         }
@@ -773,8 +787,8 @@
         }
 
         .btn-secondary {
-            background: #fff;
-            color: var(--primary);
+            background: var(--surface);
+color: var(--primary);
             border: 1px solid rgba(15, 23, 42, 0.08);
         }
 
@@ -807,8 +821,8 @@
         }
 
         .form-card {
-            background: #fff;
-            border-radius: 24px;
+            background: var(--surface);
+border-radius: 24px;
             border: 1px solid rgba(226, 232, 240, 0.85);
             box-shadow: var(--shadow-soft);
             padding: 2rem;
@@ -835,8 +849,8 @@
             width: 100%;
             border-radius: 16px;
             border: 1px solid var(--border);
-            background: #fff;
-            padding: 1rem 1.1rem;
+            background: var(--surface);
+padding: 1rem 1.1rem;
             color: var(--text);
             font-size: 0.95rem;
             transition: var(--transition);
@@ -922,8 +936,8 @@
         }
 
         .table-card {
-            background: #fff;
-            border-radius: 24px;
+            background: var(--surface);
+border-radius: 24px;
             border: 1px solid var(--border);
             box-shadow: var(--shadow-soft);
             padding: 1.8rem;
@@ -936,8 +950,8 @@
             align-items: center;
             justify-content: space-between;
             padding: 1.35rem 1.5rem;
-            background: #fff;
-            border-radius: 22px;
+            background: var(--surface);
+border-radius: 22px;
             border: 1px solid var(--border);
             box-shadow: var(--shadow-soft);
             margin-bottom: 1.5rem;
@@ -980,8 +994,8 @@
             padding: 1.25rem;
             border-radius: 22px;
             border: 1px solid var(--border);
-            background: #fff;
-            box-shadow: var(--shadow-soft);
+            background: var(--surface);
+box-shadow: var(--shadow-soft);
             transition: transform var(--transition), box-shadow var(--transition);
             align-items: center;
         }
@@ -1079,8 +1093,8 @@
             height: 44px;
             border-radius: 14px;
             border: 1px solid var(--border);
-            background: #fff;
-            color: var(--secondary);
+            background: var(--surface);
+color: var(--secondary);
             display: grid;
             place-items: center;
             cursor: pointer;
@@ -1099,8 +1113,8 @@
             min-width: 180px;
             border-radius: 18px;
             border: 1px solid var(--border);
-            background: #ffffff;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+            background: var(--surface);
+box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
             padding: 0.55rem 0;
             display: none;
             z-index: 20;
@@ -1149,8 +1163,8 @@
 
         .modal-card {
             width: min(640px, 100%);
-            background: #fff;
-            border-radius: 24px;
+            background: var(--surface);
+border-radius: 24px;
             border: 1px solid var(--border);
             box-shadow: 0 30px 80px rgba(15, 23, 42, 0.16);
             padding: 1.75rem;
@@ -1182,8 +1196,8 @@
             padding: 3rem 1.5rem;
             border-radius: 24px;
             border: 1px dashed var(--border);
-            background: #fff;
-            color: var(--subtext);
+            background: var(--surface);
+color: var(--subtext);
             text-align: center;
         }
 
@@ -1204,8 +1218,8 @@
         }
 
         .btn-secondary {
-            background: #fff;
-            color: var(--primary);
+            background: var(--surface);
+color: var(--primary);
             border: 1px solid var(--border);
         }
 
@@ -1257,8 +1271,8 @@
             padding: 0.75rem 0.9rem;
             border-radius: 14px;
             border: 1px solid rgba(15, 23, 42, 0.12);
-            background: #fff;
-            cursor: pointer;
+            background: var(--surface);
+cursor: pointer;
             transition: var(--transition);
         }
 
@@ -1276,8 +1290,8 @@
         }
 
         .chart-card {
-            background: #fff;
-            border-radius: 24px;
+            background: var(--surface);
+border-radius: 24px;
             border: 1px solid rgba(226, 232, 240, 0.85);
             padding: 1.75rem;
             box-shadow: var(--shadow-soft);
@@ -1370,7 +1384,21 @@
         }
 
         @media (max-width: 1100px) {
-            .admin-shell {
+    
+        .theme-dark {
+            --primary: #f8fafc;
+            --secondary: #6366f1;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --surface-soft: #334155;
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f1f5f9;
+            --subtext: #94a3b8;
+            --shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+            --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .admin-shell {
                 grid-template-columns: 1fr;
             }
 
@@ -1446,8 +1474,8 @@
             top: 100%;
             right: 0;
             width: 320px;
-            background: white;
-            border-radius: 12px;
+            background: var(--surface);
+border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             border: 1px solid var(--border);
             margin-top: 10px;
@@ -1579,13 +1607,13 @@
             display: inline-block;
         }
 
-        #profileDropdown {
+        .profile-dropdown {
             position: absolute;
             top: 100%;
             right: 0;
             width: 220px;
-            background: white;
-            border-radius: 12px;
+            background: var(--surface);
+border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             border: 1px solid var(--border);
             margin-top: 10px;
@@ -1595,11 +1623,11 @@
             overflow: hidden;
         }
 
-        #profileDropdown.show {
+        .profile-dropdown.show {
             display: flex !important;
         }
 
-        #profileDropdown a {
+        .profile-dropdown a {
             padding: 12px 15px;
             color: var(--text);
             text-decoration: none;
@@ -1611,14 +1639,10 @@
             font-size: 0.9rem;
         }
 
-        #profileDropdown a:hover {
+        .profile-dropdown a:hover {
             background: #f8fafc;
         }
 
-        #profileDropdown a:last-child {
-            border-bottom: none;
-            color: #e74c3c;
-        }
 
         @media (max-width: 760px) {
             .notif-dropdown {
@@ -1876,7 +1900,38 @@
                             </div>
                         </div>
                     </div>
-                    <div class="avatar-group" id="btnProfileDropdown" style="cursor: pointer; position: relative;">
+                    
+                    <!-- Language Dropdown -->
+                    <div class="notification-wrapper" id="langWrapper">
+                        <button class="icon-button" title="Language" type="button" id="btnLanguage">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M2 12h20"></path>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                        </button>
+                        <div id="languageDropdown" class="profile-dropdown" style="right: 0; min-width: 150px; padding: 0.5rem;">
+                            <a href="#" data-lang="id" style="padding: 0.5rem 1rem; color: var(--text); text-decoration: none; display: flex; justify-content: space-between; border-radius: 8px;"><span>Bahasa Indonesia</span><span class="check" style="color: var(--primary);"></span></a>
+                            <a href="#" data-lang="en" style="padding: 0.5rem 1rem; color: var(--text); text-decoration: none; display: flex; justify-content: space-between; border-radius: 8px;"><span>English</span><span class="check" style="color: var(--primary);"></span></a>
+                        </div>
+                    </div>
+                    
+                    <!-- Theme Dropdown -->
+                    <div class="notification-wrapper" id="themeWrapper">
+                        <button class="icon-button" title="Theme" type="button" id="btnTheme">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                            </svg>
+                        </button>
+                        <div id="themeDropdown" class="profile-dropdown" style="right: 0; min-width: 150px; padding: 0.5rem;">
+                            <a href="#" data-theme="light" style="padding: 0.5rem 1rem; color: var(--text); text-decoration: none; display: flex; justify-content: space-between; border-radius: 8px;"><span>☀ Light</span><span class="check" style="color: var(--primary);"></span></a>
+                            <a href="#" data-theme="dark" style="padding: 0.5rem 1rem; color: var(--text); text-decoration: none; display: flex; justify-content: space-between; border-radius: 8px;"><span>🌙 Dark</span><span class="check" style="color: var(--primary);"></span></a>
+                            <a href="#" data-theme="system" style="padding: 0.5rem 1rem; color: var(--text); text-decoration: none; display: flex; justify-content: space-between; border-radius: 8px;"><span>💻 System</span><span class="check" style="color: var(--primary);"></span></a>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('admin.profile') }}" class="avatar-group" style="cursor: pointer; text-decoration: none; color: inherit;">
                         <div class="avatar" style="overflow: hidden;">
                             {% if current_user and current_user.photo_url %}
                             <img src="{{ current_user.photo_url }}" alt="Profile"
@@ -1890,66 +1945,7 @@
                                 session.username or 'Admin' }}</div>
                             <div style="font-size:0.85rem;color:var(--subtext);">Hotel Administrator</div>
                         </div>
-                        <div id="profileDropdown" class="profile-dropdown">
-                            <a href="{{ url_for('admin.profile') }}">
-                                <svg width="18" viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                    <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </svg>
-                                My Profile
-                            </a>
-                            <a href="{{ url_for('admin.settings') }}">
-                                <svg width="18" viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                    <path
-                                        d="M19.4 15A1.65 1.65 0 0 0 19 15.65C18.667 15.8972 18.4239 16.2415 18.3079 16.6322C18.192 17.0229 18.2091 17.4385 18.356 17.815C18.4144 17.9547 18.4116 18.1102 18.3484 18.2479C18.2852 18.3855 18.1668 18.4946 18.02 18.55L16.2 19.34C16.0645 19.3976 15.9126 19.3982 15.7766 19.3418C15.6406 19.2854 15.5313 19.1764 15.47 19.04L15.35 18.73A1.65 1.65 0 0 0 14.7 18.35C14.3315 18.2327 13.9392 18.2033 13.5559 18.2646C13.1725 18.326 12.8093 18.4764 12.496 18.704L12.246 18.914C12.1158 19.0118 11.9546 19.0526 11.7947 19.0289C11.6347 19.0051 11.4878 18.9185 11.383 18.786L10.193 17.156C10.1118 17.0381 10.0759 16.8929 10.0924 16.7486C10.1089 16.6043 10.1766 16.4712 10.282 16.375L10.5 16.145A1.65 1.65 0 0 0 10.85 15.5C10.963 15.111 10.9859 14.6953 10.9161 14.3005C10.8463 13.9056 10.6865 13.5478 10.456 13.268L10.176 12.988C10.0528 12.8719 9.97022 12.7188 9.94279 12.5551C9.91535 12.3914 9.94487 12.2275 10.026 12.083L11.026 10.353C11.0963 10.222 11.2132 10.123 11.3537 10.0766C11.4942 10.0302 11.6481 10.0402 11.784 10.104L12.064 10.224A1.65 1.65 0 0 0 12.714 10.35C13.1037 10.4578 13.5186 10.4578 13.9083 10.3501C14.298 10.2423 14.6517 10.0322 14.942 9.736L15.172 9.486C15.275 9.37887 15.4191 9.31758 15.5724 9.31599C15.7258 9.31439 15.8752 9.37262 15.988 9.477L17.518 10.867C17.6253 10.9654 17.6881 11.1017 17.6934 11.2464C17.6987 11.391 17.646 11.5323 17.546 11.64L17.336 11.89C17.1065 12.1691 16.9472 12.5255 16.8781 12.9184C16.809 13.3113 16.8335 13.7251 16.948 14.11C17.027 14.3644 17.1706 14.5935 17.365 14.776L17.585 14.996C17.7011 15.109 17.7718 15.2638 17.7847 15.4304C17.7975 15.597 17.7515 15.7643 17.655 15.901C17.4764 16.2736 17.2023 16.5915 16.861 16.822C16.5198 17.0526 16.1242 17.187 15.716 17.212L15.346 17.212C14.9497 17.2057 14.5601 17.0858 14.2188 16.8647C13.8774 16.6437 13.5969 16.3298 13.405 15.955L13.255 15.655C13.1856 15.5109 13.0617 15.3996 12.906 15.3421C12.7502 15.2845 12.5732 15.2845 12.417 15.3421L12.027 15.482C11.6436 15.6033 11.2374 15.591 10.8624 15.447C10.4874 15.3031 10.1616 15.0347 9.92705 14.678L9.73705 14.408C9.64676 14.2755 9.50856 14.1834 9.34969 14.149C9.19082 14.1147 9.0227 14.1408 8.87705 14.223L7.14705 15.223C7.00902 15.3005 6.90159 15.421 6.83842 15.5688C6.77524 15.7166 6.75924 15.8845 6.79205 16.05L7.20205 17.85A1.65 1.65 0 0 0 7.76205 18.57C8.10649 18.8251 8.52309 18.966 8.95105 18.974C9.379 18.9819 9.797 18.8566 10.147 18.614L10.427 18.424C10.7431 18.2045 11.1118 18.0673 11.4984 18.0267C11.885 17.9861 12.2773 18.0435 12.637 18.194L12.987 18.334C13.1362 18.394 13.2625 18.4988 13.3486 18.634C13.4347 18.7692 13.4764 18.9284 13.467 19.09L13.427 19.46C13.3951 19.8559 13.4735 20.2541 13.6548 20.6127C13.8362 20.9714 14.1142 21.2773 14.46 21.499L16.2 22.569C16.3262 22.6465 16.4741 22.6841 16.6247 22.6775C16.7753 22.6708 16.9219 22.6202 17.046 22.532L18.476 21.532C18.8202 21.2941 19.0768 20.9575 19.2132 20.5645C19.3496 20.1714 19.3598 19.7402 19.243 19.324L19.083 18.844C18.9554 18.4828 18.9234 18.0863 18.9904 17.7088C19.0573 17.3314 19.22 16.9912 19.458 16.735L19.688 16.475C19.7891 16.3686 19.8519 16.2334 19.8687 16.0886C19.8856 15.9439 19.8556 15.797 19.783 15.669C19.702 15.529 19.562 15.409 19.4 15Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </svg>
-                                Settings
-                            </a>
-                            <a href="{{ url_for('admin.profile') }}">
-                                <svg width="18" viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                    <path
-                                        d="M15 12V9C15 8.20435 14.6839 7.44129 14.1213 6.87868C13.5587 6.31607 12.7956 6 12 6C11.2044 6 10.4413 6.31607 9.87868 6.87868C9.31607 7.44129 9 8.20435 9 9V12"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                    <path d="M12 16V14" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                    <path
-                                        d="M16 12H8C7.44772 12 7 12.4477 7 13V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V13C17 12.4477 16.5523 12 16 12Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </svg>
-                                Change Password
-                            </a>
-                            <a href="{{ url_for('auth.logout') }}">
-                                <svg width="18" viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                    <path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </svg>
-                                Logout
-                            </a>
-                        </div>
-                    </div>
+                    </a>
                 </div>
             </section>
 
@@ -2218,6 +2214,13 @@
             // Toggle dropdown
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                
+                // close other global dropdowns
+                const langDropdown = document.getElementById('languageDropdown');
+                const themeDropdown = document.getElementById('themeDropdown');
+                if (langDropdown) langDropdown.classList.remove('show');
+                if (themeDropdown) themeDropdown.classList.remove('show');
+
                 dropdown.classList.toggle('show');
                 if (dropdown.classList.contains('show')) {
                     loadNotifications();
@@ -2456,27 +2459,207 @@
             initNotifications();
             initGlobalSearch();
 
-            // Profile Dropdown Setup
-            const btnProfile = document.getElementById('btnProfileDropdown');
-            const profileDropdown = document.getElementById('profileDropdown');
-            if (btnProfile && profileDropdown) {
-                btnProfile.addEventListener('click', (e) => {
-                    if (profileDropdown.contains(e.target)) return;
-                    e.stopPropagation();
-                    profileDropdown.classList.toggle('show');
+            // Global Dropdowns Setup
+            const btnLang = document.getElementById('btnLanguage');
+            const langDropdown = document.getElementById('languageDropdown');
+            const btnTheme = document.getElementById('btnTheme');
+            const themeDropdown = document.getElementById('themeDropdown');
+            const notifDropdown = document.getElementById('notifDropdown');
 
-                    // close notif if open
-                    const notifDropdown = document.getElementById('notifDropdown');
-                    if (notifDropdown && notifDropdown.classList.contains('show')) {
-                        notifDropdown.classList.remove('show');
+            function closeAllDropdowns() {
+                if (langDropdown) langDropdown.classList.remove('show');
+                if (themeDropdown) themeDropdown.classList.remove('show');
+                if (notifDropdown) notifDropdown.classList.remove('show');
+            }
+
+            if (btnLang && langDropdown) {
+                btnLang.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const wasShow = langDropdown.classList.contains('show');
+                    closeAllDropdowns();
+                    if (!wasShow) langDropdown.classList.add('show');
+                });
+            }
+
+            if (btnTheme && themeDropdown) {
+                btnTheme.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const wasShow = themeDropdown.classList.contains('show');
+                    closeAllDropdowns();
+                    if (!wasShow) themeDropdown.classList.add('show');
+                });
+            }
+
+            document.addEventListener('click', (e) => {
+                if (btnLang && !btnLang.contains(e.target) && !langDropdown.contains(e.target)) {
+                    langDropdown.classList.remove('show');
+                }
+                if (btnTheme && !btnTheme.contains(e.target) && !themeDropdown.contains(e.target)) {
+                    themeDropdown.classList.remove('show');
+                }
+            });
+
+            // Init preferences from localStorage
+
+            // Translation Dictionary
+            const i18n = {
+                'id': {
+                    'Dashboard': 'Dasbor',
+                    'Overview': 'Ringkasan',
+                    'Hotels': 'Hotel',
+                    'Rooms': 'Kamar',
+                    'Bookings': 'Pemesanan',
+                    'Audit': 'Audit',
+                    'Reports': 'Laporan',
+                    'Website': 'Situs Web',
+                    'Logout': 'Keluar',
+                    'Business Analytics': 'Analisis Bisnis',
+                    'Notification': 'Notifikasi',
+                    'Notifications': 'Notifikasi',
+                    'Search': 'Cari',
+                    'Search hotels, rooms, guests, bookings...': 'Cari hotel, kamar, tamu, pemesanan...',
+                    'Save': 'Simpan',
+                    'Cancel': 'Batal',
+                    'Settings': 'Pengaturan',
+                    'Generate Report': 'Buat Laporan',
+                    'Profile': 'Profil',
+                    'My Profile': 'Profil Saya',
+                    'Change Password': 'Ubah Kata Sandi',
+                    'Manage your admin operations with confidence.': 'Kelola operasi admin Anda dengan percaya diri.',
+                    'Hotel Administrator': 'Administrator Hotel',
+                    'Theme': 'Tema',
+                    'Language': 'Bahasa',
+                    'Bahasa Indonesia': 'Bahasa Indonesia',
+                    'English': 'English',
+                    'System': 'Sistem',
+                    'Light': 'Terang',
+                    'Dark': 'Gelap',
+                    'Mark all read': 'Tandai semua dibaca',
+                    'Total Revenue': 'Total Pendapatan',
+                    'Active Bookings': 'Pemesanan Aktif',
+                    'Total Users': 'Total Pengguna',
+                    'Rooms Available': 'Kamar Tersedia',
+                    'Revenue Trends': 'Tren Pendapatan',
+                    'Recent Bookings': 'Pemesanan Terbaru',
+                    'Status': 'Status',
+                    'Action': 'Aksi'
+                }
+            };
+
+            function translateUI(langCode) {
+                const dict = i18n[langCode];
+                const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+                let node;
+                while (node = walker.nextNode()) {
+                    if (node.parentElement && ['SCRIPT', 'STYLE'].includes(node.parentElement.tagName)) continue;
+                    
+                    if (node._originalText === undefined) {
+                        node._originalText = node.nodeValue;
+                    }
+
+                    let original = node._originalText;
+                    let trimmed = original.trim();
+                    
+                    if (trimmed) {
+                        if (dict && dict[trimmed]) {
+                            node.nodeValue = original.replace(trimmed, dict[trimmed]);
+                        } else {
+                            node.nodeValue = original; // revert
+                        }
+                    }
+                }
+                
+                // Translate Placeholders
+                document.querySelectorAll('input[placeholder]').forEach(el => {
+                    if (el._originalPlaceholder === undefined) {
+                        el._originalPlaceholder = el.placeholder;
+                    }
+                    let orig = el._originalPlaceholder;
+                    if (dict && dict[orig]) {
+                        el.placeholder = dict[orig];
+                    } else {
+                        el.placeholder = orig;
                     }
                 });
-                document.addEventListener('click', (e) => {
-                    if (!btnProfile.contains(e.target)) {
-                        profileDropdown.classList.remove('show');
+                
+                // Translate Values (Buttons)
+                document.querySelectorAll('input[type="submit"], input[type="button"]').forEach(el => {
+                    if (el._originalValue === undefined) {
+                        el._originalValue = el.value;
+                    }
+                    let orig = el._originalValue;
+                    if (dict && dict[orig]) {
+                        el.value = dict[orig];
+                    } else {
+                        el.value = orig;
                     }
                 });
             }
+
+            const savedLang = localStorage.getItem('admin_lang') || 'id';
+            const savedTheme = localStorage.getItem('admin_theme') || 'light';
+            
+            function updateDropdownChecks(dropdownId, dataAttr, selectedValue) {
+                const links = document.querySelectorAll(`#${dropdownId} a`);
+                links.forEach(link => {
+                    const checkSpan = link.querySelector('.check');
+                    if (link.dataset[dataAttr] === selectedValue) {
+                        if (checkSpan) checkSpan.textContent = '✓';
+                        link.style.fontWeight = '700';
+                    } else {
+                        if (checkSpan) checkSpan.textContent = '';
+                        link.style.fontWeight = 'normal';
+                    }
+                });
+            }
+
+            function applyTheme(theme) {
+                if (theme === 'system') {
+                    const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.body.className = isDark ? 'theme-dark' : 'theme-light';
+                } else {
+                    document.body.className = `theme-${theme}`;
+                }
+            }
+
+            updateDropdownChecks('languageDropdown', 'lang', savedLang);
+            updateDropdownChecks('themeDropdown', 'theme', savedTheme);
+            applyTheme(savedTheme);
+            translateUI(savedLang);
+
+            if (langDropdown) {
+                langDropdown.addEventListener('click', (e) => {
+                    const link = e.target.closest('a');
+                    if (link) {
+                        e.preventDefault();
+                        const lang = link.dataset.lang;
+                        localStorage.setItem('admin_lang', lang);
+                        updateDropdownChecks('languageDropdown', 'lang', lang);
+                        translateUI(lang);
+                        closeAllDropdowns();
+                    }
+                });
+            }
+
+            if (themeDropdown) {
+                themeDropdown.addEventListener('click', (e) => {
+                    const link = e.target.closest('a');
+                    if (link) {
+                        e.preventDefault();
+                        const theme = link.dataset.theme;
+                        localStorage.setItem('admin_theme', theme);
+                        updateDropdownChecks('themeDropdown', 'theme', theme);
+                        applyTheme(theme);
+                        closeAllDropdowns();
+                    }
+                });
+            }
+
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') {
+                    closeAllDropdowns();
+                }
+            });
 
             const sidebar = document.getElementById('adminSidebar');
             const toggle = document.getElementById('sidebarToggle');

@@ -650,8 +650,114 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
     }
     
     details = []
-    # Temporary hold for other reports until Dashboard Summary is approved
+    
+    if report_type == 'Hotels':
+        q = "SELECT h.name as hotel, h.location, COUNT(r.id) as rooms, 'Available' as status FROM hotels h LEFT JOIN rooms r ON h.id = r.hotel_id AND r.is_deleted = 0 WHERE h.is_deleted = 0"
+        p = []
+        if search_term:
+            q += " AND (h.name LIKE %s OR h.location LIKE %s)"
+            p.extend([f"%{search_term}%", f"%{search_term}%"])
+        q += " GROUP BY h.id"
+        if sort_by == 'name_asc':
+            q += " ORDER BY h.name ASC"
+        else:
+            q += " ORDER BY h.id DESC"
+        cursor.execute(q, p)
+        for r in cursor.fetchall():
+            details.append({
+                'hotel': r['hotel'],
+                'location': r['location'],
+                'rooms': r['rooms'],
+                'status': r['status']
+            })
             
+    elif report_type == 'Rooms':
+        q = "SELECT r.room_type as room, h.name as hotel, r.room_number, r.price, 'Available' as status FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.is_deleted = 0"
+        p = []
+        if search_term:
+            q += " AND (r.room_type LIKE %s OR h.name LIKE %s OR r.room_number LIKE %s)"
+            p.extend([f"%{search_term}%", f"%{search_term}%", f"%{search_term}%"])
+        if sort_by == 'name_asc':
+            q += " ORDER BY r.room_type ASC"
+        else:
+            q += " ORDER BY r.id DESC"
+        cursor.execute(q, p)
+        for r in cursor.fetchall():
+            details.append({
+                'room': r['room'],
+                'hotel': r['hotel'],
+                'room_number': r['room_number'],
+                'price': r['price'],
+                'status': r['status']
+            })
+            
+    elif report_type == 'Bookings':
+        q = "SELECT b.id as booking_id, b.guest_name as guest, h.name as hotel, b.created_at as date, b.status FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE 1=1"
+        p = []
+        if start_date:
+            q += " AND b.created_at >= %s AND b.created_at <= %s"
+            p.extend([start_date, end_date])
+        if search_term:
+            q += " AND (b.guest_name LIKE %s OR h.name LIKE %s)"
+            p.extend([f"%{search_term}%", f"%{search_term}%"])
+        if sort_by == 'name_asc':
+            q += " ORDER BY b.guest_name ASC"
+        else:
+            q += " ORDER BY b.created_at DESC"
+        cursor.execute(q, p)
+        for r in cursor.fetchall():
+            details.append({
+                'booking_id': r['booking_id'],
+                'guest': r['guest'],
+                'hotel': r['hotel'],
+                'date': r['date'].strftime('%Y-%m-%d'),
+                'status': r['status']
+            })
+            
+    elif report_type == 'Revenue Report':
+        q = "SELECT h.name as hotel, r.room_type, COUNT(b.id) as total_bookings, IFNULL(SUM(r.price * GREATEST(1, DATEDIFF(b.check_out, b.check_in))), 0) as total_revenue FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out')"
+        p = []
+        if start_date:
+            q += " AND b.created_at >= %s AND b.created_at <= %s"
+            p.extend([start_date, end_date])
+        if search_term:
+            q += " AND (h.name LIKE %s OR r.room_type LIKE %s)"
+            p.extend([f"%{search_term}%", f"%{search_term}%"])
+        q += " GROUP BY h.id, r.room_type"
+        if sort_by == 'highest_revenue':
+            q += " ORDER BY total_revenue DESC"
+        else:
+            q += " ORDER BY total_revenue DESC"
+        cursor.execute(q, p)
+        for r in cursor.fetchall():
+            details.append({
+                'hotel': r['hotel'],
+                'room_type': r['room_type'],
+                'total_bookings': r['total_bookings'],
+                'total_revenue': float(r['total_revenue'])
+            })
+            
+    elif report_type == 'Audit Report':
+        # Simulate audit log from bookings since audit_logs table does not exist
+        q = "SELECT b.id as log_id, b.guest_name as admin, CONCAT('Booking ', b.status) as action, CONCAT('Room ', r.room_number, ' at ', h.name) as details, b.created_at as date FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE 1=1"
+        p = []
+        if start_date:
+            q += " AND b.created_at >= %s AND b.created_at <= %s"
+            p.extend([start_date, end_date])
+        if search_term:
+            q += " AND (b.guest_name LIKE %s OR h.name LIKE %s)"
+            p.extend([f"%{search_term}%", f"%{search_term}%"])
+        q += " ORDER BY b.created_at DESC"
+        cursor.execute(q, p)
+        for r in cursor.fetchall():
+            details.append({
+                'booking_id': r['log_id'],
+                'guest': r['details'][:30] + '...' if r['details'] and len(r['details']) > 30 else (r['details'] or '-'),
+                'admin': 'System',
+                'action': r['action'],
+                'date': r['date'].strftime('%Y-%m-%d %H:%M')
+            })
+
     cursor.close()
     conn.close()
     return summary, details

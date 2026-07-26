@@ -602,19 +602,21 @@ Bhineka Hotels</textarea>
                 document.getElementById('val-occupancy').textContent = (data.summary.occupancy_rate || 0) + '%';
             } else {
                 extraSummary.style.display = 'none';
-                // the other report tables will be handled later
-                detailsSection.style.display = 'none'; 
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            Swal.fire('Error', 'Failed to generate preview.', 'error');
-        })
-        .finally(() => {
-            btnGenerate.textContent = originalText;
-            btnGenerate.disabled = false;
-        });
-    });
+                
+                if (data.details.length > 0) {
+                    detailsSection.style.display = 'block';
+                    document.getElementById('details-title').textContent = `${type} Details`;
+                    
+                    const thead = document.getElementById('table-head');
+                    const tbody = document.getElementById('table-body');
+                    tbody.innerHTML = '';
+
+                    let headRow = '<tr>';
+                    if (type === 'Hotels') {
+                        headRow += '<th>Hotel</th><th>Location</th><th>Rooms</th><th>Status</th>';
+                        data.details.forEach(row => {
+                            tbody.innerHTML += `<tr><td>${row.hotel}</td><td>${row.location}</td><td>${row.rooms}</td><td><span class="room-badge available">${row.status}</span></td></tr>`;
+                        });
                     } else if (type === 'Rooms') {
                         headRow += '<th>Room</th><th>Hotel</th><th>Room Number</th><th>Price</th><th>Status</th>';
                         data.details.forEach(row => {
@@ -646,44 +648,16 @@ Bhineka Hotels</textarea>
                 } else {
                     detailsSection.style.display = 'none';
                 }
-            })
-            .catch(err => {
-                console.error(err);
-                Swal.fire('Error', 'Failed to generate preview.', 'error');
-            })
-            .finally(() => {
-                btnGenerate.textContent = originalText;
-                btnGenerate.disabled = false;
-            });
-    });
-                } else if (type === 'Rooms') {
-        headRow += '<th>Room</th><th>Hotel</th><th>Room Number</th><th>Price</th><th>Status</th>';
-        data.details.forEach(row => {
-            const price = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(row.price);
-            tbody.innerHTML += `<tr><td>${row.room}</td><td>${row.hotel}</td><td>${row.room_number}</td><td>${price}</td><td><span class="room-badge available">${row.status}</span></td></tr>`;
-        });
-    } else if (type === 'Bookings') {
-        headRow += '<th>Booking ID</th><th>Guest</th><th>Hotel</th><th>Date</th><th>Status</th>';
-        data.details.forEach(row => {
-            let badgeClass = row.status === 'Checked Out' ? 'maintenance' : (row.status === 'Cancelled' ? 'occupied' : 'available');
-            tbody.innerHTML += `<tr><td>#${row.booking_id}</td><td>${row.guest}</td><td>${row.hotel}</td><td>${row.date}</td><td><span class="room-badge ${badgeClass}">${row.status}</span></td></tr>`;
-        });
-    }
-    headRow += '</tr>';
-    thead.innerHTML = headRow;
-
-            } else {
-        detailsSection.style.display = 'none';
-    }
+            }
         })
-        .catch (err => {
-        console.error(err);
-        Swal.fire('Error', 'Failed to generate preview.', 'error');
-    })
+        .catch(err => {
+            console.error(err);
+            Swal.fire('Error', 'Failed to generate preview.', 'error');
+        })
         .finally(() => {
-        btnGenerate.textContent = originalText;
-        btnGenerate.disabled = false;
-    });
+            btnGenerate.textContent = originalText;
+            btnGenerate.disabled = false;
+        });
     });
 
     function openEmailModal() {
