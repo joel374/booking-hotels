@@ -2,7 +2,7 @@
 {% block content %}
 <div style="max-width: 500px; margin: 4rem auto">
   <div class="glass" style="padding: 2rem">
-    <h2 style="text-align: center; margin-bottom: 2rem">Profile Saya</h2>
+    <h2 style="text-align: center; margin-bottom: 2rem">{{ _("Profil Saya") }}</h2>
     <form method="POST" action="{{ url_for('auth.profile') }}" enctype="multipart/form-data">
       <div style="text-align: center; margin-bottom: 1.5rem;">
           <div style="width: 120px; height: 120px; border-radius: 50%; background: #cbd5e1; margin: 0 auto; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #fff; font-weight: bold; margin-bottom: 1rem;">
@@ -12,11 +12,11 @@
                   {{ user.username[0]|upper }}
               {% endif %}
           </div>
-          <label for="photo" class="btn" style="background-color: #e2e8f0; color: #475569; cursor: pointer; padding: 0.5rem 1rem; border-radius: 5px; font-weight: 500;">Change Photo</label>
+          <label for="photo" class="btn" style="background-color: #e2e8f0; color: #475569; cursor: pointer; padding: 0.5rem 1rem; border-radius: 5px; font-weight: 500;">{{ _("Ubah Foto") }}</label>
           <input type="file" id="photo" name="photo" style="display: none;" accept="image/*">
       </div>
       <div style="margin-bottom: 1rem">
-        <label class="text-muted">Username</label>
+        <label class="text-muted">{{ _("Nama Pengguna") }}</label>
         <input type="text" name="username" class="form-control" value="{{ user.username }}" required />
       </div>
       <div style="margin-bottom: 1rem">
@@ -24,25 +24,25 @@
         <input type="email" name="email" class="form-control" value="{{ user.email }}" required />
       </div>
       <div style="margin-bottom: 1rem">
-        <label class="text-muted">Phone Number</label>
+        <label class="text-muted">{{ _("Nomor Telepon") }}</label>
         <input type="text" name="phone" class="form-control" value="{{ user.phone or '' }}" />
       </div>
 
-      <p style="margin: 1.5rem 0; font-weight: 600; color: #475569">Change password (optional)</p>
+      <p style="margin: 1.5rem 0; font-weight: 600; color: #475569">{{ _("Ubah password (opsional)") }}</p>
       <div style="margin-bottom: 1rem">
-        <label class="text-muted">Current Password</label>
+        <label class="text-muted">{{ _("Password Saat Ini") }}</label>
         <input type="password" name="current_password" class="form-control" />
       </div>
       <div style="margin-bottom: 1rem">
-        <label class="text-muted">New Password</label>
+        <label class="text-muted">{{ _("Password Baru") }}</label>
         <input type="password" name="new_password" class="form-control" />
       </div>
       <div style="margin-bottom: 1.5rem">
-        <label class="text-muted">Confirm New Password</label>
+        <label class="text-muted">{{ _("Konfirmasi Password Baru") }}</label>
         <input type="password" name="confirm_password" class="form-control" />
       </div>
 
-      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem">Update Profile</button>
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem">{{ _("Perbarui Profil") }}</button>
     </form>
   </div>
 </div>

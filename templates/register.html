@@ -2,46 +2,46 @@
 <div class="auth-page">
   <div class="auth-card">
     <div class="auth-card-header">
-      <h2>Daftar Akun Baru</h2>
-      <p>Lengkapi data dasar untuk membuat akun dan mulai pesan hotel dengan lebih cepat.</p>
+      <h2>{{ _("Daftar Akun Baru") }}</h2>
+      <p>{{ _("Lengkapi data dasar untuk membuat akun dan mulai pesan hotel dengan lebih cepat.") }}</p>
     </div>
 
     <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form" autocomplete="off">
       <div class="form-group">
-        <label class="form-label" for="username">Nama Pengguna</label>
-        <input id="username" type="text" name="username" class="form-control" placeholder="Buat username unik" required autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
+        <label class="form-label" for="username">{{ _("Nama Pengguna") }}</label>
+        <input id="username" type="text" name="username" class="form-control" placeholder="{{ _('Buat username unik') }}" required autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
       </div>
 
       <div class="form-group">
         <label class="form-label" for="email">Email</label>
-        <input id="email" type="email" name="email" class="form-control" placeholder="contoh: nama@email.com" required autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
+        <input id="email" type="email" name="email" class="form-control" placeholder="{{ _('contoh: nama@email.com') }}" required autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="phone">Nomor Telepon</label>
+        <label class="form-label" for="phone">{{ _("Nomor Telepon") }}</label>
         <input id="phone" type="text" name="phone" class="form-control" placeholder="081234567890" required autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
       </div>
 
       <div class="form-group password-group">
         <div class="form-label-row">
-          <label class="form-label" for="password">Password</label>
-          <button type="button" class="password-toggle" id="togglePassword">Tampilkan</button>
+          <label class="form-label" for="password">{{ _("Password") }}</label>
+          <button type="button" class="password-toggle" id="togglePassword">{{ _("Tampilkan") }}</button>
         </div>
-        <input id="password" type="password" name="password" class="form-control" placeholder="Minimal 8 karakter" required autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
+        <input id="password" type="password" name="password" class="form-control" placeholder="{{ _('Minimal 8 karakter') }}" required autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
       </div>
 
       <div class="form-group password-group">
         <div class="form-label-row">
-          <label class="form-label" for="confirm_password">Konfirmasi Password</label>
-          <button type="button" class="password-toggle" id="toggleConfirmPassword">Tampilkan</button>
+          <label class="form-label" for="confirm_password">{{ _("Konfirmasi Password") }}</label>
+          <button type="button" class="password-toggle" id="toggleConfirmPassword">{{ _("Tampilkan") }}</button>
         </div>
-        <input id="confirm_password" type="password" name="confirm_password" class="form-control" placeholder="Ketik ulang password Anda" required autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
+        <input id="confirm_password" type="password" name="confirm_password" class="form-control" placeholder="{{ _('Ketik ulang password Anda') }}" required autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block">Register</button>
+      <button type="submit" class="btn btn-primary btn-block">{{ _("Register") }}</button>
     </form>
 
-    <div class="auth-divider"><span>ATAU</span></div>
+    <div class="auth-divider"><span>{{ _("ATAU") }}</span></div>
 
     <a href="{{ url_for('auth.login_google') }}" class="btn btn-secondary btn-block google-btn">
       <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -51,11 +51,11 @@
         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
         <path d="M1 1h22v22H1z" fill="none" />
       </svg>
-      Daftar dengan Google
+      {{ _("Daftar dengan Google") }}
     </a>
 
     <p class="auth-footer">
-      Sudah punya akun? <a href="{{ url_for('auth.login') }}" class="text-link">Login di sini</a>
+      {{ _("Sudah punya akun?") }} <a href="{{ url_for('auth.login') }}" class="text-link">{{ _("Login di sini") }}</a>
     </p>
   </div>
 </div>
@@ -70,7 +70,7 @@
     togglePassword.addEventListener('click', function() {
       const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
       passwordInput.setAttribute('type', type);
-      this.textContent = type === 'password' ? 'Tampilkan' : 'Sembunyikan';
+      this.textContent = type === 'password' ? '{{ _("Tampilkan") }}' : '{{ _("Sembunyikan") }}';
     });
   }
 
@@ -78,7 +78,7 @@
     toggleConfirmPassword.addEventListener('click', function() {
       const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
       confirmPasswordInput.setAttribute('type', type);
-      this.textContent = type === 'password' ? 'Tampilkan' : 'Sembunyikan';
+      this.textContent = type === 'password' ? '{{ _("Tampilkan") }}' : '{{ _("Sembunyikan") }}';
     });
   }
 </script>
