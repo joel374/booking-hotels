@@ -399,9 +399,9 @@
                 <div>
                     <p class="hotel-name"><strong>{{ hotel.name }}</strong></p>
                     <div class="hotel-rating">
-                        {% if hotel.rating|default(0) | float > 0 %}
+                        {% if hotel.review_count|default(0) | int > 0 %}
                             <span class="hotel-rating-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"/></svg></span>
-                            <span>{{ hotel.rating }}</span>
+                            <span>{{ hotel.avg_rating }} ({{ hotel.review_count }})</span>
                         {% else %}
                             <span class="hotel-rating-empty">Belum ada rating</span>
                         {% endif %}
@@ -417,8 +417,16 @@
                 </div>
             </div>
             <div class="hotel-card-meta">
-                <span class="hotel-location"><strong>{{ (hotel.city_name ~ ', ' ~ hotel.province) if hotel.city_name and hotel.province else hotel.city_name or hotel.province or 'No location' }}</strong></span>
-                <span class="hotel-room-count"><strong>{{ hotel.rooms|length if hotel.rooms else 0 }} Rooms</strong></span>
+                <span class="hotel-location"><strong>
+                    {% if hotel.location %}
+                        {{ hotel.location }}
+                    {% elif hotel.city_name and hotel.province %}
+                        {{ hotel.city_name }}, {{ hotel.province }}
+                    {% else %}
+                        {{ hotel.city_name or hotel.province or 'No location' }}
+                    {% endif %}
+                </strong></span>
+                <span class="hotel-room-count"><strong>{{ hotel.room_count|default(0) }} Rooms</strong></span>
             </div>
             <div class="hotel-price-row">
                 <div class="hotel-price">

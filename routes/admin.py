@@ -178,13 +178,20 @@ def hotels():
             
         return redirect(url_for('admin.hotels'))
 
-    cursor.execute("SELECT h.*, count(r.id) as room_count, p.province, c.city_name FROM hotels h LEFT JOIN provinces p ON h.province_id = p.province_id LEFT JOIN cities c ON h.city_id = c.city_id LEFT JOIN rooms r ON h.id = r.hotel_id AND r.is_deleted = 0 WHERE h.is_deleted = 0 GROUP BY h.id, p.province, c.city_name")
+    cursor.execute("SELECT h.*, COUNT(DISTINCT r.id) as room_count, p.province, c.city_name, COALESCE(ROUND(AVG(rev.rating), 1), 0) as avg_rating, COUNT(DISTINCT rev.id) as review_count FROM hotels h LEFT JOIN provinces p ON h.province_id = p.province_id LEFT JOIN cities c ON h.city_id = c.city_id LEFT JOIN rooms r ON h.id = r.hotel_id AND r.is_deleted = 0 LEFT JOIN reviews rev ON h.id = rev.hotel_id WHERE h.is_deleted = 0 GROUP BY h.id, p.province, c.city_name")
     hotel_list = cursor.fetchall()
     hotel_ids = [hotel['id'] for hotel in hotel_list]
     images_by_hotel = fetch_images_by_parent(cursor, 'hotel_images', 'hotel_id', hotel_ids)
 
+    import re
     for hotel in hotel_list:
         hotel['images'] = images_by_hotel.get(hotel['id'], [])
+        
+        # Room count fallback
+        if hotel.get('room_count', 0) == 0 and hotel.get('description'):
+            match = re.search(r'rooms:\s*(\d+)', hotel['description'])
+            if match:
+                hotel['room_count'] = int(match.group(1))
 
     cursor.execute("SELECT * FROM provinces ORDER BY province")
     provinces = cursor.fetchall()
@@ -259,6 +266,9 @@ def edit_hotel(id):
             """, (id, group['room_type']))
             img = cursor.fetchone()
             group['image_url'] = img['image_url'] if img else None
+            
+            if not group.get('image_url') and hotel.get('images'):
+                group['image_url'] = hotel['images'][0]['image_url']
 
         cursor.close()
         conn.close()
