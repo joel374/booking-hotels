@@ -6,25 +6,25 @@ from utils import login_required, add_notification
 
 booking_bp = Blueprint('booking', __name__)
 
-@booking_bp.route('/book/<int:room_id>', methods=['GET', 'POST'])
+@booking_bp.route('/book/<int:hotel_id>', methods=['GET', 'POST'])
 @login_required
-def book_room(room_id):
-
+def book_room(hotel_id):
+    room_type = request.args.get('room_type')
     check_in = request.args.get('check_in')
     check_out = request.args.get('check_out')
 
-    if not check_in or not check_out:
+    if not check_in or not check_out or not room_type:
         return redirect(url_for('main.index'))
-        
+
     try:
         ci_date = datetime.strptime(check_in, '%Y-%m-%d').date()
         co_date = datetime.strptime(check_out, '%Y-%m-%d').date()
         today = datetime.now().date()
-        
+
         if ci_date < today:
             flash("Tanggal check-in tidak boleh di masa lalu.", "danger")
             return redirect(url_for('main.index'))
-            
+
         if co_date <= ci_date:
             flash("Tanggal check-out harus setelah check-in.", "danger")
             return redirect(url_for('main.index'))
@@ -34,16 +34,30 @@ def book_room(room_id):
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+
+    # Instead of picking a specific room_id, we fetch one available room of the requested type
+    cursor.execute("""
+        SELECT r.*, h.name as hotel_name 
+        FROM rooms r 
+        JOIN hotels h ON r.hotel_id = h.id 
+        WHERE r.hotel_id = %s AND r.room_type = %s AND r.is_deleted = 0 AND h.is_deleted = 0
+        AND r.id NOT IN (
+            SELECT b.room_id FROM bookings b
+            WHERE b.status IN ('Booked', 'Checked In')
+            AND (b.check_in < %s AND b.check_out > %s)
+        )
+        ORDER BY r.room_number ASC LIMIT 1
+    """, (hotel_id, room_type, check_out, check_in))
     
-    cursor.execute("SELECT * FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.id = %s AND r.is_deleted = 0 AND h.is_deleted = 0", (room_id,))
     room = cursor.fetchone()
-    
+
     if not room:
         cursor.close()
         conn.close()
-        flash("Kamar tidak ditemukan atau tidak valid.", "danger")
-        return redirect(url_for('main.index'))
-        
+        flash("Mohon maaf, tipe kamar ini sudah penuh untuk tanggal yang dipilih.", "danger")
+        return redirect(url_for('main.hotel_rooms', hotel_id=hotel_id))
+
+    room_id = room['id']
     nights = (co_date - ci_date).days
     grand_total = room['price'] * nights
 
@@ -51,79 +65,78 @@ def book_room(room_id):
         guest_name = request.form.get('guest_name', '').strip()
         contact_number = request.form.get('contact_number', '').strip()
         payment_method = request.form.get('payment_method', '').strip()
-        
+
         if not guest_name or not contact_number or not payment_method:
             flash("Semua data pemesanan wajib diisi.", "danger")
             return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out, nights=nights, grand_total=grand_total)
-            
+
         if len(guest_name) < 3:
             flash("Nama lengkap tamu minimal 3 karakter.", "danger")
             return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out, nights=nights, grand_total=grand_total)
-            
+
         import re
         if not re.match(r'^[\d\+\-\(\)\s]{9,15}$', contact_number):
             flash("Nomor kontak tidak valid. Harap masukkan 9-15 digit angka.", "danger")
             return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out, nights=nights, grand_total=grand_total)
 
         cleanup_expired_bookings(cursor)
-        
+
         # LOCK THE ROOM ROW to prevent race conditions (Double Booking)
-        cursor.execute("SELECT id FROM rooms WHERE id = %s AND is_deleted = 0 FOR UPDATE", (room_id,))
-        locked_room = cursor.fetchone() # Clear the unread result from the buffer
+        # However, to be totally safe we should query again WITH FOR UPDATE
+        cursor.execute("""
+            SELECT id FROM rooms 
+            WHERE hotel_id = %s AND room_type = %s AND is_deleted = 0 
+            AND id NOT IN (
+                SELECT room_id FROM bookings
+                WHERE status IN ('Booked', 'Checked In')
+                AND (check_in < %s AND check_out > %s)
+            )
+            ORDER BY room_number ASC LIMIT 1 FOR UPDATE
+        """, (hotel_id, room_type, check_out, check_in))
+        locked_room = cursor.fetchone()
         
         if not locked_room:
-            flash("Mohon maaf, kamar ini baru saja dihapus atau tidak tersedia lagi.", "danger")
-            return redirect(url_for('main.index'))
-        
-        query = """
-            SELECT COUNT(*) as count FROM bookings 
-            WHERE room_id = %s AND status IN ('Booked', 'Checked In')
-            AND (check_in < %s AND check_out > %s)
-        """
-        cursor.execute(query, (room_id, check_out, check_in))
-        result = cursor.fetchone()
-        
-        if result['count'] > 0:
-            flash("Sorry, this room just got booked or locked by someone else.", "danger")
-            return redirect(url_for('main.index'))
+            conn.rollback()
+            cursor.close()
+            conn.close()
+            flash("Maaf, kamar baru saja di-booking oleh orang lain. Silakan coba lagi.", "danger")
+            return redirect(url_for('main.hotel_rooms', hotel_id=hotel_id))
+
+        final_room_id = locked_room['id']
 
         insert_query = """
             INSERT INTO bookings (user_id, room_id, guest_name, contact_number, check_in, check_out, payment_method, status)
             VALUES (%s, %s, %s, %s, %s, %s, %s, 'Booked')
         """
-        cursor.execute(insert_query, (session['user_id'], room_id, guest_name, contact_number, check_in, check_out, payment_method))
+        cursor.execute(insert_query, (session['user_id'], final_room_id, guest_name, contact_number, check_in, check_out, payment_method))
         conn.commit()
         booking_id = cursor.lastrowid
-        
-        # Add Notification
+
         add_notification(
             title="Booking Baru Dibuat",
             description=f"Guest {guest_name} membuat reservasi baru.",
             icon_type="booking"
         )
-        
-        # Kirim Email Konfirmasi (Karena tidak ada Pending lagi)
+
         cursor.execute("""
             SELECT b.*, r.room_number, r.room_type, r.price, h.name as hotel_name, u.email as user_email
-            FROM bookings b 
-            JOIN rooms r ON b.room_id = r.id 
-            JOIN hotels h ON r.hotel_id = h.id 
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            JOIN hotels h ON r.hotel_id = h.id
             JOIN users u ON b.user_id = u.id
             WHERE b.id = %s
         """, (booking_id,))
         booking_data = cursor.fetchone()
-        
+
         if booking_data and booking_data.get('user_email'):
             from services.email_service import send_email
-
-            
             html_content = render_template('emails/booking_confirmation.html', booking=booking_data)
             subject = f"Konfirmasi Pemesanan - {booking_data['hotel_name']} (INV-{booking_data['id']})"
             send_email(booking_data['user_email'], subject, html_content)
-            
+
         cursor.close()
         conn.close()
-        
+
         flash("Pemesanan berhasil! Kamar telah dibooking.", "success")
         return redirect(url_for('booking.invoice', booking_id=booking_id))
 
@@ -346,9 +359,10 @@ def cancel_booking(booking_id):
     flash("Booking cancelled successfully.", "success")
     return redirect(url_for('booking.my_bookings'))
 
-@booking_bp.route('/waitlist/<int:room_id>', methods=['POST'])
+@booking_bp.route('/waitlist/<int:hotel_id>', methods=['POST'])
 @login_required
-def join_waitlist(room_id):
+def join_waitlist(hotel_id):
+    room_type = request.args.get('room_type') or request.form.get('room_type')
 
     check_in = request.form['check_in']
     check_out = request.form['check_out']

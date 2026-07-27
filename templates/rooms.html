@@ -180,26 +180,29 @@
         <h2 class="section-title" id="rooms-section">Kamar Tersedia</h2>
         {% if available_rooms %}
         <div class="grid" style="grid-template-columns: 1fr;">
-            {% for room in available_rooms %}
+            {% for group in available_rooms %}
             <div class="room-card">
                 <div class="room-carousel">
-                    {% for img in room.images %}
-                    <img src="{{ img }}" alt="{{ room.room_type }}">
+                    {% if group.image_url %}
+                    <img src="{{ group.image_url }}" alt="{{ group.room_type }}">
                     {% else %}
                     <div style="flex: 0 0 100%; width: 100%; height: 100%; background: var(--bg-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">{{ _('Tidak ada foto') }}</div>
-                    {% endfor %}
+                    {% endif %}
                 </div>
-                
+
                 <div class="room-card-content" style="padding: 1.5rem;">
-                    <h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 0.5rem;">{{ room.room_type }}</h3>
-                    <p class="text-muted" style="font-size: 0.9rem; margin-top: 0;">Nomor Kamar: {{ room.room_number }}</p>
-                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 0.5rem;">{{ group.room_type }}</h3>
+                        <span style="background: rgba(37,99,235,0.1); color: var(--primary-color); padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600;">{{ group.quantity }} Rooms Available</span>
+                    </div>
+                    <p class="text-muted" style="font-size: 0.9rem; margin-top: 0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 0.25rem;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Kapasitas: {{ group.capacity }} Tamu</p>
+
                     <div style="margin: 1.5rem 0 0 0; padding-top: 1rem; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <span style="font-size: 0.85rem; color: var(--text-muted);">Harga per malam</span>
-                            <p style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin: 0.2rem 0 0 0;">Rp {{ "{:,.0f}".format(room.price) }}</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin: 0.2rem 0 0 0;">Rp {{ "{:,.0f}".format(group.price) }}</p>
                         </div>
-                        <a href="{{ url_for('booking.book_room', room_id=room.id, check_in=check_in, check_out=check_out) }}" class="btn btn-primary" style="padding: 0.8rem 1.5rem;">Pesan Sekarang</a>
+                        <a href="{{ url_for('booking.book_room', hotel_id=hotel.id, room_type=group.room_type, check_in=check_in, check_out=check_out) }}" class="btn btn-primary" style="padding: 0.8rem 1.5rem;">Pesan Sekarang</a>
                     </div>
                 </div>
             </div>
@@ -208,40 +211,6 @@
         {% else %}
         <div style="padding: 3rem; text-align: center; background: var(--card-bg); border-radius: 12px; border: 1px dashed var(--border-color, #cbd5e1);">
             <p class="text-muted" style="font-size: 1.1rem;">Maaf, tidak ada kamar yang tersedia untuk tanggal tersebut.</p>
-        </div>
-        {% endif %}
-
-        {% if booked_rooms %}
-        <h2 class="section-title mt-4">Kamar Penuh (Waiting List)</h2>
-        <div class="grid" style="grid-template-columns: 1fr;">
-            {% for room in booked_rooms %}
-            <div class="room-card" style="opacity: 0.7; background: #f8fafc;">
-                <div class="room-carousel">
-                    {% for img in room.images %}
-                    <img src="{{ img }}" alt="{{ room.room_type }}">
-                    {% else %}
-                    <div style="flex: 0 0 100%; width: 100%; height: 100%; background: var(--bg-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">{{ _('Tidak ada foto') }}</div>
-                    {% endfor %}
-                </div>
-                
-                <div class="room-card-content" style="padding: 1.5rem;">
-                    <h3 style="color: var(--text-muted); margin-top: 0; margin-bottom: 0.5rem;">{{ room.room_type }}</h3>
-                    <p class="text-muted" style="font-size: 0.9rem; margin-top: 0;">Nomor Kamar: {{ room.room_number }}</p>
-                    
-                    <div style="margin: 1.5rem 0 0 0; padding-top: 1rem; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <span style="font-size: 0.85rem; color: var(--text-muted);">Status</span>
-                            <p style="color: var(--danger); font-weight: 600; margin: 0.2rem 0 0 0;">Tidak Tersedia</p>
-                        </div>
-                        <form action="{{ url_for('booking.join_waitlist', room_id=room.id) }}" method="POST" style="margin: 0;">
-                            <input type="hidden" name="check_in" value="{{ check_in }}">
-                            <input type="hidden" name="check_out" value="{{ check_out }}">
-                            <button type="submit" class="btn" style="padding: 0.8rem 1.5rem; background: #cbd5e1; color: #475569;">Gabung Waiting List</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
         </div>
         {% endif %}
         

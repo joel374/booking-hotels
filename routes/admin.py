@@ -178,7 +178,7 @@ def hotels():
             
         return redirect(url_for('admin.hotels'))
 
-    cursor.execute("SELECT h.*, p.province, c.city_name FROM hotels h LEFT JOIN provinces p ON h.province_id = p.province_id LEFT JOIN cities c ON h.city_id = c.city_id WHERE h.is_deleted = 0")
+    cursor.execute("SELECT h.*, count(r.id) as room_count, p.province, c.city_name FROM hotels h LEFT JOIN provinces p ON h.province_id = p.province_id LEFT JOIN cities c ON h.city_id = c.city_id LEFT JOIN rooms r ON h.id = r.hotel_id AND r.is_deleted = 0 WHERE h.is_deleted = 0 GROUP BY h.id, p.province, c.city_name")
     hotel_list = cursor.fetchall()
     hotel_ids = [hotel['id'] for hotel in hotel_list]
     images_by_hotel = fetch_images_by_parent(cursor, 'hotel_images', 'hotel_id', hotel_ids)

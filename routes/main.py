@@ -9,51 +9,49 @@ def get_available_rooms(hotel_id, check_in, check_out, min_price=None, max_price
     cursor = conn.cursor(dictionary=True)
     cleanup_expired_bookings(cursor)
     conn.commit()
-    
+
     query = """
-        SELECT r.* FROM rooms r
+        SELECT r.room_type, r.price, r.capacity, COUNT(r.id) as quantity, MIN(r.room_number) as start_number
+        FROM rooms r
         WHERE r.hotel_id = %s AND r.is_deleted = 0 AND r.id NOT IN (
             SELECT b.room_id FROM bookings b
-            WHERE b.status IN ('Booked', 'Checked In') 
+            WHERE b.status IN ('Booked', 'Checked In')
             AND (b.check_in < %s AND b.check_out > %s)
         )
     """
     params = [hotel_id, check_out, check_in]
-    
+
     if min_price:
         query += " AND r.price >= %s"
         params.append(min_price)
     if max_price:
         query += " AND r.price <= %s"
         params.append(max_price)
-        
+
+    query += " GROUP BY r.room_type, r.price, r.capacity"
+
     if sort_by == 'cheapest':
         query += " ORDER BY r.price ASC"
     elif sort_by == 'expensive':
         query += " ORDER BY r.price DESC"
-        
+
     cursor.execute(query, tuple(params))
     rooms = cursor.fetchall()
     
-    cursor.close()
-    conn.close()
-    return rooms
+    for group in rooms:
+        cursor.execute("""
+            SELECT i.image_url
+            FROM rooms r
+            LEFT JOIN room_images i ON r.id = i.room_id
+            WHERE r.hotel_id = %s AND r.room_type = %s AND r.is_deleted = 0 AND i.image_url IS NOT NULL
+            LIMIT 1
+        """, (hotel_id, group['room_type']))
+        img = cursor.fetchone()
+        if img and img['image_url']:
+            group['image_url'] = img['image_url']
+        else:
+            group['image_url'] = None
 
-def get_booked_rooms(hotel_id, check_in, check_out):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    query = """
-        SELECT r.* FROM rooms r
-        WHERE r.hotel_id = %s AND r.is_deleted = 0 AND r.id IN (
-            SELECT b.room_id FROM bookings b
-            WHERE b.status IN ('Booked', 'Checked In') 
-            AND (b.check_in < %s AND b.check_out > %s)
-        )
-    """
-    cursor.execute(query, (hotel_id, check_out, check_in))
-    rooms = cursor.fetchall()
-    
     cursor.close()
     conn.close()
     return rooms
@@ -287,9 +285,7 @@ def hotel_rooms(hotel_id):
         flash("Invalid date format.", "danger")
         return redirect(url_for('main.index'))
 
-    # Get available and booked rooms separately to prevent price-filtered rooms from showing as booked
-    available_rooms_raw = get_available_rooms(hotel_id, check_in, check_out, min_price, max_price, sort_by)
-    booked_rooms_raw = get_booked_rooms(hotel_id, check_in, check_out)
+    available_rooms = get_available_rooms(hotel_id, check_in, check_out, min_price, max_price, sort_by)
     
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -328,20 +324,15 @@ def hotel_rooms(hotel_id):
     else:
         reviews = []
     
-    # Function to attach images to room list
-    def attach_images(room_list):
-        for r in room_list:
-            cursor.execute("SELECT image_url FROM room_images WHERE room_id = %s", (r['id'],))
-            r['images'] = [img['image_url'] for img in cursor.fetchall()]
-        return room_list
+    # Set fallback images
+    for r in available_rooms:
+        if not r['image_url']:
+            r['image_url'] = hotel['images'][0] if hotel.get('images') else None
 
-    rooms = attach_images(available_rooms_raw)
-    booked_rooms = attach_images(booked_rooms_raw)
-        
     cursor.close()
     conn.close()
 
-    return render_template('rooms.html', hotel=hotel, available_rooms=rooms, booked_rooms=booked_rooms, 
+    return render_template('rooms.html', hotel=hotel, available_rooms=available_rooms, booked_rooms=[], 
                            check_in=check_in, check_out=check_out, 
                            min_price=min_price if min_price else '', 
                            max_price=max_price if max_price else '', 

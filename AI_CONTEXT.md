@@ -402,7 +402,7 @@ return render_template('admin/dashboard.html',
 ### **Issue 1: Booking Availability Race Condition**
 
 **Status:** ✅ RESOLVED
-- **Fix Applied:** Added `SELECT ... FOR UPDATE` row-level locking on the `rooms` table in `routes/booking.py` before inserting new bookings to prevent double bookings.
+- **Fix Applied:** Added `SELECT ... FOR UPDATE` row-level locking pada saat auto-select kamar fisik di `routes/booking.py` sebelum *insert* booking baru untuk mencegah *double booking*.
 
 ---
 
@@ -721,6 +721,7 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - **[NEW]** Perhitungan *Grand Total* tagihan dinamis di *Booking Form* dan Halaman Pembayaran.
   - **[NEW]** *Empty State Illustration* premium di halaman Pesanan Saya (`my_bookings.html`).
   - **[NEW]** Dukungan multi-bahasa (ID/EN) terintegrasi penuh menggunakan `translations.py` pada halaman Beranda, Tentang Kami, dan Kontak.
+  - **[NEW]** Refaktorisasi manajemen dan UI kamar menggunakan konsep *Room Type Group Management* (Agregasi ketersediaan dinamis per tipe kamar di UI, *assignment* ID kamar fisik secara otomatis dan transparan saat *checkout*, proteksi *Double Booking* ketat menggunakan `FOR UPDATE`).
   - **[NEW]** Perbaikan efek transparan-ke-putih pada *navbar* agar adaptif di seluruh halaman utama yang memiliki spanduk *hero*.
 
 ---

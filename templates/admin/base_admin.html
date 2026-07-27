@@ -2685,6 +2685,189 @@ border-radius: 12px;
             </div>
         </div>
     </div>
+
+<!-- IMAGE UPLOAD PREVIEW INJECTION -->
+<style>
+.preview-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.preview-item {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+}
+.preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.preview-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: 0.2s;
+    z-index: 10;
+}
+.preview-remove:hover {
+    background: rgba(220, 38, 38, 1);
+    transform: scale(1.1);
+}
+.add-more-card {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    border: 2px dashed rgba(37, 99, 235, 0.35);
+    background: rgba(37, 99, 235, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--primary);
+    transition: 0.2s;
+}
+.add-more-card:hover {
+    background: rgba(37, 99, 235, 0.1);
+    border-color: var(--primary);
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropzones = document.querySelectorAll('.dropzone');
+    
+    dropzones.forEach(dropzone => {
+        const fileInput = dropzone.querySelector('input[type="file"][multiple]');
+        if (!fileInput) return;
+        
+        const previewGrid = dropzone.parentElement.querySelector('.preview-grid');
+        if (!previewGrid) return;
+        
+        let selectedFiles = [];
+        
+        const addMoreCard = document.createElement('label');
+        addMoreCard.className = 'add-more-card';
+        addMoreCard.innerHTML = `
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span style="font-size: 0.8rem; margin-top: 0.5rem; font-weight: 500;">Add More</span>
+            <input type="file" multiple accept="${fileInput.accept}" style="display: none;" class="add-more-input">
+        `;
+        
+        const addMoreInput = addMoreCard.querySelector('input');
+        
+        function updateMainInput() {
+            const dt = new DataTransfer();
+            selectedFiles.forEach(f => dt.items.add(f));
+            fileInput.files = dt.files;
+        }
+        
+        function renderGallery() {
+            previewGrid.innerHTML = '';
+            
+            if (selectedFiles.length === 0) {
+                dropzone.style.display = 'grid'; 
+                previewGrid.style.display = 'none'; 
+                return;
+            }
+            
+            dropzone.style.display = 'none';
+            previewGrid.style.display = 'grid';
+            
+            selectedFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                
+                const img = document.createElement('img');
+                const reader = new FileReader();
+                reader.onload = e => img.src = e.target.result;
+                reader.readAsDataURL(file);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'preview-remove';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.type = 'button';
+                removeBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    selectedFiles.splice(index, 1);
+                    updateMainInput();
+                    renderGallery();
+                };
+                
+                item.appendChild(img);
+                item.appendChild(removeBtn);
+                previewGrid.appendChild(item);
+            });
+            
+            previewGrid.appendChild(addMoreCard);
+        }
+        
+        function handleFiles(files) {
+            if (!files || files.length === 0) return;
+            const newFiles = Array.from(files);
+            selectedFiles = [...selectedFiles, ...newFiles];
+            updateMainInput();
+            renderGallery();
+        }
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        addMoreInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+            addMoreInput.value = ''; 
+        });
+        
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = 'var(--primary)';
+        });
+        dropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = 'rgba(37, 99, 235, 0.35)';
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = 'rgba(37, 99, 235, 0.35)';
+            if (e.dataTransfer.files.length > 0) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+        
+        previewGrid.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        previewGrid.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length > 0) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+    });
+});
+</script>
+<!-- END IMAGE UPLOAD PREVIEW INJECTION -->
+
 </body>
 
 </html>
