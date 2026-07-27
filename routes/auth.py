@@ -7,7 +7,7 @@ from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
 from extensions import oauth
-from utils import login_required, add_notification
+from utils import login_required, add_notification, save_file, delete_image_file
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -367,7 +367,26 @@ def profile():
             new_password_hash = generate_password_hash(new_password)
             cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (new_password_hash, session['user_id']))
 
-        cursor.execute("UPDATE users SET username = %s, email = %s, phone = %s WHERE id = %s", (username, email, phone, session['user_id']))
+        file = request.files.get('photo')
+        photo_url = None
+        if file and file.filename != '':
+            try:
+                photo_url = save_file(file, current_app.config['USER_UPLOAD_FOLDER'], 'uploads/users')
+                cursor.execute("SELECT photo_url FROM users WHERE id = %s", (session['user_id'],))
+                old_photo_row = cursor.fetchone()
+                if old_photo_row and old_photo_row.get('photo_url'):
+                    delete_image_file(old_photo_row['photo_url'], current_app.root_path)
+            except Exception as e:
+                flash(f"Error uploading photo: {e}", 'danger')
+                cursor.close()
+                conn.close()
+                return redirect(url_for('auth.profile'))
+
+        if photo_url:
+            cursor.execute("UPDATE users SET username = %s, email = %s, phone = %s, photo_url = %s WHERE id = %s", (username, email, phone, photo_url, session['user_id']))
+        else:
+            cursor.execute("UPDATE users SET username = %s, email = %s, phone = %s WHERE id = %s", (username, email, phone, session['user_id']))
+            
         conn.commit()
         session['username'] = username
         flash("Profile updated successfully.", "success")
@@ -375,7 +394,7 @@ def profile():
         conn.close()
         return redirect(url_for('auth.profile'))
 
-    cursor.execute("SELECT username, email, phone FROM users WHERE id = %s", (session['user_id'],))
+    cursor.execute("SELECT username, email, phone, photo_url FROM users WHERE id = %s", (session['user_id'],))
     user = cursor.fetchone()
     cursor.close()
     conn.close()
