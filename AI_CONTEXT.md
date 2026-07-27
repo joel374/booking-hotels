@@ -720,6 +720,8 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - **[NEW]** Sistem "Siapa Cepat Dia Dapat!" (Email Broadcast ke pengguna *Waiting List* jika ada kamar batal).
   - **[NEW]** Perhitungan *Grand Total* tagihan dinamis di *Booking Form* dan Halaman Pembayaran.
   - **[NEW]** *Empty State Illustration* premium di halaman Pesanan Saya (`my_bookings.html`).
+  - **[NEW]** Dukungan multi-bahasa (ID/EN) terintegrasi penuh menggunakan `translations.py` pada halaman Beranda, Tentang Kami, dan Kontak.
+  - **[NEW]** Perbaikan efek transparan-ke-putih pada *navbar* agar adaptif di seluruh halaman utama yang memiliki spanduk *hero*.
 
 ---
 
@@ -738,6 +740,6 @@ Proyek ini telah dikonfigurasi untuk rilis ke lingkungan *Production* (VPS) seca
 
 ---
 
-**Last Updated:** July 23, 2026  
-**Version:** 1.6  
+**Last Updated:** July 26, 2026  
+**Version:** 1.7  
 **Status:** Active Development (Distributed to 3 Team Members)

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
 </head>
 <body>
-    <nav class="navbar {% if request.endpoint != 'main.index' %}scrolled{% endif %}" id="navbar">
+    <nav class="navbar {% if request.endpoint not in ['main.index', 'main.about', 'main.contact'] %}scrolled{% endif %}" id="navbar">
         <a href="{{ url_for('main.index') }}" class="navbar-brand">Bhineka Hotels</a>
         
         <div class="nav-links center-nav" id="navLinks">
@@ -27,10 +27,10 @@
 
         <div class="nav-actions">
             <div style="display: flex; gap: 0.5rem; align-items: center; margin-right: 1rem;">
-                <button id="theme-toggle" class="btn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.2rem; color: var(--text-main);">
+                <button class="btn theme-toggle-btn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.2rem; color: var(--text-main);">
                     {% if current_theme == 'dark' %}🌙{% else %}☀️{% endif %}
                 </button>
-                <select id="lang-toggle" class="custom-select-native" style="padding: 0.3rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: 500; font-size: 0.85rem; cursor: pointer; outline: none;">
+                <select class="custom-select-native lang-toggle-btn" style="padding: 0.3rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: 500; font-size: 0.85rem; cursor: pointer; outline: none;">
                     <option value="id" {% if current_language == 'id' %}selected{% endif %}>ID</option>
                     <option value="en" {% if current_language == 'en' %}selected{% endif %}>EN</option>
                 </select>
@@ -54,8 +54,20 @@
     </nav>
 
     <div class="mobile-search-wrapper" style="padding: 1rem; background: var(--primary-color); display: none; position: sticky; top: 0; z-index: 1050; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+            <span style="color: white; font-size: 1.1rem; font-weight: 600;">Bhineka Hotels</span>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button class="btn theme-toggle-btn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.2rem; color: white;">
+                    {% if current_theme == 'dark' %}🌙{% else %}☀️{% endif %}
+                </button>
+                <select class="custom-select-native lang-toggle-btn" style="padding: 0.2rem 0.4rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-weight: 500; font-size: 0.85rem; cursor: pointer; outline: none;">
+                    <option value="id" style="color: black;" {% if current_language == 'id' %}selected{% endif %}>ID</option>
+                    <option value="en" style="color: black;" {% if current_language == 'en' %}selected{% endif %}>EN</option>
+                </select>
+            </div>
+        </div>
         <div class="mobile-search-inner-container" style="position: relative; width: 100%;">
-            <input type="text" class="mobileSearchInput" placeholder="Cari Hotel / Kota..." autocomplete="off" style="width: 100%; padding: 0.8rem 1rem; border-radius: 8px; border: none; outline: none; font-family: 'Inter', sans-serif; font-size: 0.95rem; box-sizing: border-box;">
+            <input type="text" class="mobileSearchInput" placeholder="{{ _('Cari Hotel / Kota...') }}" autocomplete="off" style="width: 100%; padding: 0.8rem 1rem; border-radius: 8px; border: none; outline: none; font-family: 'Inter', sans-serif; font-size: 0.95rem; box-sizing: border-box;">
             <div class="suggestions-box mobile-suggestions" style="display: none; width: 100%;"></div>
         </div>
     </div>
@@ -74,32 +86,36 @@
 
     <script>
         // Theme and Language Logic
-        document.getElementById('theme-toggle').addEventListener('click', async function() {
-            const html = document.documentElement;
-            const isDark = html.getAttribute('data-theme') === 'dark';
-            const newTheme = isDark ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            this.innerText = newTheme === 'dark' ? '🌙' : '☀️';
-            
-            try {
-                await fetch('/api/set-theme', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({theme: newTheme})
-                });
-            } catch (e) { console.error('Error saving theme', e); }
+        document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const html = document.documentElement;
+                const isDark = html.getAttribute('data-theme') === 'dark';
+                const newTheme = isDark ? 'light' : 'dark';
+                html.setAttribute('data-theme', newTheme);
+                document.querySelectorAll('.theme-toggle-btn').forEach(b => b.innerText = newTheme === 'dark' ? '🌙' : '☀️');
+                
+                try {
+                    await fetch('/api/set-theme', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({theme: newTheme})
+                    });
+                } catch (e) { console.error('Error saving theme', e); }
+            });
         });
 
-        document.getElementById('lang-toggle').addEventListener('change', async function() {
-            const newLang = this.value;
-            try {
-                await fetch('/api/set-language', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({language: newLang})
-                });
-                window.location.reload();
-            } catch (e) { console.error('Error saving language', e); }
+        document.querySelectorAll('.lang-toggle-btn').forEach(select => {
+            select.addEventListener('change', async function() {
+                const newLang = this.value;
+                try {
+                    await fetch('/api/set-language', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({language: newLang})
+                    });
+                    window.location.reload();
+                } catch (e) { console.error('Error saving language', e); }
+            });
         });
 
         // SweetAlert2 for Flash Messages
@@ -203,6 +219,7 @@
         });
 
         // Navbar Scroll Effect
+        {% if request.endpoint in ['main.index', 'main.about', 'main.contact'] %}
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
             if (window.scrollY > 50) {
@@ -211,6 +228,7 @@
                 navbar.classList.remove('scrolled');
             }
         });
+        {% endif %}
     </script>
     
     <script>

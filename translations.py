@@ -90,5 +90,29 @@ TRANSLATIONS = {
     "Kirim Ulasan": "Submit Review",
     "Belum ada ulasan untuk penginapan ini.": "No reviews for this property yet.",
     "Tidak ada foto": "No photos available",
-    "Belum ada hotel yang tersedia untuk kota ini.": "No hotels available for this city."
+    "Belum ada hotel yang tersedia untuk kota ini.": "No hotels available for this city.",
+    
+    # About Page
+    "Tentang Bhineka": "About Bhineka",
+    "Mendefinisikan ulang kemewahan dan kenyamanan menginap.": "Redefining luxury and comfortable stays.",
+    "Cerita Kami": "Our Story",
+    "Bhineka Hotels didirikan dengan satu visi sederhana: menciptakan pengalaman menginap yang melampaui batas ekspektasi. Kami percaya bahwa setiap perjalanan harus menjadi memori yang berharga, dan itu dimulai dari tempat Anda merebahkan diri.": "Bhineka Hotels was founded with one simple vision: to create a stay experience that exceeds expectations. We believe every journey should be a precious memory, starting from where you rest.",
+    "Sejak awal berdiri, kami terus berkomitmen untuk menghadirkan layanan bintang lima, fasilitas premium, dan sentuhan keramahan lokal di setiap properti kami. Dengan desain modern-elegan dan perhatian pada detail terkecil, kami mengundang Anda untuk merasakan kemewahan yang sebenarnya tanpa gravitasi beban pikiran.": "Since our inception, we have been committed to providing five-star services, premium facilities, and a touch of local hospitality in every property. With modern-elegant designs and attention to the smallest details, we invite you to experience true luxury without the gravity of worries.",
+    "Properti Mewah": "Luxury Properties",
+    "Tamu Puas": "Satisfied Guests",
+    
+    # Contact Page
+    "Hubungi Kami": "Contact Us",
+    "Kami siap membantu Anda kapan pun Anda butuhkan.": "We are ready to help you whenever you need.",
+    "Get in Touch": "Get in Touch",
+    "Punya pertanyaan mengenai reservasi, kemitraan, atau layanan kami? Tim dukungan pelanggan kami selalu siap sedia membantu memberikan solusi dan pengalaman terbaik untuk Anda.": "Have questions about reservations, partnerships, or our services? Our customer support team is always ready to help provide the best solutions and experiences for you.",
+    "Alamat Kantor Pusat:": "Head Office Address:",
+    "Gedung Bhineka Lt. 42<br>Jl. Jend. Sudirman Kav 1, Jakarta 10220": "Bhineka Tower 42nd Fl<br>Jl. Jend. Sudirman Kav 1, Jakarta 10220",
+    "Email Support:": "Email Support:",
+    "Hotline 24/7:": "24/7 Hotline:",
+    "Kirim Pesan": "Send Message",
+    "Nama Lengkap": "Full Name",
+    "Alamat Email": "Email Address",
+    "Pesan Anda": "Your Message",
+    "Kirim Pesan Sekarang": "Send Message Now"
 }
