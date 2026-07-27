@@ -1,7 +1,9 @@
+import re
 import os
 from decimal import Decimal
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
 from db import get_db_connection
+from services.room_service import generate_rooms, edit_room_group, delete_room_group
 from utils import admin_required, delete_image_file, save_file, add_notification
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -100,7 +102,7 @@ def dashboard():
 def hotels():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
+
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         location = request.form.get('location', '').strip()
@@ -114,37 +116,68 @@ def hotels():
             cursor.close()
             conn.close()
             return redirect(url_for('admin.hotels'))
-        
-        cursor.execute("INSERT INTO hotels (name, location, province_id, city_id, description) VALUES (%s, %s, %s, %s, %s)",
-                      (name, location, province_id, city_id, description))
-        hotel_id = cursor.lastrowid
-        
-        files = request.files.getlist('images')
-        saved_image_urls = []
+
         try:
+            conn.start_transaction()
+            cursor.execute("INSERT INTO hotels (name, location, province_id, city_id, description) VALUES (%s, %s, %s, %s, %s)",
+                          (name, location, province_id, city_id, description))
+            hotel_id = cursor.lastrowid
+
+            files = request.files.getlist('images')
+            saved_image_urls = []
             for file in files:
                 if file and file.filename != '':
                     image_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
                     saved_image_urls.append(image_url)
                     cursor.execute("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", (hotel_id, image_url))
+            
+            conn.commit()
+            saved_image_urls = [] # Clear so we do not delete committed images
+            # Handle Room Groups
+            room_types = request.form.getlist('room_type[]')
+            quantities = request.form.getlist('quantity[]')
+            start_numbers = request.form.getlist('start_number[]')
+            prices = request.form.getlist('price[]')
+            capacities = request.form.getlist('capacity[]')
+            room_images = request.files.getlist('room_image[]')
+            
+            for i in range(len(room_types)):
+                r_type = room_types[i].strip()
+                if not r_type: continue
+                qty = int(quantities[i]) if quantities[i] else 1
+                start_no = int(start_numbers[i]) if start_numbers[i] else 1
+                price = float(prices[i]) if prices[i] else 0
+                cap = int(capacities[i]) if capacities[i] else 2
+                
+                r_img_url = None
+                if i < len(room_images) and room_images[i] and room_images[i].filename != '':
+                    r_img_url = save_file(room_images[i], current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
+                    
+                generate_rooms(hotel_id, r_type, qty, start_no, price, cap, r_img_url)
+
+            conn.commit()
+            add_notification(
+                title="Hotel Baru Ditambahkan",
+                description=f"Hotel {name} berhasil ditambahkan ke sistem.",
+                icon_type="hotel"
+            )
+            flash("Hotel and rooms added successfully!", "success")
         except ValueError as e:
             for image_url in saved_image_urls:
                 delete_image_file(image_url, current_app.root_path)
             conn.rollback()
+            flash(str(e), 'danger')
+        except Exception as e:
+            for image_url in saved_image_urls:
+                delete_image_file(image_url, current_app.root_path)
+            conn.rollback()
+            flash(f"Error adding hotel: {str(e)}", 'danger')
+        finally:
             cursor.close()
             conn.close()
-            flash(str(e), 'danger')
-            return redirect(url_for('admin.hotels'))
-
-        conn.commit()
-        add_notification(
-            title="Hotel Baru Ditambahkan",
-            description=f"Hotel {name} berhasil ditambahkan ke sistem.",
-            icon_type="hotel"
-        )
-        flash("Hotel added successfully!", "success")
+            
         return redirect(url_for('admin.hotels'))
-        
+
     cursor.execute("SELECT h.*, p.province, c.city_name FROM hotels h LEFT JOIN provinces p ON h.province_id = p.province_id LEFT JOIN cities c ON h.city_id = c.city_id WHERE h.is_deleted = 0")
     hotel_list = cursor.fetchall()
     hotel_ids = [hotel['id'] for hotel in hotel_list]
@@ -152,20 +185,86 @@ def hotels():
 
     for hotel in hotel_list:
         hotel['images'] = images_by_hotel.get(hotel['id'], [])
-    
+
     cursor.execute("SELECT * FROM provinces ORDER BY province")
     provinces = cursor.fetchall()
-    
+
     cursor.close()
     conn.close()
     return render_template('admin/hotels.html', hotels=hotel_list, provinces=provinces)
 
-@admin_bp.route('/hotel/edit/<int:id>', methods=['POST'])
+
+@admin_bp.route('/hotel/edit/<int:id>', methods=['GET', 'POST'])
 @admin_required
 def edit_hotel(id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
+    if request.method == 'GET':
+        cursor.execute("SELECT * FROM hotels WHERE id = %s AND is_deleted = 0", (id,))
+        hotel = cursor.fetchone()
+        if not hotel:
+            flash("Hotel not found.", "danger")
+            return redirect(url_for('admin.hotels'))
+            
+
+        # JIT Auto-Migration for legacy hotels
+        cursor.execute("SELECT COUNT(*) as c FROM rooms WHERE hotel_id = %s AND is_deleted = 0", (id,))
+        room_count = cursor.fetchone()['c']
+        
+        if room_count == 0 and hotel.get('description'):
+            desc = hotel['description']
+            # Look for rooms:XX and type:YY
+            import re
+            rooms_match = re.search(r'rooms:(\d+)', desc)
+            type_match = re.search(r'type:([^|]+)', desc)
+            
+            if rooms_match:
+                legacy_qty = int(rooms_match.group(1))
+                legacy_type = type_match.group(1).strip() if type_match else "Standard Room"
+                if legacy_qty > 0:
+                    try:
+                        # Auto-generate rooms using default price 500k and capacity 2
+                        # The start number will be 101
+                        generate_rooms(id, legacy_type, legacy_qty, 101, 500000, 2, None)
+                    except Exception as e:
+                        print(f"JIT Auto-migration failed for hotel {id}: {str(e)}")
+
+        cursor.execute("SELECT * FROM provinces ORDER BY province")
+        provinces = cursor.fetchall()
+        
+        cursor.execute("SELECT * FROM cities WHERE province_id = %s ORDER BY city_name", (hotel['province_id'],))
+        cities = cursor.fetchall()
+        
+        cursor.execute("SELECT * FROM hotel_images WHERE hotel_id = %s", (id,))
+        hotel['images'] = cursor.fetchall()
+        
+        # Get Room Groups
+        cursor.execute("""
+            SELECT room_type, price, capacity, COUNT(*) as quantity, MIN(room_number) as start_number 
+            FROM rooms 
+            WHERE hotel_id = %s AND is_deleted = 0 
+            GROUP BY room_type, price, capacity
+        """, (id,))
+        room_groups = cursor.fetchall()
+        
+        # Get one image per room type
+        for group in room_groups:
+            cursor.execute("""
+                SELECT i.image_url 
+                FROM rooms r
+                LEFT JOIN room_images i ON r.id = i.room_id
+                WHERE r.hotel_id = %s AND r.room_type = %s AND r.is_deleted = 0 AND i.image_url IS NOT NULL
+                LIMIT 1
+            """, (id, group['room_type']))
+            img = cursor.fetchone()
+            group['image_url'] = img['image_url'] if img else None
+
+        cursor.close()
+        conn.close()
+        return render_template('admin/edit_hotel.html', hotel=hotel, provinces=provinces, cities=cities, room_groups=room_groups)
+
+    # POST method
     name = request.form.get('name', '').strip()
     location = request.form.get('location', '').strip()
     province_id = request.form.get('province_id')
@@ -177,7 +276,141 @@ def edit_hotel(id):
         flash(message, 'danger')
         cursor.close()
         conn.close()
-        return redirect(url_for('admin.hotels'))
+        return redirect(url_for('admin.edit_hotel', id=id))
+
+    cursor.execute("UPDATE hotels SET name=%s, location=%s, province_id=%s, city_id=%s, description=%s WHERE id=%s",
+                  (name, location, province_id, city_id, description, id))
+
+    files = request.files.getlist('images')
+    if files and files[0].filename != '':
+        cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (id,))
+        old_images = cursor.fetchall()
+        for old in old_images:
+            delete_image_file(old['image_url'], current_app.root_path)
+
+        cursor.execute("DELETE FROM hotel_images WHERE hotel_id = %s", (id,))
+
+        saved_image_urls = []
+        try:
+            for file in files:
+                if file and file.filename != '':
+                    image_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
+                    saved_image_urls.append(image_url)
+                    cursor.execute("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", (id, image_url))
+        except ValueError as e:
+            for image_url in saved_image_urls:
+                delete_image_file(image_url, current_app.root_path)
+            conn.rollback()
+            cursor.close()
+            conn.close()
+            flash(str(e), 'danger')
+            return redirect(url_for('admin.edit_hotel', id=id))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash("Hotel updated successfully!", "success")
+    return redirect(url_for('admin.edit_hotel', id=id))
+
+@admin_bp.route('/hotel/edit/<int:hotel_id>/room_group/add', methods=['POST'])
+@admin_required
+def hotel_add_room_group(hotel_id):
+    room_type = request.form.get('room_type', '').strip()
+    quantity = int(request.form.get('quantity', 1))
+    start_number = int(request.form.get('start_number', 1))
+    price = float(request.form.get('price', 0))
+    capacity = int(request.form.get('capacity', 2))
+    
+    file = request.files.get('room_image')
+    image_url = None
+    if file and file.filename != '':
+        image_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
+    
+    try:
+        generate_rooms(hotel_id, room_type, quantity, start_number, price, capacity, image_url)
+        flash(f"Berhasil menambahkan {quantity} kamar tipe {room_type}!", "success")
+    except ValueError as ve:
+        flash(str(ve), "danger")
+    except Exception as e:
+        flash(f"Error menambahkan room group: {str(e)}", "danger")
+        
+    return redirect(url_for('admin.edit_hotel', id=hotel_id) + "#manage-rooms")
+
+
+@admin_bp.route('/hotel/edit/<int:hotel_id>/room_group/add_more', methods=['POST'])
+@admin_required
+def hotel_add_more_rooms(hotel_id):
+    room_type = request.form.get('room_type', '').strip()
+    quantity = int(request.form.get('quantity', 1))
+    start_number = int(request.form.get('start_number', 1))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        # Fetch existing price, capacity, and image
+        cursor.execute("""
+            SELECT r.price, r.capacity, i.image_url 
+            FROM rooms r 
+            LEFT JOIN room_images i ON r.id = i.room_id 
+            WHERE r.hotel_id = %s AND r.room_type = %s AND r.is_deleted = 0 
+            LIMIT 1
+        """, (hotel_id, room_type))
+        existing = cursor.fetchone()
+        
+        if not existing:
+            flash(f"Room Group '{room_type}' tidak ditemukan.", "danger")
+            return redirect(url_for('admin.edit_hotel', id=hotel_id) + "#manage-rooms")
+            
+        price = existing['price']
+        capacity = existing['capacity']
+        image_url = existing['image_url']
+        
+        generate_rooms(hotel_id, room_type, quantity, start_number, price, capacity, image_url)
+        flash(f"Berhasil menambahkan {quantity} kamar tambahan untuk tipe {room_type}!", "success")
+    except ValueError as ve:
+        flash(str(ve), "danger")
+    except Exception as e:
+        flash(f"Error menambahkan kamar tambahan: {str(e)}", "danger")
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for('admin.edit_hotel', id=hotel_id) + "#manage-rooms")
+
+@admin_bp.route('/hotel/edit/<int:hotel_id>/room_group/edit', methods=['POST'])
+@admin_required
+def hotel_edit_room_group(hotel_id):
+    old_room_type = request.form.get('old_room_type', '').strip()
+    new_room_type = request.form.get('room_type', '').strip()
+    price = float(request.form.get('price', 0))
+    capacity = int(request.form.get('capacity', 2))
+    
+    file = request.files.get('room_image')
+    image_url = None
+    if file and file.filename != '':
+        image_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
+        
+    try:
+        edit_room_group(hotel_id, old_room_type, new_room_type, price, capacity, image_url)
+        flash(f"Berhasil mengubah grup kamar {old_room_type}!", "success")
+    except Exception as e:
+        flash(f"Error mengubah room group: {str(e)}", "danger")
+        
+    return redirect(url_for('admin.edit_hotel', id=hotel_id) + "#manage-rooms")
+
+@admin_bp.route('/hotel/edit/<int:hotel_id>/room_group/delete', methods=['POST'])
+@admin_required
+def hotel_delete_room_group(hotel_id):
+    room_type = request.form.get('room_type', '').strip()
+    try:
+        delete_room_group(hotel_id, room_type)
+        flash(f"Berhasil menghapus grup kamar {room_type}!", "success")
+    except Exception as e:
+        flash(f"Error menghapus room group: {str(e)}", "danger")
+        
+    return redirect(url_for('admin.edit_hotel', id=hotel_id) + "#manage-rooms")
+
     
     cursor.execute("UPDATE hotels SET name=%s, location=%s, province_id=%s, city_id=%s, description=%s WHERE id=%s",
                   (name, location, province_id, city_id, description, id))
@@ -293,6 +526,7 @@ def search():
 @admin_bp.route('/rooms', methods=['GET', 'POST'])
 @admin_required
 def rooms():
+    return redirect(url_for('admin.hotels'))
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     

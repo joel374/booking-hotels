@@ -1,0 +1,295 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Edit Hotel: {{ hotel.name }}{% endblock %}
+
+{% block page_description %}Manage hotel information and room inventory groups.{% endblock %}
+
+{% block content %}
+<style>
+.tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+.tab-btn { background: none; border: none; padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; color: var(--subtext); border-bottom: 2px solid transparent; transition: all 0.2s; }
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+</style>
+
+<div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('hotel-info')">Hotel Information</button>
+    <button class="tab-btn" onclick="switchTab('manage-rooms')">Manage Rooms</button>
+</div>
+
+<!-- Hotel Info Tab -->
+<div id="hotel-info" class="tab-pane active">
+    <div class="form-card" style="max-width: 800px;">
+        <h2 style="margin-top: 0;">Hotel Information</h2>
+        <form method="POST" action="{{ url_for('admin.edit_hotel', id=hotel.id) }}" enctype="multipart/form-data">
+            <div class="input-group">
+                <label>Hotel Name</label>
+                <input type="text" name="name" value="{{ hotel.name }}" required>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="input-group">
+                    <label>Province</label>
+                    <select name="province_id" id="edit_province_id" required onchange="loadCities(this.value, 'edit_city_id')">
+                        <option value="">Select Province</option>
+                        {% for prov in provinces %}
+                            <option value="{{ prov.province_id }}" {% if hotel.province_id == prov.province_id %}selected{% endif %}>{{ prov.province }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>City</label>
+                    <select name="city_id" id="edit_city_id" required>
+                        <option value="">Select City</option>
+                        {% for city in cities %}
+                            <option value="{{ city.city_id }}" {% if hotel.city_id == city.city_id %}selected{% endif %}>{{ city.city_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Detailed Address</label>
+                <input type="text" name="location" value="{{ hotel.location }}" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Description</label>
+                <textarea name="description" rows="5" required>{{ hotel.description }}</textarea>
+            </div>
+            
+            <div class="input-group">
+                <label>Hotel Images (Leave empty to keep current)</label>
+                <div class="dropzone">
+                    <p>Drop files to replace images, or click to choose</p>
+                    <p style="font-size:0.84rem; color: var(--subtext);">Supports JPG, PNG, WEBP.</p>
+                    <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp">
+                </div>
+                <div class="preview-grid"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 1rem;">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<!-- Manage Rooms Tab -->
+<div id="manage-rooms" class="tab-pane">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 style="margin: 0; font-size: 1.5rem;">Room Type Inventory</h2>
+        <button class="btn btn-primary" onclick="document.getElementById('add-room-group-modal').classList.add('active')" style="height: 48px;">+ Add Room Group</button>
+    </div>
+    
+    <div class="room-grid">
+        {% for group in room_groups %}
+        <div class="hotel-card" style="min-height: auto;">
+            {% if group.image_url %}
+            <img src="{{ group.image_url }}" alt="{{ group.room_type }}" style="width: 100%; height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="hotel-card-image" style="height: 200px; background: #f8fafc; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #94a3b8;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 48px; height: 48px; margin-bottom: 0.5rem;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span style="font-size: 0.875rem; font-weight: 500;">No Image</span>
+            </div>
+            {% endif %}
+            <div class="hotel-card-body">
+                <div class="hotel-card-title">
+                    <p class="hotel-name" style="font-size: 1.25rem;"><strong>{{ group.room_type }}</strong></p>
+                </div>
+                <div class="hotel-card-meta" style="margin-top: 0.5rem;">
+                    <span class="hotel-room-count"><strong>{{ group.quantity }} Rooms</strong></span>
+                    <span class="hotel-location" style="margin-left: auto;"><strong>Capacity: {{ group.capacity }} guests</strong></span>
+                </div>
+                <div class="hotel-price-row" style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                    <div class="hotel-price">
+                        <strong>Rp {{ "{:,}".format(group.price).replace(',', '.') }}</strong>
+                        <small>per night</small>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-primary" style="flex:1; background: var(--success); border-color: var(--success);" onclick="openAddMoreRoomsModal('{{ group.room_type }}')">+ Add</button>
+                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="openEditGroupModal('{{ group.room_type }}', '{{ group.price }}', '{{ group.capacity }}')">Edit</button>
+                    <button type="button" class="btn btn-outline" style="flex:1; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);" onclick="openDeleteGroupModal('{{ group.room_type }}')">Delete</button>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: #fff; border-radius: 16px; border: 1px dashed var(--border); color: var(--subtext);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 48px; height: 48px; margin-bottom: 1rem; color: #cbd5e1;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <h3 style="margin: 0 0 0.5rem; color: var(--text);">No Room Groups Yet</h3>
+            <p style="margin: 0 0 1.5rem;">Add your first room group to manage inventory efficiently.</p>
+            <button class="btn btn-primary" onclick="document.getElementById('add-room-group-modal').classList.add('active')">+ Add Room Group</button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add Room Group Modal -->
+<div id="add-room-group-modal" class="modal">
+    <div class="form-card">
+        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active')">&times;</button>
+        <h2 style="margin-top: 0;">Add Room Group</h2>
+        <p style="margin:0 0 1.5rem; color: var(--subtext);">Create a new block of identical rooms.</p>
+        <form method="POST" action="{{ url_for('admin.hotel_add_room_group', hotel_id=hotel.id) }}" enctype="multipart/form-data">
+            <div class="input-group">
+                <label>Room Type</label>
+                <input type="text" name="room_type" required placeholder="e.g. Deluxe Room">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="input-group">
+                    <label>Quantity</label>
+                    <input type="number" name="quantity" required min="1" value="1">
+                </div>
+                <div class="input-group">
+                    <label>Start Number</label>
+                    <input type="number" name="start_number" required min="1" value="101">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="input-group">
+                    <label>Price (Rp)</label>
+                    <input type="number" name="price" required min="0" value="500000">
+                </div>
+                <div class="input-group">
+                    <label>Capacity</label>
+                    <input type="number" name="capacity" required min="1" value="2">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Room Image (1 image per group)</label>
+                <div class="dropzone">
+                    <p>Drop file here, or click to choose</p>
+                    <input type="file" name="room_image" accept="image/png, image/jpeg, image/webp">
+                </div>
+                <div class="preview-grid"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 0.5rem;">Create Room Group</button>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Room Group Modal -->
+<div id="edit-room-group-modal" class="modal">
+    <div class="form-card">
+        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active')">&times;</button>
+        <h2 style="margin-top: 0;">Edit Room Group</h2>
+        <p style="margin:0 0 1.5rem; color: var(--subtext);">Update details for all rooms in this group.</p>
+        <form method="POST" action="{{ url_for('admin.hotel_edit_room_group', hotel_id=hotel.id) }}" enctype="multipart/form-data">
+            <input type="hidden" name="old_room_type" id="edit_old_room_type">
+            <div class="input-group">
+                <label>Room Type</label>
+                <input type="text" name="room_type" id="edit_room_type" required>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="input-group">
+                    <label>Price (Rp)</label>
+                    <input type="number" name="price" id="edit_price" required min="0">
+                </div>
+                <div class="input-group">
+                    <label>Capacity</label>
+                    <input type="number" name="capacity" id="edit_capacity" required min="1">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Room Image (Leave empty to keep current)</label>
+                <div class="dropzone">
+                    <p>Drop file here, or click to choose</p>
+                    <input type="file" name="room_image" accept="image/png, image/jpeg, image/webp">
+                </div>
+                <div class="preview-grid"></div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--warning); margin-bottom: 1.5rem; background: rgba(245, 158, 11, 0.1); padding: 0.75rem; border-radius: 8px;">Note: Changes apply to ALL rooms in this group.</p>
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px;">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+
+<!-- Add More Rooms Modal -->
+<div id="add-more-rooms-modal" class="modal">
+    <div class="form-card">
+        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active')">&times;</button>
+        <h2 style="margin-top: 0;">Add More Rooms</h2>
+        <p style="margin:0 0 1.5rem; color: var(--subtext);">Generate extra rooms for this room group. They will automatically inherit the price, capacity, and image.</p>
+        <form method="POST" action="{{ url_for('admin.hotel_add_more_rooms', hotel_id=hotel.id) }}">
+            <input type="hidden" name="room_type" id="add_more_room_type">
+            <div class="input-group">
+                <label>Room Type</label>
+                <input type="text" id="add_more_room_type_display" disabled style="background: #f1f5f9;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="input-group">
+                    <label>Quantity to Add</label>
+                    <input type="number" name="quantity" required min="1" value="1">
+                </div>
+                <div class="input-group">
+                    <label>Start Number</label>
+                    <input type="number" name="start_number" required min="1">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 0.5rem; background: var(--success); border-color: var(--success);">Generate Extra Rooms</button>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Room Group Form (Hidden) -->
+<form id="delete-group-form" method="POST" action="{{ url_for('admin.hotel_delete_room_group', hotel_id=hotel.id) }}" style="display:none;">
+    <input type="hidden" name="room_type" id="delete_room_type">
+</form>
+
+<script>
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    event.currentTarget.classList.add('active');
+    
+    window.history.replaceState(null, null, '#' + tabId);
+}
+
+function loadCities(provinceId, citySelectId) {
+    const citySelect = document.getElementById(citySelectId);
+    if (!provinceId) {
+        citySelect.innerHTML = '<option value="">Select City</option>';
+        return;
+    }
+    
+    fetch(`/admin/api/cities/${provinceId}`)
+        .then(response => response.json())
+        .then(data => {
+            citySelect.innerHTML = '<option value="">Select City</option>';
+            data.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.city_id;
+                option.textContent = city.city_name;
+                citySelect.appendChild(option);
+            });
+        });
+}
+
+function openEditGroupModal(roomType, price, capacity) {
+    document.getElementById('edit_old_room_type').value = roomType;
+    document.getElementById('edit_room_type').value = roomType;
+    document.getElementById('edit_price').value = parseInt(parseFloat(price));
+    document.getElementById('edit_capacity').value = capacity;
+    document.getElementById('edit-room-group-modal').classList.add('active');
+}
+
+function openDeleteGroupModal(roomType) {
+    if(confirm(`Are you sure you want to delete ALL rooms of type '${roomType}'? This action cannot be undone.`)) {
+        document.getElementById('delete_room_type').value = roomType;
+        document.getElementById('delete-group-form').submit();
+    }
+}
+
+window.onload = function() {
+    if(window.location.hash === '#manage-rooms') {
+        const btn = document.querySelector('.tab-btn[onclick="switchTab(\\\'manage-rooms\\\')"]');
+        if(btn) btn.click();
+    }
+}
+</script>
+{% endblock %}
