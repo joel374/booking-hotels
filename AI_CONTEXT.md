@@ -686,7 +686,7 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - `routes/auth.py`
   - `templates/auth/` (atau file-file login/register)
 - **Tabel Database:** `users`
-- **Next Enhancements:** Halaman Profil Pengguna (`/profile`), Fitur Lupa Password, Verifikasi Email pendaftaran.
+- **Next Enhancements:** Autentikasi Dua Langkah (2FA), Integrasi Social Login Tambahan (Facebook/Apple).
 
 ### **Modul 2: Katalog & Admin (Modul Inventory)**
 
@@ -722,6 +722,10 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - **[NEW]** *Empty State Illustration* premium di halaman Pesanan Saya (`my_bookings.html`).
   - **[NEW]** Dukungan multi-bahasa (ID/EN) terintegrasi penuh menggunakan `translations.py` pada halaman Beranda, Tentang Kami, dan Kontak.
   - **[NEW]** Perbaikan efek transparan-ke-putih pada *navbar* agar adaptif di seluruh halaman utama yang memiliki spanduk *hero*.
+  - **[NEW]** Implementasi Halaman Profil Pengguna (`/profile`) dengan fitur ubah data diri, foto profil, dan password.
+  - **[NEW]** Fitur Lupa Password dan Reset Password melalui tautan token unik via email.
+  - **[NEW]** Sistem Email Otomatis: Verifikasi pendaftaran (Welcome Email) dan Notifikasi keamanan saat pengguna berhasil login.
+  - **[NEW]** Ekspansi dukungan terjemahan multi-bahasa (ID/EN) untuk halaman Profil dan Autentikasi (Lupa/Reset Password).
 
 ---
 
@@ -740,6 +744,6 @@ Proyek ini telah dikonfigurasi untuk rilis ke lingkungan *Production* (VPS) seca
 
 ---
 
-**Last Updated:** July 26, 2026  
-**Version:** 1.7  
+**Last Updated:** July 27, 2026  
+**Version:** 1.8  
 **Status:** Active Development (Distributed to 3 Team Members)
