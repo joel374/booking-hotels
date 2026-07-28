@@ -248,7 +248,7 @@ def edit_hotel(id):
         
         # Get Room Groups
         cursor.execute("""
-            SELECT room_type, price, capacity, COUNT(*) as quantity, MIN(room_number) as start_number 
+            SELECT room_type, price, capacity, COUNT(*) as quantity, MIN(room_number) as start_number, MAX(CAST(room_number AS UNSIGNED)) as max_number 
             FROM rooms 
             WHERE hotel_id = %s AND is_deleted = 0 
             GROUP BY room_type, price, capacity
@@ -360,12 +360,12 @@ def hotel_add_more_rooms(hotel_id):
     try:
         # Fetch existing price, capacity, and image
         cursor.execute("""
-            SELECT r.price, r.capacity, i.image_url 
+            SELECT r.price, r.capacity, i.image_url, (SELECT MAX(CAST(room_number AS UNSIGNED)) FROM rooms WHERE hotel_id = %s AND room_type = %s) as max_number
             FROM rooms r 
             LEFT JOIN room_images i ON r.id = i.room_id 
-            WHERE r.hotel_id = %s AND r.room_type = %s AND r.is_deleted = 0 
+            WHERE r.hotel_id = %s AND r.room_type = %s AND r.is_deleted = 0
             LIMIT 1
-        """, (hotel_id, room_type))
+            """, (hotel_id, room_type, hotel_id, room_type))
         existing = cursor.fetchone()
         
         if not existing:
@@ -1630,3 +1630,4 @@ def settings_update():
     
     flash("Settings updated successfully.", "success")
     return redirect(url_for('admin.settings'))
+
