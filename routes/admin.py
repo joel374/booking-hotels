@@ -1340,15 +1340,15 @@ def api_analytics_data():
     
     b_join = " FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE r.is_deleted = 0 AND h.is_deleted = 0 "
     
-    cursor.execute("SELECT IFNULL(SUM(r.price), 0) as revenue " + b_join + " AND b.status = 'Booked' " + hotel_filter, params)
+    cursor.execute("SELECT IFNULL(SUM(r.price), 0) as revenue " + b_join + " AND b.status IN ('Booked', 'Checked In', 'Checked Out') " + hotel_filter, params)
     total_revenue_lifetime = float(cursor.fetchone()['revenue'])
     
-    cursor.execute("SELECT IFNULL(SUM(r.price), 0) as revenue " + b_join + " AND b.status = 'Booked' " + hotel_filter + date_filter, params + date_params)
+    cursor.execute("SELECT IFNULL(SUM(r.price), 0) as revenue " + b_join + " AND b.status IN ('Booked', 'Checked In', 'Checked Out') " + hotel_filter + date_filter, params + date_params)
     period_revenue = float(cursor.fetchone()['revenue'])
     
     prev_revenue = 0
     if start_date:
-        cursor.execute("SELECT IFNULL(SUM(r.price), 0) as revenue " + b_join + " AND b.status = 'Booked' " + hotel_filter + prev_date_filter, params + prev_date_params)
+        cursor.execute("SELECT IFNULL(SUM(r.price), 0) as revenue " + b_join + " AND b.status IN ('Booked', 'Checked In', 'Checked Out') " + hotel_filter + prev_date_filter, params + prev_date_params)
         prev_revenue = float(cursor.fetchone()['revenue'])
     
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -1363,7 +1363,7 @@ def api_analytics_data():
         cursor.execute("SELECT COUNT(*) as total " + b_join + hotel_filter + prev_date_filter, params + prev_date_params)
         prev_bookings = cursor.fetchone()['total']
     
-    cursor.execute("SELECT COUNT(DISTINCT r.id) as occupied FROM rooms r JOIN bookings b ON r.id = b.room_id JOIN hotels h ON r.hotel_id = h.id WHERE b.status = 'Booked' AND DATE(b.created_at) = CURDATE() " + hotel_filter, params)
+    cursor.execute("SELECT COUNT(DISTINCT r.id) as occupied FROM rooms r JOIN bookings b ON r.id = b.room_id JOIN hotels h ON r.hotel_id = h.id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out') AND DATE(b.created_at) = CURDATE() " + hotel_filter, params)
     occupied_rooms = cursor.fetchone()['occupied']
     
     available_rooms = max(0, total_rooms - occupied_rooms)
@@ -1372,7 +1372,7 @@ def api_analytics_data():
     cursor.execute("SELECT IFNULL(AVG(r.price), 0) as avg_price FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.is_deleted = 0 " + hotel_filter, params)
     avg_price = float(cursor.fetchone()['avg_price'])
     
-    cursor.execute("SELECT DATE_FORMAT(b.created_at, '%b') as label, IFNULL(SUM(r.price), 0) as value " + b_join + " AND b.status = 'Booked' AND b.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH) " + hotel_filter + " GROUP BY label ORDER BY MIN(b.created_at)", params)
+    cursor.execute("SELECT DATE_FORMAT(b.created_at, '%b') as label, IFNULL(SUM(r.price), 0) as value " + b_join + " AND b.status IN ('Booked', 'Checked In', 'Checked Out') AND b.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH) " + hotel_filter + " GROUP BY label ORDER BY MIN(b.created_at)", params)
     revenue_trend = cursor.fetchall()
     
     cursor.execute("SELECT DATE_FORMAT(b.created_at, '%b') as label, COUNT(*) as value " + b_join + " AND b.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH) " + hotel_filter + " GROUP BY label ORDER BY MIN(b.created_at)", params)

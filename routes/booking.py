@@ -163,7 +163,7 @@ def pay(booking_id):
         flash("Your booking session has expired.", "warning")
         return redirect(url_for('main.index'))
 
-    if booking_record['status'] == 'Booked':
+    if booking_record['status'] in ('Booked', 'Checked In', 'Checked Out'):
         return render_template('invoice.html', booking=booking_record)
 
     expiry_time = booking_record['created_at'] + timedelta(minutes=15)
@@ -409,7 +409,7 @@ def submit_review(booking_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    cursor.execute("SELECT r.hotel_id, b.check_out FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.id = %s AND b.user_id = %s AND b.status = 'Booked'", (booking_id, session['user_id']))
+    cursor.execute("SELECT r.hotel_id, b.check_out FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.id = %s AND b.user_id = %s AND b.status = 'Checked Out'", (booking_id, session['user_id']))
     booking = cursor.fetchone()
     
     if not booking:
