@@ -248,7 +248,7 @@ def edit_hotel(id):
         
         # Get Room Groups
         cursor.execute("""
-            SELECT room_type, price, capacity, COUNT(*) as quantity, MIN(room_number) as start_number 
+            SELECT room_type, price, capacity, COUNT(*) as quantity, MIN(room_number) as start_number, MAX(CAST(room_number AS UNSIGNED)) as max_number 
             FROM rooms 
             WHERE hotel_id = %s AND is_deleted = 0 
             GROUP BY room_type, price, capacity
@@ -360,12 +360,12 @@ def hotel_add_more_rooms(hotel_id):
     try:
         # Fetch existing price, capacity, and image
         cursor.execute("""
-            SELECT r.price, r.capacity, i.image_url 
+            SELECT r.price, r.capacity, i.image_url, (SELECT MAX(CAST(room_number AS UNSIGNED)) FROM rooms WHERE hotel_id = %s AND room_type = %s) as max_number
             FROM rooms r 
             LEFT JOIN room_images i ON r.id = i.room_id 
-            WHERE r.hotel_id = %s AND r.room_type = %s AND r.is_deleted = 0 
+            WHERE r.hotel_id = %s AND r.room_type = %s AND r.is_deleted = 0
             LIMIT 1
-        """, (hotel_id, room_type))
+            """, (hotel_id, room_type, hotel_id, room_type))
         existing = cursor.fetchone()
         
         if not existing:
@@ -810,7 +810,7 @@ def reports():
     return render_template('admin/reports.html')
 
 
-def get_report_data(report_type, period, search_term='', sort_by=''):
+def get_report_data(report_type, period, search_term='', sort_by='', page=1, limit=None):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
@@ -881,6 +881,39 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
     if total_rooms > 0:
         occupancy_rate = ((status_counts['Booked'] + status_counts['Checked In']) / total_rooms) * 100
     
+    # Calculate new data without breaking existing structure
+    cursor.execute("SELECT COUNT(*) as total FROM rooms WHERE is_deleted = 0 AND id NOT IN (SELECT room_id FROM bookings WHERE status IN ('Booked', 'Checked In'))")
+    row_ar = cursor.fetchone()
+    available_rooms = row_ar['total'] if row_ar else 0
+    
+    query_trx = "SELECT COUNT(id) as cnt FROM bookings WHERE status IN ('Booked', 'Checked In', 'Checked Out')"
+    params_trx = []
+    if start_date:
+        query_trx += " AND created_at >= %s AND created_at <= %s"
+        params_trx.extend([start_date, end_date])
+    cursor.execute(query_trx, params_trx)
+    row_trx = cursor.fetchone()
+    total_transactions = row_trx['cnt'] if row_trx else 0
+    avg_revenue = total_revenue / total_transactions if total_transactions > 0 else 0.0
+
+    query_top = "SELECT h.name, SUM(r.price * GREATEST(1, DATEDIFF(b.check_out, b.check_in))) as revenue FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON h.id = r.hotel_id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out') GROUP BY h.id ORDER BY revenue DESC LIMIT 1"
+    cursor.execute(query_top)
+    top_hotel_data = cursor.fetchone()
+    highest_revenue_hotel = top_hotel_data['name'] if top_hotel_data else "-"
+    
+    query_logs = "SELECT COUNT(*) as total FROM bookings WHERE 1=1"
+    params_logs = []
+    if start_date:
+        query_logs += " AND created_at >= %s AND created_at <= %s"
+        params_logs.extend([start_date, end_date])
+    cursor.execute(query_logs, params_logs)
+    row_logs = cursor.fetchone()
+    total_audit_logs = row_logs['total'] if row_logs else 0
+    
+    cursor.execute("SELECT COUNT(*) as today FROM bookings WHERE DATE(created_at) = CURDATE()")
+    row_today = cursor.fetchone()
+    today_logs = row_today['today'] if row_today else 0
+
     summary = {
         'total_hotels': total_hotels,
         'total_rooms': total_rooms,
@@ -890,12 +923,30 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
         'status_checked_in': status_counts['Checked In'],
         'status_checked_out': status_counts['Checked Out'],
         'status_cancelled': status_counts['Cancelled'],
-        'occupancy_rate': round(occupancy_rate, 1)
+        'occupancy_rate': round(occupancy_rate, 1),
+        
+        # New enriched data
+        'available_rooms': available_rooms,
+        'avg_revenue': avg_revenue,
+        'total_transactions': total_transactions,
+        'highest_revenue_hotel': highest_revenue_hotel,
+        'total_audit_logs': total_audit_logs,
+        'today_logs': today_logs,
+        'admin_actions': total_audit_logs,
+        'system_actions': 0
     }
     
     details = []
-    
+    total_records = 0
     if report_type == 'Hotels':
+        q_count = "SELECT COUNT(DISTINCT h.id) as total FROM hotels h LEFT JOIN rooms r ON h.id = r.hotel_id AND r.is_deleted = 0 WHERE h.is_deleted = 0"
+        p_count = []
+        if search_term:
+            q_count += " AND (h.name LIKE %s OR h.location LIKE %s)"
+            p_count.extend([f"%{search_term}%", f"%{search_term}%"])
+        cursor.execute(q_count, p_count)
+        total_records = cursor.fetchone()['total']
+
         q = "SELECT h.name as hotel, h.location, COUNT(r.id) as rooms, 'Available' as status FROM hotels h LEFT JOIN rooms r ON h.id = r.hotel_id AND r.is_deleted = 0 WHERE h.is_deleted = 0"
         p = []
         if search_term:
@@ -906,6 +957,11 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
             q += " ORDER BY h.name ASC"
         else:
             q += " ORDER BY h.id DESC"
+            
+        if limit is not None:
+            q += " LIMIT %s OFFSET %s"
+            p.extend([limit, (page - 1) * limit])
+            
         cursor.execute(q, p)
         for r in cursor.fetchall():
             details.append({
@@ -914,28 +970,62 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
                 'rooms': r['rooms'],
                 'status': r['status']
             })
-            
     elif report_type == 'Rooms':
-        q = "SELECT r.room_type as room, h.name as hotel, r.room_number, r.price, 'Available' as status FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.is_deleted = 0"
+        q_count = "SELECT COUNT(*) as total FROM (SELECT h.id FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.is_deleted = 0"
+        p_count = []
+        if search_term:
+            q_count += " AND (r.room_type LIKE %s OR h.name LIKE %s)"
+            p_count.extend([f"%{search_term}%", f"%{search_term}%"])
+        q_count += " GROUP BY h.id, r.room_type) as tmp"
+        cursor.execute(q_count, p_count)
+        total_records = cursor.fetchone()['total']
+
+        q = """
+        SELECT h.name as hotel, r.room_type, COUNT(r.id) as total_rooms, 
+        SUM(CASE WHEN r.id IN (SELECT room_id FROM bookings WHERE status IN ('Booked', 'Checked In')) THEN 1 ELSE 0 END) as booked
+        FROM rooms r JOIN hotels h ON r.hotel_id = h.id 
+        WHERE r.is_deleted = 0
+        """
         p = []
         if search_term:
-            q += " AND (r.room_type LIKE %s OR h.name LIKE %s OR r.room_number LIKE %s)"
-            p.extend([f"%{search_term}%", f"%{search_term}%", f"%{search_term}%"])
+            q += " AND (r.room_type LIKE %s OR h.name LIKE %s)"
+            p.extend([f"%{search_term}%", f"%{search_term}%"])
+        q += " GROUP BY h.id, r.room_type"
         if sort_by == 'name_asc':
             q += " ORDER BY r.room_type ASC"
         else:
-            q += " ORDER BY r.id DESC"
+            q += " ORDER BY h.name ASC"
+            
+        if limit is not None:
+            q += " LIMIT %s OFFSET %s"
+            p.extend([limit, (page - 1) * limit])
+            
         cursor.execute(q, p)
         for r in cursor.fetchall():
+            tr = r['total_rooms'] or 0
+            br = int(r['booked']) or 0
+            ar = tr - br
+            occ_rate = (br / tr) * 100 if tr > 0 else 0
             details.append({
-                'room': r['room'],
                 'hotel': r['hotel'],
-                'room_number': r['room_number'],
-                'price': r['price'],
-                'status': r['status']
+                'room_type': r['room_type'],
+                'total_rooms': tr,
+                'booked': br,
+                'available': ar,
+                'occupancy': f"{occ_rate:.0f}%"
             })
-            
     elif report_type == 'Bookings':
+        q_count = "SELECT COUNT(*) as total FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE 1=1"
+        p_count = []
+        if start_date:
+            q_count += " AND b.created_at >= %s AND b.created_at <= %s"
+            p_count.extend([start_date, end_date])
+        if search_term:
+            q_count += " AND (b.guest_name LIKE %s OR h.name LIKE %s)"
+            p_count.extend([f"%{search_term}%", f"%{search_term}%"])
+        cursor.execute(q_count, p_count)
+        total_records = cursor.fetchone()['total']
+
         q = "SELECT b.id as booking_id, b.guest_name as guest, h.name as hotel, b.created_at as date, b.status FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE 1=1"
         p = []
         if start_date:
@@ -948,6 +1038,11 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
             q += " ORDER BY b.guest_name ASC"
         else:
             q += " ORDER BY b.created_at DESC"
+            
+        if limit is not None:
+            q += " LIMIT %s OFFSET %s"
+            p.extend([limit, (page - 1) * limit])
+            
         cursor.execute(q, p)
         for r in cursor.fetchall():
             details.append({
@@ -957,8 +1052,19 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
                 'date': r['date'].strftime('%Y-%m-%d'),
                 'status': r['status']
             })
-            
     elif report_type == 'Revenue Report':
+        q_count = "SELECT COUNT(*) as total FROM (SELECT h.id FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out')"
+        p_count = []
+        if start_date:
+            q_count += " AND b.created_at >= %s AND b.created_at <= %s"
+            p_count.extend([start_date, end_date])
+        if search_term:
+            q_count += " AND (h.name LIKE %s OR r.room_type LIKE %s)"
+            p_count.extend([f"%{search_term}%", f"%{search_term}%"])
+        q_count += " GROUP BY h.id, r.room_type) as tmp"
+        cursor.execute(q_count, p_count)
+        total_records = cursor.fetchone()['total']
+
         q = "SELECT h.name as hotel, r.room_type, COUNT(b.id) as total_bookings, IFNULL(SUM(r.price * GREATEST(1, DATEDIFF(b.check_out, b.check_in))), 0) as total_revenue FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out')"
         p = []
         if start_date:
@@ -972,6 +1078,11 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
             q += " ORDER BY total_revenue DESC"
         else:
             q += " ORDER BY total_revenue DESC"
+            
+        if limit is not None:
+            q += " LIMIT %s OFFSET %s"
+            p.extend([limit, (page - 1) * limit])
+            
         cursor.execute(q, p)
         for r in cursor.fetchall():
             details.append({
@@ -980,8 +1091,18 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
                 'total_bookings': r['total_bookings'],
                 'total_revenue': float(r['total_revenue'])
             })
-            
     elif report_type == 'Audit Report':
+        q_count = "SELECT COUNT(*) as total FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE 1=1"
+        p_count = []
+        if start_date:
+            q_count += " AND b.created_at >= %s AND b.created_at <= %s"
+            p_count.extend([start_date, end_date])
+        if search_term:
+            q_count += " AND (b.guest_name LIKE %s OR h.name LIKE %s)"
+            p_count.extend([f"%{search_term}%", f"%{search_term}%"])
+        cursor.execute(q_count, p_count)
+        total_records = cursor.fetchone()['total']
+
         # Simulate audit log from bookings since audit_logs table does not exist
         q = "SELECT b.id as log_id, b.guest_name as admin, CONCAT('Booking ', b.status) as action, CONCAT('Room ', r.room_number, ' at ', h.name) as details, b.created_at as date FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE 1=1"
         p = []
@@ -992,6 +1113,11 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
             q += " AND (b.guest_name LIKE %s OR h.name LIKE %s)"
             p.extend([f"%{search_term}%", f"%{search_term}%"])
         q += " ORDER BY b.created_at DESC"
+        
+        if limit is not None:
+            q += " LIMIT %s OFFSET %s"
+            p.extend([limit, (page - 1) * limit])
+            
         cursor.execute(q, p)
         for r in cursor.fetchall():
             details.append({
@@ -1004,7 +1130,7 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
 
     cursor.close()
     conn.close()
-    return summary, details
+    return summary, details, total_records
 
 
 
@@ -1018,17 +1144,18 @@ def api_reports_preview():
     period = data.get('period', 'This Month')
     search_term = data.get('search', '').strip()
     sort_by = data.get('sort', '').strip()
+    page = int(data.get('page', 1))
+    limit = int(data.get('limit', 20))
     
-    print(f"report_type: {report_type}")
-    print(f"period: {period}")
-    print(f"search: {search_term}")
-    print(f"sort: {sort_by}")
-    
-    summary, details = get_report_data(report_type, period, search_term, sort_by)
-    print("Summary data returned from get_report_data:", summary)
+    summary, details, total_records = get_report_data(report_type, period, search_term, sort_by, page, limit)
     return jsonify({
         'summary': summary,
-        'details': details
+        'details': details,
+        'pagination': {
+            'page': page,
+            'limit': limit,
+            'total_records': total_records
+        }
     })
 
 
@@ -1086,11 +1213,51 @@ def generate_pdf_bytes(report_type, period, summary, details):
     
     # --- SUMMARY ---
     elements.append(Paragraph("EXECUTIVE SUMMARY", heading_style))
-    summary_data = [
-        ['Total Hotels', 'Total Rooms', 'Total Bookings', 'Total Revenue'],
-        [str(summary.get('total_hotels', 0)), str(summary.get('total_rooms', 0)), 
-         str(summary.get('total_bookings', 0)), f"Rp {summary.get('total_revenue', 0):,.0f}".replace(',', '.')]
-    ]
+    if report_type == 'Dashboard Summary':
+        summary_data = [
+            ['Total Hotels', 'Total Rooms', 'Total Bookings', 'Total Revenue'],
+            [str(summary.get('total_hotels', 0)), str(summary.get('total_rooms', 0)),
+             str(summary.get('total_bookings', 0)), f"Rp {summary.get('total_revenue', 0):,.0f}".replace(',', '.')]
+        ]
+    elif report_type == 'Hotels':
+        summary_data = [
+            ['Total Hotels', 'Total Rooms', 'Available Rooms', 'Occupancy Rate'],
+            [str(summary.get('total_hotels', 0)), str(summary.get('total_rooms', 0)),
+             str(summary.get('available_rooms', 0)), f"{summary.get('occupancy_rate', 0)}%"]
+        ]
+    elif report_type == 'Rooms':
+        booked_rooms = summary.get('total_rooms', 0) - summary.get('available_rooms', 0)
+        summary_data = [
+            ['Total Rooms', 'Booked Rooms', 'Available Rooms', 'Occupancy Rate'],
+            [str(summary.get('total_rooms', 0)), str(booked_rooms),
+             str(summary.get('available_rooms', 0)), f"{summary.get('occupancy_rate', 0)}%"]
+        ]
+    elif report_type == 'Bookings':
+        summary_data = [
+            ['Total Bookings', 'Booked', 'Checked In', 'Cancelled'],
+            [str(summary.get('total_bookings', 0)), str(summary.get('status_booked', 0)),
+             str(summary.get('status_checked_in', 0)), str(summary.get('status_cancelled', 0))]
+        ]
+    elif report_type == 'Revenue Report':
+        summary_data = [
+            ['Total Revenue', 'Avg Revenue', 'Transactions', 'Top Hotel'],
+            [f"Rp {summary.get('total_revenue', 0):,.0f}".replace(',', '.'), 
+             f"Rp {summary.get('avg_revenue', 0):,.0f}".replace(',', '.'),
+             str(summary.get('total_transactions', 0)), 
+             str(summary.get('highest_revenue_hotel', '-'))]
+        ]
+    elif report_type == 'Audit Report':
+        summary_data = [
+            ['Total Audit Logs', "Today's Logs", 'Admin Actions', 'System Actions'],
+            [str(summary.get('total_audit_logs', 0)), str(summary.get('today_logs', 0)),
+             str(summary.get('admin_actions', 0)), str(summary.get('system_actions', 0))]
+        ]
+    else:
+        summary_data = [
+            ['Total Hotels', 'Total Rooms', 'Total Bookings', 'Total Revenue'],
+            [str(summary.get('total_hotels', 0)), str(summary.get('total_rooms', 0)),
+             str(summary.get('total_bookings', 0)), f"Rp {summary.get('total_revenue', 0):,.0f}".replace(',', '.')]
+        ]
     
     t_sum = Table(summary_data, colWidths=['25%', '25%', '25%', '25%'])
     t_sum.setStyle(TableStyle([
@@ -1141,10 +1308,13 @@ def generate_pdf_bytes(report_type, period, summary, details):
             for row in details:
                 table_data.append([row['hotel'], row['location'], str(row['rooms']), row['status']])
         elif report_type == 'Rooms':
-            headers = ['Room', 'Hotel', 'Room Number', 'Price', 'Status']
+            headers = ['Hotel', 'Room Type', 'Total Rooms', 'Available', 'Booked', 'Occupancy']
             table_data = [headers]
+            last_hotel = None
             for row in details:
-                table_data.append([row['room'], row['hotel'], row['room_number'], f"Rp {row['price']:,.0f}".replace(',', '.'), row['status']])
+                hotel_name = "" if row['hotel'] == last_hotel else row['hotel']
+                last_hotel = row['hotel']
+                table_data.append([hotel_name, row['room_type'], str(row['total_rooms']), str(row['available']), str(row['booked']), row['occupancy']])
         elif report_type == 'Bookings':
             headers = ['Booking ID', 'Guest', 'Hotel', 'Date', 'Status']
             table_data = [headers]
@@ -1197,7 +1367,7 @@ def api_reports_download_pdf():
     search_term = request.form.get('search', '').strip()
     sort_by = request.form.get('sort', '').strip()
     
-    summary, details = get_report_data(report_type, period, search_term, sort_by)
+    summary, details, _ = get_report_data(report_type, period, search_term, sort_by, 1, None)
     pdf_bytes = generate_pdf_bytes(report_type, period, summary, details)
     
     add_notification(
@@ -1228,7 +1398,7 @@ def api_reports_send_email():
     if not email:
         return jsonify({'error': 'Recipient email is required.'}), 400
         
-    summary, details = get_report_data(report_type, period, search_term, sort_by)
+    summary, details, _ = get_report_data(report_type, period, search_term, sort_by, 1, None)
     pdf_bytes = generate_pdf_bytes(report_type, period, summary, details)
     
     try:
@@ -1630,3 +1800,4 @@ def settings_update():
     
     flash("Settings updated successfully.", "success")
     return redirect(url_for('admin.settings'))
+

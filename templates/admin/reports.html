@@ -445,19 +445,6 @@ endblock %}
             </div>
         </div>
     </div>
-        <div class="report-stat-card">
-            <span class="report-stat-label">Total Rooms</span>
-            <span class="report-stat-value" id="val-rooms">0</span>
-        </div>
-        <div class="report-stat-card">
-            <span class="report-stat-label">Total Bookings</span>
-            <span class="report-stat-value" id="val-bookings">0</span>
-        </div>
-        <div class="report-stat-card">
-            <span class="report-stat-label">Total Revenue</span>
-            <span class="report-stat-value" id="val-revenue">Rp 0</span>
-        </div>
-    </div>
 
     <div id="details-section" style="display: none;">
         <h3 style="margin-bottom: 1rem;" id="details-title">Details</h3>
@@ -470,6 +457,12 @@ endblock %}
                     <!-- Dynamic Rows -->
                 </tbody>
             </table>
+        </div>
+        <div id="pagination-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--subtext);">
+            <div id="pagination-info">Showing 0-0 of 0 records</div>
+            <div id="pagination-controls" style="display: flex; gap: 0.5rem; align-items: center;">
+                <!-- Pagination Buttons -->
+            </div>
         </div>
     </div>
 </div>
@@ -531,7 +524,15 @@ Bhineka Hotels</textarea>
         } else {
             searchInput.disabled = false;
         }
+        window.currentPage = 1; // Reset on type change
     });
+    
+    document.getElementById('report-search').addEventListener('input', () => { window.currentPage = 1; });
+    document.getElementById('report-sort').addEventListener('change', () => { window.currentPage = 1; });
+    document.getElementById('report-period').addEventListener('change', () => { window.currentPage = 1; });
+
+    window.currentPage = 1;
+    window.itemsPerPage = 20;
 
     btnGenerate.addEventListener('click', () => {
         console.log("Generate Report button clicked");
@@ -562,7 +563,7 @@ Bhineka Hotels</textarea>
         fetch("{{ url_for('admin.api_reports_preview') }}", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type, period, search, sort }),
+            body: JSON.stringify({ type, period, search, sort, page: window.currentPage, limit: window.itemsPerPage }),
             credentials: 'same-origin'
         })
         .then(res => res.json())
@@ -582,11 +583,54 @@ Bhineka Hotels</textarea>
             document.getElementById('pdf-search').value = search;
             document.getElementById('pdf-sort').value = sort;
 
-            // Update Summary
-            document.getElementById('val-hotels').textContent = data.summary.total_hotels;
-            document.getElementById('val-rooms').textContent = data.summary.total_rooms;
-            document.getElementById('val-bookings').textContent = data.summary.total_bookings;
-            document.getElementById('val-revenue').textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(data.summary.total_revenue);
+            // Update Summary Dynamically
+            const lbl1 = document.getElementById('val-hotels').previousElementSibling;
+            const val1 = document.getElementById('val-hotels');
+            const lbl2 = document.getElementById('val-rooms').previousElementSibling;
+            const val2 = document.getElementById('val-rooms');
+            const lbl3 = document.getElementById('val-bookings').previousElementSibling;
+            const val3 = document.getElementById('val-bookings');
+            const lbl4 = document.getElementById('val-revenue').previousElementSibling;
+            const val4 = document.getElementById('val-revenue');
+            
+            const formatRp = num => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+
+            if (type === 'Dashboard Summary') {
+                lbl1.textContent = 'Total Hotels'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = 'Total Rooms'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = 'Total Bookings'; val3.textContent = data.summary.total_bookings;
+                lbl4.textContent = 'Total Revenue'; val4.textContent = formatRp(data.summary.total_revenue);
+            } else if (type === 'Hotels') {
+                lbl1.textContent = 'Total Hotels'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = 'Total Rooms'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = 'Available Rooms'; val3.textContent = data.summary.available_rooms;
+                lbl4.textContent = 'Occupancy Rate'; val4.textContent = data.summary.occupancy_rate + '%';
+            } else if (type === 'Rooms') {
+                lbl1.textContent = 'Total Rooms'; val1.textContent = data.summary.total_rooms;
+                lbl2.textContent = 'Booked Rooms'; val2.textContent = data.summary.total_rooms - data.summary.available_rooms;
+                lbl3.textContent = 'Available Rooms'; val3.textContent = data.summary.available_rooms;
+                lbl4.textContent = 'Occupancy Rate'; val4.textContent = data.summary.occupancy_rate + '%';
+            } else if (type === 'Bookings') {
+                lbl1.textContent = 'Total Bookings'; val1.textContent = data.summary.total_bookings;
+                lbl2.textContent = 'Booked'; val2.textContent = data.summary.status_booked;
+                lbl3.textContent = 'Checked In'; val3.textContent = data.summary.status_checked_in;
+                lbl4.textContent = 'Cancelled'; val4.textContent = data.summary.status_cancelled;
+            } else if (type === 'Revenue Report') {
+                lbl1.textContent = 'Total Revenue'; val1.textContent = formatRp(data.summary.total_revenue);
+                lbl2.textContent = 'Avg Revenue'; val2.textContent = formatRp(data.summary.avg_revenue);
+                lbl3.textContent = 'Transactions'; val3.textContent = data.summary.total_transactions;
+                lbl4.textContent = 'Top Hotel'; val4.textContent = data.summary.highest_revenue_hotel;
+            } else if (type === 'Audit Report') {
+                lbl1.textContent = 'Total Audit Logs'; val1.textContent = data.summary.total_audit_logs;
+                lbl2.textContent = 'Today\'s Logs'; val2.textContent = data.summary.today_logs;
+                lbl3.textContent = 'Admin Actions'; val3.textContent = data.summary.admin_actions;
+                lbl4.textContent = 'System Actions'; val4.textContent = data.summary.system_actions;
+            } else {
+                lbl1.textContent = 'Total Hotels'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = 'Total Rooms'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = 'Total Bookings'; val3.textContent = data.summary.total_bookings;
+                lbl4.textContent = 'Total Revenue'; val4.textContent = formatRp(data.summary.total_revenue);
+            }
 
             const extraSummary = document.getElementById('dashboard-extra-summary');
             const detailsSection = document.getElementById('details-section');
@@ -618,11 +662,14 @@ Bhineka Hotels</textarea>
                             tbody.innerHTML += `<tr><td>${row.hotel}</td><td>${row.location}</td><td>${row.rooms}</td><td><span class="room-badge available">${row.status}</span></td></tr>`;
                         });
                     } else if (type === 'Rooms') {
-                        headRow += '<th>Room</th><th>Hotel</th><th>Room Number</th><th>Price</th><th>Status</th>';
-                        data.details.forEach(row => {
-                            const price = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(row.price);
-                            tbody.innerHTML += `<tr><td>${row.room}</td><td>${row.hotel}</td><td>${row.room_number}</td><td>${price}</td><td><span class="room-badge available">${row.status}</span></td></tr>`;
-                        });
+                    headRow += '<th>Hotel</th><th>Room Type</th><th>Total Rooms</th><th>Available Rooms</th><th>Booked Rooms</th><th>Occupancy Rate</th>';
+                    let lastHotel = null;
+                    data.details.forEach(row => {
+                        let hotelName = (row.hotel === lastHotel) ? '' : row.hotel;
+                        lastHotel = row.hotel;
+                        // Use a subtle border or spacing for the first row of a group if desired, but we keep it simple
+                        tbody.innerHTML += `<tr><td><strong>${hotelName}</strong></td><td>${row.room_type}</td><td>${row.total_rooms}</td><td>${row.available}</td><td>${row.booked}</td><td>${row.occupancy}</td></tr>`;
+                    });
                     } else if (type === 'Bookings') {
                         headRow += '<th>Booking ID</th><th>Guest</th><th>Hotel</th><th>Date</th><th>Status</th>';
                         data.details.forEach(row => {
@@ -648,6 +695,12 @@ Bhineka Hotels</textarea>
                 } else {
                     detailsSection.style.display = 'none';
                 }
+                
+                // Render Pagination
+                if (data.pagination) {
+                    renderPagination(data.pagination);
+                }
+
             }
         })
         .catch(err => {
@@ -708,6 +761,73 @@ Bhineka Hotels</textarea>
                 btn.disabled = false;
             });
     });
+
+    function renderPagination(pagination) {
+        const container = document.getElementById('pagination-container');
+        if (!container) return;
+        
+        const total = pagination.total_records;
+        const page = pagination.page;
+        const limit = pagination.limit;
+        
+        if (total === 0 || document.getElementById('report-type').value === 'Dashboard Summary') {
+            container.style.display = 'none';
+            return;
+        }
+        container.style.display = 'flex';
+        
+        const startIdx = (page - 1) * limit + 1;
+        const endIdx = Math.min(page * limit, total);
+        document.getElementById('pagination-info').textContent = `Showing ${startIdx}–${endIdx} of ${total} records`;
+        
+        const controls = document.getElementById('pagination-controls');
+        controls.innerHTML = '';
+        
+        const totalPages = Math.ceil(total / limit);
+        
+        const btnStyle = "padding: 0.25rem 0.75rem; border: 1px solid var(--border); border-radius: 4px; background: white; cursor: pointer; color: var(--text);";
+        const btnActiveStyle = "padding: 0.25rem 0.75rem; border: 1px solid var(--primary); border-radius: 4px; background: var(--primary); color: white; cursor: pointer;";
+        const btnDisabledStyle = "padding: 0.25rem 0.75rem; border: 1px solid var(--border); border-radius: 4px; background: #f8fafc; cursor: not-allowed; color: #94a3b8;";
+        
+        // Prev
+        const prevBtn = document.createElement('button');
+        prevBtn.textContent = '< Previous';
+        prevBtn.style.cssText = page > 1 ? btnStyle : btnDisabledStyle;
+        if (page > 1) prevBtn.onclick = () => { window.currentPage = page - 1; btnGenerate.click(); };
+        controls.appendChild(prevBtn);
+        
+        // Page numbers (simple logic for now: show all or just a few if too many)
+        let pages = [];
+        if (totalPages <= 7) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            pages = [1, 2, '...', page-1, page, page+1, '...', totalPages-1, totalPages];
+            if (page <= 4) pages = [1, 2, 3, 4, 5, '...', totalPages];
+            if (page >= totalPages - 3) pages = [1, '...', totalPages-4, totalPages-3, totalPages-2, totalPages-1, totalPages];
+        }
+        
+        pages.forEach(p => {
+            if (p === '...') {
+                const span = document.createElement('span');
+                span.textContent = '...';
+                span.style.padding = '0.25rem';
+                controls.appendChild(span);
+            } else {
+                const pBtn = document.createElement('button');
+                pBtn.textContent = p;
+                pBtn.style.cssText = p === page ? btnActiveStyle : btnStyle;
+                pBtn.onclick = () => { window.currentPage = p; btnGenerate.click(); };
+                controls.appendChild(pBtn);
+            }
+        });
+        
+        // Next
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = 'Next >';
+        nextBtn.style.cssText = page < totalPages ? btnStyle : btnDisabledStyle;
+        if (page < totalPages) nextBtn.onclick = () => { window.currentPage = page + 1; btnGenerate.click(); };
+        controls.appendChild(nextBtn);
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
         console.log("Reports page loaded");

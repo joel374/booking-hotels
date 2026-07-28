@@ -28,7 +28,10 @@ def generate_rooms(hotel_id, room_type, quantity, start_number, price, capacity,
         room_numbers = [str(start_number + i) for i in range(quantity)]
         duplicates = validate_room_number(cursor, hotel_id, room_numbers)
         if duplicates:
-            raise ValueError(f"Proses dibatalkan! Nomor kamar duplikat: {', '.join(duplicates)}")
+            unique_dups = sorted(list(set(duplicates)), key=lambda x: int(x) if str(x).isdigit() else x)
+            dup_str = ", ".join(unique_dups)
+            end_number = start_number + quantity - 1
+            raise ValueError(f"Room number range {start_number}-{end_number} overlaps with existing rooms. Conflicting room numbers: {dup_str}. Please choose another Start Number.")
             
         for r_num in room_numbers:
             cursor.execute(
