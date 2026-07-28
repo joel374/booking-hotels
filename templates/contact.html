@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 3rem; margin-bottom: 3rem; align-items: start;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 4rem; margin-top: 3rem; margin-bottom: 3rem; align-items: start;">
     <!-- Contact Info -->
     <div>
         <h2 style="color: var(--primary-color); margin-bottom: 1.5rem; font-size: 2.2rem;">{{ _('Get in Touch') }}</h2>
