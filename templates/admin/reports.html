@@ -458,6 +458,12 @@ endblock %}
                 </tbody>
             </table>
         </div>
+        <div id="pagination-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--subtext);">
+            <div id="pagination-info">Showing 0-0 of 0 records</div>
+            <div id="pagination-controls" style="display: flex; gap: 0.5rem; align-items: center;">
+                <!-- Pagination Buttons -->
+            </div>
+        </div>
     </div>
 </div>
 
@@ -518,7 +524,15 @@ Bhineka Hotels</textarea>
         } else {
             searchInput.disabled = false;
         }
+        window.currentPage = 1; // Reset on type change
     });
+    
+    document.getElementById('report-search').addEventListener('input', () => { window.currentPage = 1; });
+    document.getElementById('report-sort').addEventListener('change', () => { window.currentPage = 1; });
+    document.getElementById('report-period').addEventListener('change', () => { window.currentPage = 1; });
+
+    window.currentPage = 1;
+    window.itemsPerPage = 20;
 
     btnGenerate.addEventListener('click', () => {
         console.log("Generate Report button clicked");
@@ -549,7 +563,7 @@ Bhineka Hotels</textarea>
         fetch("{{ url_for('admin.api_reports_preview') }}", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type, period, search, sort }),
+            body: JSON.stringify({ type, period, search, sort, page: window.currentPage, limit: window.itemsPerPage }),
             credentials: 'same-origin'
         })
         .then(res => res.json())
@@ -681,6 +695,12 @@ Bhineka Hotels</textarea>
                 } else {
                     detailsSection.style.display = 'none';
                 }
+                
+                // Render Pagination
+                if (data.pagination) {
+                    renderPagination(data.pagination);
+                }
+
             }
         })
         .catch(err => {
@@ -741,6 +761,73 @@ Bhineka Hotels</textarea>
                 btn.disabled = false;
             });
     });
+
+    function renderPagination(pagination) {
+        const container = document.getElementById('pagination-container');
+        if (!container) return;
+        
+        const total = pagination.total_records;
+        const page = pagination.page;
+        const limit = pagination.limit;
+        
+        if (total === 0 || document.getElementById('report-type').value === 'Dashboard Summary') {
+            container.style.display = 'none';
+            return;
+        }
+        container.style.display = 'flex';
+        
+        const startIdx = (page - 1) * limit + 1;
+        const endIdx = Math.min(page * limit, total);
+        document.getElementById('pagination-info').textContent = `Showing ${startIdx}–${endIdx} of ${total} records`;
+        
+        const controls = document.getElementById('pagination-controls');
+        controls.innerHTML = '';
+        
+        const totalPages = Math.ceil(total / limit);
+        
+        const btnStyle = "padding: 0.25rem 0.75rem; border: 1px solid var(--border); border-radius: 4px; background: white; cursor: pointer; color: var(--text);";
+        const btnActiveStyle = "padding: 0.25rem 0.75rem; border: 1px solid var(--primary); border-radius: 4px; background: var(--primary); color: white; cursor: pointer;";
+        const btnDisabledStyle = "padding: 0.25rem 0.75rem; border: 1px solid var(--border); border-radius: 4px; background: #f8fafc; cursor: not-allowed; color: #94a3b8;";
+        
+        // Prev
+        const prevBtn = document.createElement('button');
+        prevBtn.textContent = '< Previous';
+        prevBtn.style.cssText = page > 1 ? btnStyle : btnDisabledStyle;
+        if (page > 1) prevBtn.onclick = () => { window.currentPage = page - 1; btnGenerate.click(); };
+        controls.appendChild(prevBtn);
+        
+        // Page numbers (simple logic for now: show all or just a few if too many)
+        let pages = [];
+        if (totalPages <= 7) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            pages = [1, 2, '...', page-1, page, page+1, '...', totalPages-1, totalPages];
+            if (page <= 4) pages = [1, 2, 3, 4, 5, '...', totalPages];
+            if (page >= totalPages - 3) pages = [1, '...', totalPages-4, totalPages-3, totalPages-2, totalPages-1, totalPages];
+        }
+        
+        pages.forEach(p => {
+            if (p === '...') {
+                const span = document.createElement('span');
+                span.textContent = '...';
+                span.style.padding = '0.25rem';
+                controls.appendChild(span);
+            } else {
+                const pBtn = document.createElement('button');
+                pBtn.textContent = p;
+                pBtn.style.cssText = p === page ? btnActiveStyle : btnStyle;
+                pBtn.onclick = () => { window.currentPage = p; btnGenerate.click(); };
+                controls.appendChild(pBtn);
+            }
+        });
+        
+        // Next
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = 'Next >';
+        nextBtn.style.cssText = page < totalPages ? btnStyle : btnDisabledStyle;
+        if (page < totalPages) nextBtn.onclick = () => { window.currentPage = page + 1; btnGenerate.click(); };
+        controls.appendChild(nextBtn);
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
         console.log("Reports page loaded");

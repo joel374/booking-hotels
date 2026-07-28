@@ -810,7 +810,7 @@ def reports():
     return render_template('admin/reports.html')
 
 
-def get_report_data(report_type, period, search_term='', sort_by=''):
+def get_report_data(report_type, period, search_term='', sort_by='', page=1, limit=None):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
@@ -937,8 +937,16 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
     }
     
     details = []
-    
+    total_records = 0
     if report_type == 'Hotels':
+        q_count = "SELECT COUNT(DISTINCT h.id) as total FROM hotels h LEFT JOIN rooms r ON h.id = r.hotel_id AND r.is_deleted = 0 WHERE h.is_deleted = 0"
+        p_count = []
+        if search_term:
+            q_count += " AND (h.name LIKE %s OR h.location LIKE %s)"
+            p_count.extend([f"%{search_term}%", f"%{search_term}%"])
+        cursor.execute(q_count, p_count)
+        total_records = cursor.fetchone()['total']
+
         q = "SELECT h.name as hotel, h.location, COUNT(r.id) as rooms, 'Available' as status FROM hotels h LEFT JOIN rooms r ON h.id = r.hotel_id AND r.is_deleted = 0 WHERE h.is_deleted = 0"
         p = []
         if search_term:
@@ -949,6 +957,11 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
             q += " ORDER BY h.name ASC"
         else:
             q += " ORDER BY h.id DESC"
+            
+        if limit is not None:
+            q += " LIMIT %s OFFSET %s"
+            p.extend([limit, (page - 1) * limit])
+            
         cursor.execute(q, p)
         for r in cursor.fetchall():
             details.append({
@@ -957,8 +970,16 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
                 'rooms': r['rooms'],
                 'status': r['status']
             })
-            
     elif report_type == 'Rooms':
+        q_count = "SELECT COUNT(*) as total FROM (SELECT h.id FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.is_deleted = 0"
+        p_count = []
+        if search_term:
+            q_count += " AND (r.room_type LIKE %s OR h.name LIKE %s)"
+            p_count.extend([f"%{search_term}%", f"%{search_term}%"])
+        q_count += " GROUP BY h.id, r.room_type) as tmp"
+        cursor.execute(q_count, p_count)
+        total_records = cursor.fetchone()['total']
+
         q = """
         SELECT h.name as hotel, r.room_type, COUNT(r.id) as total_rooms, 
         SUM(CASE WHEN r.id IN (SELECT room_id FROM bookings WHERE status IN ('Booked', 'Checked In')) THEN 1 ELSE 0 END) as booked
@@ -975,6 +996,10 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
         else:
             q += " ORDER BY h.name ASC"
             
+        if limit is not None:
+            q += " LIMIT %s OFFSET %s"
+            p.extend([limit, (page - 1) * limit])
+            
         cursor.execute(q, p)
         for r in cursor.fetchall():
             tr = r['total_rooms'] or 0
@@ -989,8 +1014,18 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
                 'available': ar,
                 'occupancy': f"{occ_rate:.0f}%"
             })
-            
     elif report_type == 'Bookings':
+        q_count = "SELECT COUNT(*) as total FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE 1=1"
+        p_count = []
+        if start_date:
+            q_count += " AND b.created_at >= %s AND b.created_at <= %s"
+            p_count.extend([start_date, end_date])
+        if search_term:
+            q_count += " AND (b.guest_name LIKE %s OR h.name LIKE %s)"
+            p_count.extend([f"%{search_term}%", f"%{search_term}%"])
+        cursor.execute(q_count, p_count)
+        total_records = cursor.fetchone()['total']
+
         q = "SELECT b.id as booking_id, b.guest_name as guest, h.name as hotel, b.created_at as date, b.status FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE 1=1"
         p = []
         if start_date:
@@ -1003,6 +1038,11 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
             q += " ORDER BY b.guest_name ASC"
         else:
             q += " ORDER BY b.created_at DESC"
+            
+        if limit is not None:
+            q += " LIMIT %s OFFSET %s"
+            p.extend([limit, (page - 1) * limit])
+            
         cursor.execute(q, p)
         for r in cursor.fetchall():
             details.append({
@@ -1012,8 +1052,19 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
                 'date': r['date'].strftime('%Y-%m-%d'),
                 'status': r['status']
             })
-            
     elif report_type == 'Revenue Report':
+        q_count = "SELECT COUNT(*) as total FROM (SELECT h.id FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out')"
+        p_count = []
+        if start_date:
+            q_count += " AND b.created_at >= %s AND b.created_at <= %s"
+            p_count.extend([start_date, end_date])
+        if search_term:
+            q_count += " AND (h.name LIKE %s OR r.room_type LIKE %s)"
+            p_count.extend([f"%{search_term}%", f"%{search_term}%"])
+        q_count += " GROUP BY h.id, r.room_type) as tmp"
+        cursor.execute(q_count, p_count)
+        total_records = cursor.fetchone()['total']
+
         q = "SELECT h.name as hotel, r.room_type, COUNT(b.id) as total_bookings, IFNULL(SUM(r.price * GREATEST(1, DATEDIFF(b.check_out, b.check_in))), 0) as total_revenue FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out')"
         p = []
         if start_date:
@@ -1027,6 +1078,11 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
             q += " ORDER BY total_revenue DESC"
         else:
             q += " ORDER BY total_revenue DESC"
+            
+        if limit is not None:
+            q += " LIMIT %s OFFSET %s"
+            p.extend([limit, (page - 1) * limit])
+            
         cursor.execute(q, p)
         for r in cursor.fetchall():
             details.append({
@@ -1035,8 +1091,18 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
                 'total_bookings': r['total_bookings'],
                 'total_revenue': float(r['total_revenue'])
             })
-            
     elif report_type == 'Audit Report':
+        q_count = "SELECT COUNT(*) as total FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE 1=1"
+        p_count = []
+        if start_date:
+            q_count += " AND b.created_at >= %s AND b.created_at <= %s"
+            p_count.extend([start_date, end_date])
+        if search_term:
+            q_count += " AND (b.guest_name LIKE %s OR h.name LIKE %s)"
+            p_count.extend([f"%{search_term}%", f"%{search_term}%"])
+        cursor.execute(q_count, p_count)
+        total_records = cursor.fetchone()['total']
+
         # Simulate audit log from bookings since audit_logs table does not exist
         q = "SELECT b.id as log_id, b.guest_name as admin, CONCAT('Booking ', b.status) as action, CONCAT('Room ', r.room_number, ' at ', h.name) as details, b.created_at as date FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN hotels h ON r.hotel_id = h.id WHERE 1=1"
         p = []
@@ -1047,6 +1113,11 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
             q += " AND (b.guest_name LIKE %s OR h.name LIKE %s)"
             p.extend([f"%{search_term}%", f"%{search_term}%"])
         q += " ORDER BY b.created_at DESC"
+        
+        if limit is not None:
+            q += " LIMIT %s OFFSET %s"
+            p.extend([limit, (page - 1) * limit])
+            
         cursor.execute(q, p)
         for r in cursor.fetchall():
             details.append({
@@ -1059,7 +1130,7 @@ def get_report_data(report_type, period, search_term='', sort_by=''):
 
     cursor.close()
     conn.close()
-    return summary, details
+    return summary, details, total_records
 
 
 
@@ -1073,17 +1144,18 @@ def api_reports_preview():
     period = data.get('period', 'This Month')
     search_term = data.get('search', '').strip()
     sort_by = data.get('sort', '').strip()
+    page = int(data.get('page', 1))
+    limit = int(data.get('limit', 20))
     
-    print(f"report_type: {report_type}")
-    print(f"period: {period}")
-    print(f"search: {search_term}")
-    print(f"sort: {sort_by}")
-    
-    summary, details = get_report_data(report_type, period, search_term, sort_by)
-    print("Summary data returned from get_report_data:", summary)
+    summary, details, total_records = get_report_data(report_type, period, search_term, sort_by, page, limit)
     return jsonify({
         'summary': summary,
-        'details': details
+        'details': details,
+        'pagination': {
+            'page': page,
+            'limit': limit,
+            'total_records': total_records
+        }
     })
 
 
@@ -1295,7 +1367,7 @@ def api_reports_download_pdf():
     search_term = request.form.get('search', '').strip()
     sort_by = request.form.get('sort', '').strip()
     
-    summary, details = get_report_data(report_type, period, search_term, sort_by)
+    summary, details, _ = get_report_data(report_type, period, search_term, sort_by, 1, None)
     pdf_bytes = generate_pdf_bytes(report_type, period, summary, details)
     
     add_notification(
@@ -1326,7 +1398,7 @@ def api_reports_send_email():
     if not email:
         return jsonify({'error': 'Recipient email is required.'}), 400
         
-    summary, details = get_report_data(report_type, period, search_term, sort_by)
+    summary, details, _ = get_report_data(report_type, period, search_term, sort_by, 1, None)
     pdf_bytes = generate_pdf_bytes(report_type, period, summary, details)
     
     try:
