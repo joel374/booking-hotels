@@ -146,6 +146,76 @@ def book_room(hotel_id):
     return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out, nights=nights, grand_total=grand_total)
 
 
+@booking_bp.route('/pay/<int:booking_id>', methods=['GET', 'POST'])
+@login_required
+def pay(booking_id):
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cleanup_expired_bookings(cursor)
+    
+    cursor.execute("SELECT * FROM bookings WHERE id = %s AND user_id = %s", (booking_id, session['user_id']))
+    booking_record = cursor.fetchone()
+
+    if not booking_record:
+        flash("Booking not found or you don't have permission.", "danger")
+        return redirect(url_for('main.index'))
+
+    if booking_record['status'] == 'Cancelled':
+        flash("Your booking session has expired.", "warning")
+        return redirect(url_for('main.index'))
+
+    if booking_record['status'] in ('Booked', 'Checked In', 'Checked Out'):
+        return render_template('invoice.html', booking=booking_record)
+
+    expiry_time = booking_record['created_at'] + timedelta(minutes=15)
+    now = datetime.now()
+    if now > expiry_time:
+        cursor.execute("UPDATE bookings SET status = 'Cancelled' WHERE id = %s", (booking_id,))
+        conn.commit()
+        flash("Your booking session has expired.", "warning")
+        return redirect(url_for('main.index'))
+
+    time_left_seconds = (expiry_time - now).total_seconds()
+
+    if request.method == 'POST':
+        cursor.execute("UPDATE bookings SET status = 'Booked' WHERE id = %s", (booking_id,))
+        conn.commit()
+        
+        # Ambil data lengkap untuk email konfirmasi
+        cursor.execute("""
+            SELECT b.*, r.room_number, r.room_type, r.price, h.name as hotel_name, u.email as user_email
+            FROM bookings b 
+            JOIN rooms r ON b.room_id = r.id 
+            JOIN hotels h ON r.hotel_id = h.id 
+            JOIN users u ON b.user_id = u.id
+            WHERE b.id = %s
+        """, (booking_id,))
+        booking_data = cursor.fetchone()
+        
+        cursor.close()
+        conn.close()
+        
+        if booking_data and booking_data.get('user_email'):
+            from services.email_service import send_email
+
+            
+            html_content = render_template('emails/booking_confirmation.html', booking=booking_data)
+            subject = f"Konfirmasi Pemesanan - {booking_data['hotel_name']} (INV-{booking_data['id']})"
+            send_email(booking_data['user_email'], subject, html_content)
+            
+        flash("Payment successful! Room booked.", "success")
+        return redirect(url_for('booking.invoice', booking_id=booking_id))
+
+    cursor.execute("SELECT * FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.id = %s", (booking_record['room_id'],))
+    room = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    nights = (booking_record['check_out'] - booking_record['check_in']).days
+    grand_total = room['price'] * nights
+    
+    return render_template('pay.html', booking=booking_record, room=room, time_left_seconds=int(time_left_seconds), nights=nights, grand_total=grand_total)
 
 @booking_bp.route('/invoice/<int:booking_id>')
 @login_required
@@ -406,6 +476,7 @@ def submit_review(booking_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
+    cursor.execute("SELECT r.hotel_id, b.check_out FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.id = %s AND b.user_id = %s AND b.status = 'Checked Out'", (booking_id, session['user_id']))
     cursor.execute("SELECT r.hotel_id, b.check_out FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.id = %s AND b.user_id = %s AND b.status = 'Checked Out'", (booking_id, session['user_id']))
     booking = cursor.fetchone()
     
