@@ -11,9 +11,7 @@
         .content { padding: 2rem; color: #334155; }
         .content p { font-size: 1rem; line-height: 1.6; }
         .booking-details { background: #f1f5f9; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; }
-        .booking-details h3 { margin-top: 0; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.5rem; }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
-        .detail-row strong { color: #475569; }
+        .booking-details h3 { margin-top: 0; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.5rem; margin-bottom: 1rem; }
         .footer { background: #f8fafc; padding: 1.5rem; text-align: center; color: #64748b; font-size: 0.85rem; border-top: 1px solid #e2e8f0; }
         .btn { display: inline-block; background: #2563eb; color: white; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: bold; margin-top: 1rem; }
     </style>
@@ -29,26 +27,34 @@
             
             <div class="booking-details">
                 <h3>Rincian Pesanan</h3>
-                <div class="detail-row">
-                    <strong>Booking ID:</strong> <span>INV-{{ booking.id }}-{{ booking.created_at.strftime('%Y') }}</span>
-                </div>
-                <div class="detail-row">
-                    <strong>Hotel:</strong> <span>{{ booking.hotel_name }}</span>
-                </div>
-                <div class="detail-row">
-                    <strong>Tipe Kamar:</strong> <span>{{ booking.room_type }} (Kamar {{ booking.room_number }})</span>
-                </div>
-                <div class="detail-row">
-                    <strong>Check-in:</strong> <span>{{ booking.check_in.strftime('%d %b %Y') }}</span>
-                </div>
-                <div class="detail-row">
-                    <strong>Check-out:</strong> <span>{{ booking.check_out.strftime('%d %b %Y') }}</span>
-                </div>
-                <div class="detail-row">
-                    {% set nights = (booking.check_out - booking.check_in).days %}
-                    {% set nights = nights if nights > 0 else 1 %}
-                    <strong>Total Harga:</strong> <span style="font-weight: bold; color: #2563eb;">Rp {{ "{:,.0f}".format(booking.price * nights) }}</span>
-                </div>
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td style="padding: 5px 0; color: #475569; font-weight: bold; width: 40%;">Booking ID:</td>
+                        <td style="padding: 5px 0; text-align: right;">INV-{{ booking.id }}-{{ booking.created_at.strftime('%Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 0; color: #475569; font-weight: bold;">Hotel:</td>
+                        <td style="padding: 5px 0; text-align: right;">{{ booking.hotel_name }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 0; color: #475569; font-weight: bold;">Tipe Kamar:</td>
+                        <td style="padding: 5px 0; text-align: right;">{{ booking.room_type }} (Kamar {{ booking.room_number }})</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 0; color: #475569; font-weight: bold;">Check-in:</td>
+                        <td style="padding: 5px 0; text-align: right;">{{ booking.check_in.strftime('%d %b %Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 0; color: #475569; font-weight: bold;">Check-out:</td>
+                        <td style="padding: 5px 0; text-align: right;">{{ booking.check_out.strftime('%d %b %Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0 0 0; color: #475569; font-weight: bold; border-top: 1px solid #cbd5e1; margin-top: 5px;">Total Harga:</td>
+                        {% set nights = (booking.check_out - booking.check_in).days %}
+                        {% set nights = nights if nights > 0 else 1 %}
+                        <td style="padding: 10px 0 0 0; text-align: right; font-weight: bold; color: #2563eb; border-top: 1px solid #cbd5e1; margin-top: 5px;">Rp {{ "{:,.0f}".format(booking.price * nights) }}</td>
+                    </tr>
+                </table>
             </div>
 
             <p>Silakan tunjukkan email ini atau Invoice dari Dasbor Anda saat melakukan proses Check-in di resepsionis.</p>

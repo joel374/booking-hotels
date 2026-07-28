@@ -7,7 +7,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link id="flatpickr-theme-css" rel="stylesheet" href="{% if current_theme == 'dark' %}https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css{% else %}https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css{% endif %}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
 </head>
 <body>
@@ -94,6 +94,14 @@
                 html.setAttribute('data-theme', newTheme);
                 document.querySelectorAll('.theme-toggle-btn').forEach(b => b.innerText = newTheme === 'dark' ? '🌙' : '☀️');
                 
+                // Update flatpickr theme
+                const flatpickrCss = document.getElementById('flatpickr-theme-css');
+                if (flatpickrCss) {
+                    flatpickrCss.href = newTheme === 'dark' 
+                        ? 'https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css' 
+                        : 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
+                }
+                
                 try {
                     await fetch('/api/set-theme', {
                         method: 'POST',
@@ -134,9 +142,9 @@
                       showConfirmButton: false,
                       timer: 5000,
                       timerProgressBar: true,
-                      background: '#111827',
-                      color: '#f8fafc',
-                      iconColor: '#D4AF37',
+                      background: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      iconColor: 'var(--primary-color)',
                       didOpen: (toast) => {
                         toast.addEventListener('mouseenter', Swal.stopTimer)
                         toast.addEventListener('mouseleave', Swal.resumeTimer)

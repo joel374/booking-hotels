@@ -131,7 +131,8 @@ booking-hotels/
 
 - `id`, `user_id`, `room_id`, `guest_name`, `contact_number`
 - `check_in`, `check_out`, `payment_method`
-- `status` (Pending/Booked/Cancelled), `created_at`
+- `status` (Booked/Checked In/Checked Out/Cancelled), `created_at`
+- `cancel_reason`
 
 **9. waiting_lists**
 
@@ -307,39 +308,26 @@ utils.py::cleanup_unused_images('hotels')
 
 ```
 1. User clicks "Book Room" on /rooms page
-   → GET /booking/<room_id>
+   → GET /booking/<hotel_id>?room_type=...
 
 2. Display booking form (routes/booking.py::booking_form)
-   → Check room availability for date range
    → Render templates/booking_form.html
 
 3. User submits form
-   → POST /booking/<room_id>
-   → Validate dates
-   → Check availability again
-   → Insert into bookings table (status='Pending')
-   → Redirect to /pay/<booking_id>
-
-4. Payment confirmation page
-   → GET /pay/<booking_id>
-   → Display payment details
-   → User confirms payment
-
-5. Confirm payment
-   → POST /pay/<booking_id>
-   → Update booking status = 'Booked'
+   → POST /booking/<hotel_id>
+   → Validate dates & availability (using row-level FOR UPDATE locking)
+   → Insert into bookings table (status='Booked')
+   → Send Confirmation Email
    → Redirect to /invoice/<booking_id>
 
-6. Invoice/Receipt
+4. Invoice/Receipt
    → GET /invoice/<booking_id>
    → Display invoice with booking details
 ```
 
 **⚠️ Known Issues:**
 
-- Pending bookings expire after 15 minutes (db.py::cleanup_expired_bookings)
-- BUT cleanup function might NOT run automatically
-- Race condition: Multiple users booking same room at same time
+- Race condition is mitigated via `FOR UPDATE` locking.
 
 ---
 
@@ -713,20 +701,15 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - Implementasi _Horizontal Scroll_ ala Netflix di Beranda (`index.html`).
   - Implementasi _Infinite Scroll_ (AJAX API & IntersectionObserver) dengan _Skeleton Loader_ dan Filter Kriteria (`city_hotels.html`).
   - Redesign detail hotel dengan *Masonry Gallery* UI dan Sistem Ulasan Pengguna (`rooms.html`).
-  - Integrasi UI Mock Midtrans Snap untuk Gateway Pembayaran (`pay.html`).
   - Implementasi ekspor Invoice ke PDF dengan `html2pdf.js` (`invoice.html`).
-  - Integrasi Layanan Email Otomatis (Fail-Safe) untuk konfirmasi dan pembatalan (*Pending*, *Booked*, *Cancelled*).
   - Implementasi fitur *Global Live Search Autocomplete* di *navbar* desktop dan *mobile*.
-  - **[NEW]** Sistem "Siapa Cepat Dia Dapat!" (Email Broadcast ke pengguna *Waiting List* jika ada kamar batal).
-  - **[NEW]** Perhitungan *Grand Total* tagihan dinamis di *Booking Form* dan Halaman Pembayaran.
-  - **[NEW]** *Empty State Illustration* premium di halaman Pesanan Saya (`my_bookings.html`).
   - **[NEW]** Dukungan multi-bahasa (ID/EN) terintegrasi penuh menggunakan `translations.py` pada halaman Beranda, Tentang Kami, dan Kontak.
-  - **[NEW]** Refaktorisasi manajemen dan UI kamar menggunakan konsep *Room Type Group Management* (Agregasi ketersediaan dinamis per tipe kamar di UI, *assignment* ID kamar fisik secara otomatis dan transparan saat *checkout*, proteksi *Double Booking* ketat menggunakan `FOR UPDATE`).
-  - **[NEW]** Perbaikan efek transparan-ke-putih pada *navbar* agar adaptif di seluruh halaman utama yang memiliki spanduk *hero*.
+  - **[NEW]** Refaktorisasi manajemen dan UI kamar menggunakan konsep *Room Type Group Management* (Agregasi ketersediaan dinamis per tipe kamar di UI, *assignment* ID kamar fisik secara otomatis dan transparan).
+  - **[NEW]** Sistem "Siapa Cepat Dia Dapat!" (Email Broadcast ke pengguna *Waiting List* jika ada kamar batal) divalidasi Anti-Spam agar *user* tidak dobel masuk antrean.
+  - **[NEW]** Penyesuaian skema Status Pemesanan: Status `Pending` dihapus. Sistem pembayaran 15 menit dibuang dari *flow*, sehingga *user* langsung `Booked`.
+  - **[NEW]** Standarisasi seluruh _Template_ Email (Konfirmasi, Batal, Waiting List) menggunakan _Table Layout_ klasik agar 100% _cross-client compatible_.
   - **[NEW]** Implementasi Halaman Profil Pengguna (`/profile`) dengan fitur ubah data diri, foto profil, dan password.
   - **[NEW]** Fitur Lupa Password dan Reset Password melalui tautan token unik via email.
-  - **[NEW]** Sistem Email Otomatis: Verifikasi pendaftaran (Welcome Email) dan Notifikasi keamanan saat pengguna berhasil login.
-  - **[NEW]** Ekspansi dukungan terjemahan multi-bahasa (ID/EN) untuk halaman Profil dan Autentikasi (Lupa/Reset Password).
 
 ---
 
@@ -745,6 +728,6 @@ Proyek ini telah dikonfigurasi untuk rilis ke lingkungan *Production* (VPS) seca
 
 ---
 
-**Last Updated:** July 27, 2026  
-**Version:** 1.8  
+**Last Updated:** July 28, 2026  
+**Version:** 1.9  
 **Status:** Active Development (Distributed to 3 Team Members)

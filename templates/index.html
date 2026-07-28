@@ -15,7 +15,7 @@
                 <label>{{ _('Lokasi') }}</label>
                 <div class="input-with-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                    <select name="city_id" class="custom-select-native" style="border: 1px solid #e2e8f0; border-radius: 8px; outline: none; box-sizing: border-box; cursor: pointer; color: var(--text-main); font-family: 'Inter', sans-serif;">
+                    <select name="city_id" class="custom-select-native" style="border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; outline: none; box-sizing: border-box; cursor: pointer; color: var(--text-main); font-family: 'Inter', sans-serif; background: var(--card-bg);">
                         <option value="">Semua Lokasi</option>
                         {% for city in available_cities %}
                         <option value="{{ city.city_id }}" {% if selected_city == city.city_id %}selected{% endif %}>{{ city.city_name }}, {{ city.province }}</option>
