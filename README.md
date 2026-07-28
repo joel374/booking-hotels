@@ -23,7 +23,7 @@ Aplikasi ini dibangun menggunakan arsitektur *Server-Side Rendering* (SSR) yang 
 
 ## 🗄️ Database Schema
 
-Sistem ini memiliki 9 entitas utama yang saling berelasi:
+Sistem ini memiliki 10 entitas utama yang saling berelasi:
 
 1. **provinces & cities**: Master data lokasi untuk fitur *filtering* dinamis. (`cities.province_id` -> `provinces.province_id`)
 2. **users**: Menyimpan data akun pelanggan dan admin. Mendukung autentikasi lokal (dengan *password hash*) maupun Google OAuth.
@@ -34,6 +34,7 @@ Sistem ini memiliki 9 entitas utama yang saling berelasi:
 7. **bookings**: Tabel inti transaksi pemesanan. Berelasi dengan `users` dan `rooms`. Menyimpan tanggal inap, detail tamu, metode pembayaran, dan *Status* (`Pending`, `Booked`, `Cancelled`).
 8. **waiting_lists**: Menyimpan data antrean pengguna (*Waitlist*) yang ingin memesan kamar yang sedang penuh pada tanggal tertentu.
 9. **reviews**: Ulasan pengguna pasca-inap. Berisi *rating* 1-5 bintang dan komentar. Berelasi unik dengan `booking_id` untuk mencegah *double review*.
+10. **company_settings**: Menyimpan informasi identitas dan profil perusahaan secara dinamis untuk keperluan invoice, pdf, email, dan contact us.
 
 ---
 
