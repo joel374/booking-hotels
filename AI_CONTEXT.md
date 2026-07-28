@@ -84,7 +84,7 @@ booking-hotels/
 │       ├── hotels/
 │       └── rooms/
 │
-├── schema.sql                  # Database schema (9 tables)
+├── schema.sql                  # Database schema (10 tables)
 ├── seed_data.sql              # Master data (provinces, cities)
 └── init_db.py                 # Database initialization
 ```
