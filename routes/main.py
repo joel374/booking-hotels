@@ -234,6 +234,7 @@ def live_search():
         FROM cities c
         JOIN provinces p ON c.province_id = p.province_id
         WHERE c.city_name LIKE %s
+        AND EXISTS (SELECT 1 FROM hotels h WHERE h.city_id = c.city_id AND h.is_deleted = 0)
         LIMIT 5
     """, (f'%{query}%',))
     cities = cursor.fetchall()
