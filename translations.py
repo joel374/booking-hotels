@@ -50,7 +50,8 @@ TRANSLATIONS = {
     "Kapasitas:": "Capacity:",
     "orang": "people",
     "Pilih tanggal": "Select date",
-    "Urutkan": "Sort By",
+    "Urutkan By": "Sort By",
+    "Urutkan": "Sort",
     "Rekomendasi": "Recommended",
     "Harga Termurah": "Lowest Price",
     "Harga Termahal": "Highest Price",
@@ -91,6 +92,25 @@ TRANSLATIONS = {
     "Belum ada ulasan untuk penginapan ini.": "No reviews for this property yet.",
     "Tidak ada foto": "No photos available",
     "Belum ada hotel yang tersedia untuk kota ini.": "No hotels available for this city.",
+    
+    # Extra my_bookings
+    "Semua": "All",
+    "Koper Masih Kosong!": "Your Suitcase is Empty!",
+    "Sepertinya Anda belum menjadwalkan liburan apa pun. Yuk temukan hotel impian Anda sekarang dan mulai petualangan!": "It looks like you haven't scheduled any vacations yet. Let's find your dream hotel now and start the adventure!",
+    "Eksplor Hotel Sekarang": "Explore Hotels Now",
+    "Waiting List Anda": "Your Waiting List",
+    "Check-in yang Diinginkan:": "Desired Check-in:",
+    "Check-out yang Diinginkan:": "Desired Check-out:",
+    "Anda akan diberitahu jika kamar ini tersedia.": "You will be notified if this room becomes available.",
+    "Anda tidak sedang mengantre di kamar mana pun.": "You are not on any room waiting list.",
+    "Bagikan pengalaman Anda menginap di": "Share your experience staying at",
+    "Apa yang Anda suka atau tidak suka dari penginapan ini?": "What did you like or dislike about this property?",
+    "Batalkan Pesanan?": "Cancel Booking?",
+    "Mohon beri tahu kami alasan Anda membatalkan pesanan ini:": "Please let us know your reason for canceling this booking:",
+    "Misal: Berubah pikiran, salah tanggal, dll.": "E.g., changed my mind, wrong date, etc.",
+    "Ya, Batalkan!": "Yes, Cancel!",
+    "Tutup": "Close",
+    "Anda harus memberikan alasan pembatalan!": "You must provide a cancellation reason!",
     
     # About Page
     "Tentang Bhineka": "About Bhineka",
@@ -145,6 +165,71 @@ TRANSLATIONS = {
     "Daftar dengan Google": "Sign up with Google",
     "Sudah punya akun?": "Already have an account?",
     "Login di sini": "Login here",
+    
+    # Missing from my_bookings
+    "Batal": "Cancel",
+    "Alasan:": "Reason:",
+    "Batas waktu pembatalan sudah lewat": "Cancellation deadline has passed",
+    "Lihat Hotel": "View Hotel",
+    
+    # Status Badges
+    "BOOKED": "BOOKED",
+    "CHECKED IN": "CHECKED IN",
+    "CHECKED OUT": "CHECKED OUT",
+    "CANCELLED": "CANCELLED",
+    "LUNAS": "PAID",
+    
+    # Invoice
+    "Kembali ke Pesanan": "Back to Bookings",
+    "Diterbitkan:": "Issued On:",
+    "Kepada / Tamu": "To / Guest",
+    
+    # Room Details (rooms.html)
+    "Deskripsi Hotel": "Hotel Description",
+    "Fasilitas Populer": "Popular Amenities",
+    "WiFi Gratis": "Free WiFi",
+    "Resepsionis 24 Jam": "24-Hour Front Desk",
+    "Restoran": "Restaurant",
+    "Kolam Renang": "Swimming Pool",
+    "Kamar Tersedia": "Rooms Available",
+    "Habis Terjual": "Sold Out",
+    "Tamu": "Guests",
+    "Harga per malam": "Price per night",
+    "Gabung Waiting List": "Join Waitlist",
+    "Login untuk Waiting List": "Login to Waitlist",
+    "Hotel ini belum memiliki kamar yang terdaftar.": "This hotel does not have any registered rooms yet.",
+    "Ulasan Tamu": "Guest Reviews",
+    "Lihat Semua Ulasan": "View All Reviews",
+    "Semua Ulasan": "All Reviews",
+    "Memuat ulasan...": "Loading reviews...",
+    
+    # Booking Form (booking_form.html)
+    "Hanya huruf dan spasi yang diizinkan (minimal 3 karakter)": "Only letters and spaces are allowed (minimum 3 characters)",
+    "Sesuai KTP": "As per ID Card",
+    "Nama harus terdiri dari minimal 3 karakter huruf.": "Name must consist of at least 3 alphabetical characters.",
+    "Masukkan nomor telepon yang valid (9-15 digit angka)": "Enter a valid phone number (9-15 digits)",
+    "Nomor HP harus terdiri dari 9 hingga 15 digit angka.": "Mobile number must consist of 9 to 15 digits.",
+    "Transfer Bank": "Bank Transfer",
+    "E-Wallet (OVO/GoPay/Dana)": "E-Wallet (OVO/GoPay/Dana)",
+    "Bayar di Tempat (Pay at Hotel)": "Pay at Hotel",
+    "Data Belum Lengkap": "Incomplete Data",
+    "Mohon periksa kembali form pengisian Anda. Pastikan Nama dan Nomor HP telah terisi dengan benar.": "Please double-check your form. Ensure Name and Mobile Number are filled correctly.",
+    "Baik, saya lengkapi": "Okay, I will complete it",
+    "Memproses...": "Processing...",
+    
+    # Invoice (invoice.html extra)
+    "Catatan Tambahan": "Additional Notes",
+    "Detail Penginapan": "Accommodation Details",
+    "Deskripsi Pesanan": "Order Description",
+    "Harga/Malam": "Price/Night",
+    "Total Harga": "Total Price",
+    "Subtotal:": "Subtotal:",
+    "Pajak & Biaya Layanan:": "Tax & Service Fees:",
+    "Termasuk": "Included",
+    "Total Tagihan:": "Total Amount:",
+    "Ini adalah bukti pemesanan yang sah dari": "This is a valid booking receipt from",
+    "Telepon:": "Phone:",
+    "Memproses PDF...": "Processing PDF...",
     
     # Profile
     "Profil Saya": "My Profile",
