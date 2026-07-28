@@ -53,16 +53,16 @@
         </div>
     </nav>
 
-    <div class="mobile-search-wrapper" style="padding: 1rem; background: var(--primary-color); display: none; position: sticky; top: 0; z-index: 1050; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="mobile-search-wrapper" style="padding: 1rem; background: var(--card-bg); display: none; position: sticky; top: 0; z-index: 1050; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-bottom: 1px solid var(--border-color);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-            <span style="color: white; font-size: 1.1rem; font-weight: 600;">Bhineka Hotels</span>
+            <span style="color: var(--primary-color); font-size: 1.1rem; font-weight: 600;">Bhineka Hotels</span>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <button class="btn theme-toggle-btn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.2rem; color: white;">
+                <button class="btn theme-toggle-btn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.2rem; color: var(--text-main);">
                     {% if current_theme == 'dark' %}🌙{% else %}☀️{% endif %}
                 </button>
-                <select class="custom-select-native lang-toggle-btn" style="padding: 0.2rem 0.4rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-weight: 500; font-size: 0.85rem; cursor: pointer; outline: none;">
-                    <option value="id" style="color: black;" {% if current_language == 'id' %}selected{% endif %}>ID</option>
-                    <option value="en" style="color: black;" {% if current_language == 'en' %}selected{% endif %}>EN</option>
+                <select class="custom-select-native lang-toggle-btn" style="padding: 0.2rem 0.4rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-weight: 500; font-size: 0.85rem; cursor: pointer; outline: none;">
+                    <option value="id" {% if current_language == 'id' %}selected{% endif %}>ID</option>
+                    <option value="en" {% if current_language == 'en' %}selected{% endif %}>EN</option>
                 </select>
             </div>
         </div>

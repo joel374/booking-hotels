@@ -13,6 +13,7 @@
   --success: #10b981;
   --danger: #ef4444;
   --warning: #f59e0b;
+  --border-color: #e2e8f0;
 }
 
 [data-theme="dark"] {
