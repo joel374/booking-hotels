@@ -365,10 +365,10 @@
 <div class="hotel-page-toolbar">
     <div class="toolbar-search">
         <svg class="toolbar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input id="hotels-search" class="toolbar-input" type="search" placeholder="Search Hotel...">
+        <input id="hotels-search" class="toolbar-input" type="search" placeholder="{{ _('Cari Hotel...') }}">
     </div>
     <select id="hotels-category" class="toolbar-select">
-        <option value="">Category</option>
+        <option value="">{{ _('Kategori') }}</option>
         <option value="has_images">With images</option>
         <option value="no_images">Without images</option>
     </select>
@@ -390,7 +390,7 @@
         <div class="hotel-card-image">
             <div class="image-placeholder">
                 <span class="placeholder-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg></span>
-                <strong>No Image Available</strong>
+                <strong>{{ _('Tidak Ada Gambar') }}</strong>
             </div>
         </div>
         {% endif %}
@@ -410,7 +410,6 @@
                 <div class="hotel-card-menu">
                     <button type="button" class="btn btn-secondary hotel-menu-toggle" aria-label="Open hotel menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
                     <div class="hotel-dropdown">
-                                    <button type="button" class="dropdown-button hotel-action-add" onclick="openAddRoomGroupModal({{ hotel.id }})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> + Add</button>
                         <button type="button" class="dropdown-button hotel-action-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path d="M2.05 12c1.4-4.08 5-7 9.95-7s8.55 2.92 9.95 7c-1.4 4.08-5 7-9.95 7s-8.55-2.92-9.95-7z"/></svg> View</button>
                         <a href="{{ url_for('admin.edit_hotel', id=hotel.id) }}" class="dropdown-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg> Edit</a>
                         <button type="button" class="dropdown-button hotel-action-delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> Delete</button>
@@ -444,7 +443,7 @@
         </div>
     </article>
     {% else %}
-    <div style="grid-column:1 / -1; padding:2rem; text-align:center; color: var(--subtext);">No hotels in database.</div>
+    <div style="grid-column:1 / -1; padding:2rem; text-align:center; color: var(--subtext);">{{ _('Tidak ada hotel di basis data.') }}</div>
     {% endfor %}
 </div>
 
@@ -453,34 +452,34 @@
 <div id="modalAddHotel" class="modal">
     <div class="form-card">
         <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;">×</button>
-        <h2>Add New Hotel</h2>
+        <h2>{{ _('Tambah Hotel Baru') }}</h2>
         <p style="margin:0 0 1rem; color: var(--subtext);">Provide hotel details and upload gallery images for the new listing.</p>
         <form method="POST" enctype="multipart/form-data">
             <div class="input-group">
-                <label>Hotel Name</label>
+                <label>{{ _('Nama Hotel') }}</label>
                 <input type="text" name="name" required placeholder="Enter hotel name">
             </div>
             <div class="input-group">
-                <label>Province</label>
+                <label>{{ _('Provinsi') }}</label>
                 <select name="province_id" id="province_id" required>
-                    <option value="">Select Province...</option>
+                    <option value="">{{ _('Pilih Provinsi...') }}</option>
                     {% for p in provinces %}
                     <option value="{{ p.province_id }}">{{ p.province }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="input-group">
-                <label>City</label>
+                <label>{{ _('Kota') }}</label>
                 <select name="city_id" id="city_id" required disabled>
-                    <option value="">Select City...</option>
+                    <option value="">{{ _('Pilih Kota...') }}</option>
                 </select>
             </div>
             <div class="input-group">
-                <label>Detailed Address</label>
+                <label>{{ _('Alamat Lengkap') }}</label>
                 <input type="text" name="location" required placeholder="Jalan, RT/RW, dsb.">
             </div>
             <div class="input-group">
-                <label>Description</label>
+                <label>{{ _('Deskripsi') }}</label>
                 <textarea name="description" rows="5" required placeholder="Describe the hotel and amenities..."></textarea>
             </div>
             
@@ -491,17 +490,17 @@
                         <button type="button" onclick="this.parentElement.remove()" style="position: absolute; right: 10px; top: 10px; color: var(--danger); background: none; border: none; cursor: pointer; font-size: 1.2rem;">&times;</button>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                             <div class="input-group" style="margin-bottom:0;">
-                                <label>Room Type</label>
+                                <label>{{ _('Tipe Kamar') }}</label>
                                 <input type="text" name="room_type[]" placeholder="e.g. Deluxe Room">
                             </div>
                             <div class="input-group" style="margin-bottom:0;">
-                                <label>Quantity</label>
+                                <label>{{ _('Kuantitas') }}</label>
                                 <input type="number" name="quantity[]" value="1" min="1">
                             </div>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                             <div class="input-group" style="margin-bottom:0;">
-                                <label>Start Number</label>
+                                <label>{{ _('Nomor Awal') }}</label>
                                 <input type="number" name="start_number[]" value="101">
                             </div>
                             <div class="input-group" style="margin-bottom:0;">
@@ -509,12 +508,12 @@
                                 <input type="number" name="price[]" value="500000">
                             </div>
                             <div class="input-group" style="margin-bottom:0;">
-                                <label>Capacity</label>
+                                <label>{{ _('Kapasitas') }}</label>
                                 <input type="number" name="capacity[]" value="2" min="1">
                             </div>
                         </div>
                         <div class="input-group" style="margin-bottom:0;">
-                            <label>Room Image</label>
+                            <label>{{ _('Gambar Kamar') }}</label>
                             <input type="file" name="room_image[]" accept="image/png, image/jpeg, image/webp">
                         </div>
                     </div>
@@ -523,10 +522,10 @@
             </div>
 
             <div class="input-group">
-                <label>Hotel Images</label>
+                <label>{{ _('Gambar Hotel') }}</label>
                 <div class="dropzone">
-                    <p>Drag & drop images here, or click to browse</p>
-                    <p style="font-size:0.84rem; color: var(--subtext);">Supports JPG, PNG, WEBP. Max 16MB per file.</p>
+                    <p>{{ _('Seret & lepas gambar di sini, atau klik untuk menelusuri') }}</p>
+                    <p style="font-size:0.84rem; color: var(--subtext);">{{ _('Mendukung JPG, PNG, WEBP. Maks 16MB per file.') }}</p>
                     <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp" required>
                 </div>
                 <div class="preview-grid"></div>
@@ -543,30 +542,30 @@
         <p style="margin:0 0 1rem; color: var(--subtext);">Update hotel details and replace images if needed.</p>
         <form id="editForm" method="POST" enctype="multipart/form-data">
             <div class="input-group">
-                <label>Hotel Name</label>
+                <label>{{ _('Nama Hotel') }}</label>
                 <input type="text" name="name" id="edit_name" required>
             </div>
             <div class="input-group">
-                <label>Province</label>
+                <label>{{ _('Provinsi') }}</label>
                 <select name="province_id" id="edit_province_id" required>
-                    <option value="">Select Province...</option>
+                    <option value="">{{ _('Pilih Provinsi...') }}</option>
                     {% for p in provinces %}
                     <option value="{{ p.province_id }}">{{ p.province }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="input-group">
-                <label>City</label>
+                <label>{{ _('Kota') }}</label>
                 <select name="city_id" id="edit_city_id" required>
-                    <option value="">Select City...</option>
+                    <option value="">{{ _('Pilih Kota...') }}</option>
                 </select>
             </div>
             <div class="input-group">
-                <label>Detailed Address</label>
+                <label>{{ _('Alamat Lengkap') }}</label>
                 <input type="text" name="location" id="edit_location" required>
             </div>
             <div class="input-group">
-                <label>Description</label>
+                <label>{{ _('Deskripsi') }}</label>
                 <textarea name="description" id="edit_description" rows="4" required></textarea>
             </div>
             <div class="input-group">
@@ -577,7 +576,7 @@
                 </div>
                 <div class="preview-grid"></div>
             </div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="submit" class="btn btn-primary">{{ _('Simpan Perubahan') }}</button>
         </form>
     </div>
 </div>
@@ -593,6 +592,7 @@ function openAddRoomGroupModal(hotelId) {
     // Update end number
     updateShortcutEndNumber();
     modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function updateShortcutEndNumber() {
@@ -610,18 +610,18 @@ function updateShortcutEndNumber() {
 }
 function loadCities(provinceId, citySelectId, selectedCityId = null) {
     const citySelect = document.getElementById(citySelectId);
-    citySelect.innerHTML = '<option value="">Loading...</option>';
+    citySelect.innerHTML = '<option value="">{{ _('Memuat...') }}</option>';
     citySelect.disabled = true;
 
     if (!provinceId) {
-        citySelect.innerHTML = '<option value="">Select City...</option>';
+        citySelect.innerHTML = '<option value="">{{ _('Pilih Kota...') }}</option>';
         return;
     }
 
     fetch(`/admin/api/cities/${provinceId}`)
         .then(response => response.json())
         .then(data => {
-            citySelect.innerHTML = '<option value="">Select City...</option>';
+            citySelect.innerHTML = '<option value="">{{ _('Pilih Kota...') }}</option>';
             data.forEach(city => {
                 const option = document.createElement('option');
                 option.value = city.city_id;
@@ -666,7 +666,7 @@ function openEditModal(id, name, province_id, city_id, location, description) {
         loadCities(province_id, 'edit_city_id', city_id);
     } else {
         const citySelect = document.getElementById('edit_city_id');
-        citySelect.innerHTML = '<option value="">Select City...</option>';
+        citySelect.innerHTML = '<option value="">{{ _('Pilih Kota...') }}</option>';
         citySelect.disabled = true;
     }
     document.getElementById('editModal').classList.add('active');
@@ -722,7 +722,7 @@ function initHotelPage() {
             pagination.appendChild(button);
         };
 
-        addButton('Previous', currentPage - 1, currentPage === 1);
+        addButton('{{ _('Sebelumnya') }}', currentPage - 1, currentPage === 1);
 
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(pageCount, currentPage + 2);
@@ -744,7 +744,7 @@ function initHotelPage() {
             addButton(String(pageCount), pageCount);
         }
 
-        addButton('Next', currentPage + 1, currentPage === pageCount);
+        addButton('{{ _('Selanjutnya') }}', currentPage + 1, currentPage === pageCount);
     };
 
     const renderPage = () => {
@@ -820,7 +820,7 @@ function initHotelPage() {
                 const description = card.dataset.description || '';
                 Swal.fire({
                     title: title,
-                    html: `<p style="text-align:left; margin:0.5rem 0;"><strong>Location</strong>: ${location}</p><p style="text-align:left; margin:0.5rem 0;"><strong>Photos</strong>: ${images}</p><p style="text-align:left; margin:0.5rem 0; color: var(--subtext);">${description}</p>`,
+                    html: `<p style="text-align:left; margin:0.5rem 0;"><strong>{{ _('Lokasi') }}</strong>: ${location}</p><p style="text-align:left; margin:0.5rem 0;"><strong>{{ _('Foto') }}</strong>: ${images}</p><p style="text-align:left; margin:0.5rem 0; color: var(--subtext);">${description}</p>`,
                     showCloseButton: true,
                     confirmButtonText: 'Close',
                     width: '28rem'
@@ -840,8 +840,6 @@ function initHotelPage() {
 
 window.addEventListener('DOMContentLoaded', initHotelPage);
 </script>
-{% endblock %}
-
 <script>
 
 function openAddRoomGroupModal(hotelId) {
@@ -853,6 +851,7 @@ function openAddRoomGroupModal(hotelId) {
     // Update end number
     updateShortcutEndNumber();
     modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function updateShortcutEndNumber() {
@@ -874,16 +873,18 @@ function addRoomGroupField() {
     <div class="room-group-entry" style="background: #F8FAFC; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; position: relative; border: 1px solid #e2e8f0;">
         <button type="button" onclick="this.parentElement.remove()" style="position: absolute; right: 10px; top: 10px; color: var(--danger); background: none; border: none; cursor: pointer; font-size: 1.2rem;">&times;</button>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div class="input-group" style="margin-bottom:0;"><label>Room Type</label><input type="text" name="room_type[]" placeholder="e.g. Standard Room"></div>
-            <div class="input-group" style="margin-bottom:0;"><label>Quantity</label><input type="number" name="quantity[]" value="1" min="1"></div>
+            <div class="input-group" style="margin-bottom:0;"><label>{{ _('Tipe Kamar') }}</label><input type="text" name="room_type[]" placeholder="e.g. Standard Room"></div>
+            <div class="input-group" style="margin-bottom:0;"><label>{{ _('Kuantitas') }}</label><input type="number" name="quantity[]" value="1" min="1"></div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-            <div class="input-group" style="margin-bottom:0;"><label>Start Number</label><input type="number" name="start_number[]" value="201"></div>
+            <div class="input-group" style="margin-bottom:0;"><label>{{ _('Nomor Awal') }}</label><input type="number" name="start_number[]" value="201"></div>
             <div class="input-group" style="margin-bottom:0;"><label>Price (Rp)</label><input type="number" name="price[]" value="500000"></div>
-            <div class="input-group" style="margin-bottom:0;"><label>Capacity</label><input type="number" name="capacity[]" value="2" min="1"></div>
+            <div class="input-group" style="margin-bottom:0;"><label>{{ _('Kapasitas') }}</label><input type="number" name="capacity[]" value="2" min="1"></div>
         </div>
-        <div class="input-group" style="margin-bottom:0;"><label>Room Image</label><input type="file" name="room_image[]" accept="image/png, image/jpeg, image/webp"></div>
+        <div class="input-group" style="margin-bottom:0;"><label>{{ _('Gambar Kamar') }}</label><input type="file" name="room_image[]" accept="image/png, image/jpeg, image/webp"></div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
 }
 </script>
+
+{% endblock %}

@@ -1850,7 +1850,7 @@ border-radius: 12px;
                 </nav>
             <div class="sidebar-footer">
                 <a href="{{ url_for('main.index') }}" target="_blank">Website</a>
-                <a href="{{ url_for('auth.logout') }}">Logout</a>
+                <a href="{{ url_for('auth.logout') }}">{{ _('Keluar') }}</a>
             </div>
         </aside>
 
@@ -1858,7 +1858,7 @@ border-radius: 12px;
             <section class="header">
                 <div class="header-left">
                     <div class="breadcrumb">
-                        <span>Dashboard</span>
+                        <span>{{ _('Dasbor') }}</span>
                         <span>{% if request.endpoint == 'admin.dashboard' %}Overview{% elif request.endpoint ==
                             'admin.hotels' %}Hotels{% elif request.endpoint == 'admin.rooms' %}Rooms{% elif
                             request.endpoint == 'admin.bookings' and request.args.get('view') == 'audit' %}Audit{% elif
@@ -1893,8 +1893,8 @@ border-radius: 12px;
                         </button>
                         <div id="notifDropdown" class="notif-dropdown">
                             <div class="notif-header">
-                                <h4>Notifications</h4>
-                                <a id="btnMarkAllRead">Mark all read</a>
+                                <h4>{{ _('Notifikasi') }}</h4>
+                                <a id="btnMarkAllRead">{{ _('Tandai semua dibaca') }}</a>
                             </div>
                             <div class="notif-body" id="notifBody">
                                 <!-- Notifications injected here -->
@@ -2019,7 +2019,7 @@ border-radius: 12px;
                             if (submit) {
                                 submit.disabled = true;
                                 submit.dataset.originalText = submit.textContent;
-                                submit.textContent = 'Deleting...';
+                                submit.textContent = '{{ _('Hapus') }}...';
                             }
                             form.submit();
                         }
@@ -2032,14 +2032,20 @@ border-radius: 12px;
             document.querySelectorAll('[data-modal-target]').forEach(trigger => {
                 trigger.addEventListener('click', () => {
                     const modal = document.querySelector(trigger.dataset.modalTarget);
-                    if (modal) modal.classList.add('active');
+                    if (modal) {
+                        modal.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    }
                 });
             });
 
             document.querySelectorAll('.js-close-modal').forEach(button => {
                 button.addEventListener('click', () => {
                     const modal = button.closest('.modal');
-                    if (modal) modal.classList.remove('active');
+                    if (modal) {
+                        modal.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
                 });
             });
 
@@ -2047,6 +2053,7 @@ border-radius: 12px;
                 modal.addEventListener('click', event => {
                     if (event.target === modal) {
                         modal.classList.remove('active');
+                        document.body.style.overflow = '';
                     }
                 });
             });
@@ -2088,7 +2095,7 @@ border-radius: 12px;
                     if (submit) {
                         submit.disabled = true;
                         submit.dataset.originalText = submit.textContent;
-                        submit.textContent = 'Loading...';
+                        submit.textContent = '{{ _('Memuat...') }}';
                     }
                 });
             });
@@ -2250,7 +2257,7 @@ border-radius: 12px;
             function renderNotifications(notifs) {
                 body.innerHTML = '';
                 if (notifs.length === 0) {
-                    body.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">No notifications yet.</div>';
+                    body.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">{{ _('Belum ada notifikasi.') }}</div>';
                     return;
                 }
 
@@ -2440,7 +2447,7 @@ border-radius: 12px;
                             })
                             .catch(err => {
                                 console.error(err);
-                                resultsBox.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--danger);">Error fetching results.</div>';
+                                resultsBox.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--danger);">{{ _('Terjadi kesalahan saat mengambil data.') }}</div>';
                             });
                     }, 300);
                 });
@@ -2505,45 +2512,45 @@ border-radius: 12px;
             // Translation Dictionary
             const i18n = {
                 'id': {
-                    'Dashboard': 'Dasbor',
+                    '{{ _('Dasbor') }}': 'Dasbor',
                     'Overview': 'Ringkasan',
-                    'Hotels': 'Hotel',
-                    'Rooms': 'Kamar',
-                    'Bookings': 'Pemesanan',
+                    '{{ _('Hotel') }}': 'Hotel',
+                    '{{ _('Kamar') }}': 'Kamar',
+                    '{{ _('Pesanan') }}': 'Pemesanan',
                     'Audit': 'Audit',
-                    'Reports': 'Laporan',
+                    '{{ _('Laporan') }}': 'Laporan',
                     'Website': 'Situs Web',
-                    'Logout': 'Keluar',
+                    '{{ _('Keluar') }}': 'Keluar',
                     'Business Analytics': 'Analisis Bisnis',
                     'Notification': 'Notifikasi',
-                    'Notifications': 'Notifikasi',
+                    '{{ _('Notifikasi') }}': 'Notifikasi',
                     'Search': 'Cari',
                     'Search hotels, rooms, guests, bookings...': 'Cari hotel, kamar, tamu, pemesanan...',
                     'Save': 'Simpan',
                     'Cancel': 'Batal',
                     'Settings': 'Pengaturan',
-                    'Generate Report': 'Buat Laporan',
-                    'Profile': 'Profil',
+                    '{{ _('Buat Laporan') }}': 'Buat Laporan',
+                    '{{ _('Profil') }}': 'Profil',
                     'My Profile': 'Profil Saya',
                     'Change Password': 'Ubah Kata Sandi',
                     'Manage your admin operations with confidence.': 'Kelola operasi admin Anda dengan percaya diri.',
                     'Hotel Administrator': 'Administrator Hotel',
-                    'Theme': 'Tema',
-                    'Language': 'Bahasa',
+                    '{{ _('Tema') }}': 'Tema',
+                    '{{ _('Bahasa') }}': 'Bahasa',
                     'Bahasa Indonesia': 'Bahasa Indonesia',
                     'English': 'English',
                     'System': 'Sistem',
                     'Light': 'Terang',
                     'Dark': 'Gelap',
-                    'Mark all read': 'Tandai semua dibaca',
-                    'Total Revenue': 'Total Pendapatan',
+                    '{{ _('Tandai semua dibaca') }}': 'Tandai semua dibaca',
+                    '{{ _('Total Pendapatan') }}': 'Total Pendapatan',
                     'Active Bookings': 'Pemesanan Aktif',
                     'Total Users': 'Total Pengguna',
                     'Rooms Available': 'Kamar Tersedia',
                     'Revenue Trends': 'Tren Pendapatan',
-                    'Recent Bookings': 'Pemesanan Terbaru',
-                    'Status': 'Status',
-                    'Action': 'Aksi'
+                    '{{ _('Pesanan Terbaru') }}': 'Pemesanan Terbaru',
+                    '{{ _('Status') }}': '{{ _('Status') }}',
+                    '{{ _('Aksi') }}': 'Aksi'
                 }
             };
 

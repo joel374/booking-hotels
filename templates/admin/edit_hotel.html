@@ -26,13 +26,13 @@
         <h2 style="margin-top: 0;">Hotel Information</h2>
         <form method="POST" action="{{ url_for('admin.edit_hotel', id=hotel.id) }}" enctype="multipart/form-data">
             <div class="input-group">
-                <label>Hotel Name</label>
+                <label>{{ _('Nama Hotel') }}</label>
                 <input type="text" name="name" value="{{ hotel.name }}" required>
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="input-group">
-                    <label>Province</label>
+                    <label>{{ _('Provinsi') }}</label>
                     <select name="province_id" id="edit_province_id" required onchange="loadCities(this.value, 'edit_city_id')">
                         <option value="">Select Province</option>
                         {% for prov in provinces %}
@@ -41,7 +41,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>City</label>
+                    <label>{{ _('Kota') }}</label>
                     <select name="city_id" id="edit_city_id" required>
                         <option value="">Select City</option>
                         {% for city in cities %}
@@ -52,12 +52,12 @@
             </div>
 
             <div class="input-group">
-                <label>Detailed Address</label>
+                <label>{{ _('Alamat Lengkap') }}</label>
                 <input type="text" name="location" value="{{ hotel.location }}" required>
             </div>
             
             <div class="input-group">
-                <label>Description</label>
+                <label>{{ _('Deskripsi') }}</label>
                 <textarea name="description" rows="5" required>{{ hotel.description }}</textarea>
             </div>
             
@@ -71,7 +71,7 @@
                 <div class="preview-grid"></div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 1rem;">Save Changes</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 1rem;">{{ _('Simpan Perubahan') }}</button>
         </form>
     </div>
 </div>
@@ -110,16 +110,16 @@
                 </div>
                 <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
                     <button type="button" class="btn btn-primary" style="flex:1; background: var(--success); border-color: var(--success);" onclick="openAddMoreRoomsModal('{{ group.room_type }}', {{ group.max_number if group.max_number else 100 }})">+ Add</button>
-                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="openEditGroupModal('{{ group.room_type }}', '{{ group.price }}', '{{ group.capacity }}')">Edit</button>
-                    <button type="button" class="btn btn-outline" style="flex:1; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);" onclick="openDeleteGroupModal('{{ group.room_type }}')">Delete</button>
+                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="openEditGroupModal('{{ group.room_type }}', '{{ group.price }}', '{{ group.capacity }}')">{{ _('Ubah') }}</button>
+                    <button type="button" class="btn btn-outline" style="flex:1; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);" onclick="openDeleteGroupModal('{{ group.room_type }}', {{ group.quantity }})">{{ _('Hapus') }}</button>
                 </div>
             </div>
         </div>
         {% else %}
         <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: #fff; border-radius: 16px; border: 1px dashed var(--border); color: var(--subtext);">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 48px; height: 48px; margin-bottom: 1rem; color: #cbd5e1;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <h3 style="margin: 0 0 0.5rem; color: var(--text);">No Room Groups Yet</h3>
-            <p style="margin: 0 0 1.5rem;">Add your first room group to manage inventory efficiently.</p>
+            <h3 style="margin: 0 0 0.5rem; color: var(--text);">{{ _('Belum Ada Grup Kamar') }}</h3>
+            <p style="margin: 0 0 1.5rem;">{{ _('Tambahkan grup kamar pertama Anda untuk mengelola inventaris secara efisien.') }}</p>
             <button class="btn btn-primary" onclick="document.getElementById('add-room-group-modal').classList.add('active')">+ Add Room Group</button>
         </div>
         {% endfor %}
@@ -134,16 +134,16 @@
         <p style="margin:0 0 1.5rem; color: var(--subtext);">Create a new block of identical rooms.</p>
         <form method="POST" action="{{ url_for('admin.hotel_add_room_group', hotel_id=hotel.id) }}" enctype="multipart/form-data">
             <div class="input-group">
-                <label>Room Type</label>
+                <label>{{ _('Tipe Kamar') }}</label>
                 <input type="text" name="room_type" required placeholder="e.g. Deluxe Room">
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="input-group">
-                    <label>Quantity</label>
+                    <label>{{ _('Kuantitas') }}</label>
                     <input type="number" name="quantity" required min="1" value="1">
                 </div>
                 <div class="input-group">
-                    <label>Start Number</label>
+                    <label>{{ _('Nomor Awal') }}</label>
                     <input type="number" name="start_number" required min="1" value="101">
                 </div>
             </div>
@@ -153,7 +153,7 @@
                     <input type="number" name="price" required min="0" value="500000">
                 </div>
                 <div class="input-group">
-                    <label>Capacity</label>
+                    <label>{{ _('Kapasitas') }}</label>
                     <input type="number" name="capacity" required min="1" value="2">
                 </div>
             </div>
@@ -175,11 +175,11 @@
     <div class="form-card">
         <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active')">&times;</button>
         <h2 style="margin-top: 0;">Edit Room Group</h2>
-        <p style="margin:0 0 1.5rem; color: var(--subtext);">Update details for all rooms in this group.</p>
+        <p style="margin:0 0 1.5rem; color: var(--subtext);">{{ _('Perbarui detail untuk semua kamar di grup ini.') }}</p>
         <form method="POST" action="{{ url_for('admin.hotel_edit_room_group', hotel_id=hotel.id) }}" enctype="multipart/form-data">
             <input type="hidden" name="old_room_type" id="edit_old_room_type">
             <div class="input-group">
-                <label>Room Type</label>
+                <label>{{ _('Tipe Kamar') }}</label>
                 <input type="text" name="room_type" id="edit_room_type" required>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -188,7 +188,7 @@
                     <input type="number" name="price" id="edit_price" required min="0">
                 </div>
                 <div class="input-group">
-                    <label>Capacity</label>
+                    <label>{{ _('Kapasitas') }}</label>
                     <input type="number" name="capacity" id="edit_capacity" required min="1">
                 </div>
             </div>
@@ -200,8 +200,8 @@
                 </div>
                 <div class="preview-grid"></div>
             </div>
-            <p style="font-size: 0.85rem; color: var(--warning); margin-bottom: 1.5rem; background: rgba(245, 158, 11, 0.1); padding: 0.75rem; border-radius: 8px;">Note: Changes apply to ALL rooms in this group.</p>
-            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px;">Save Changes</button>
+            <p style="font-size: 0.85rem; color: var(--warning); margin-bottom: 1.5rem; background: rgba(245, 158, 11, 0.1); padding: 0.75rem; border-radius: 8px;">{{ _('Catatan: Perubahan berlaku untuk SEMUA kamar di grup ini.') }}</p>
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px;">{{ _('Simpan Perubahan') }}</button>
         </form>
     </div>
 </div>
@@ -211,12 +211,12 @@
 <div id="add-more-rooms-modal" class="modal">
     <div class="form-card">
         <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active')">&times;</button>
-        <h2 style="margin-top: 0;">Add More Rooms</h2>
+        <h2 style="margin-top: 0;">{{ _('Tambah Kamar') }}</h2>
         <p style="margin:0 0 1.5rem; color: var(--subtext);">Generate extra rooms for this room group. They will automatically inherit the price, capacity, and image.</p>
         <form method="POST" action="{{ url_for('admin.hotel_add_more_rooms', hotel_id=hotel.id) }}">
             <input type="hidden" name="room_type" id="add_more_room_type">
             <div class="input-group">
-                <label>Room Type</label>
+                <label>{{ _('Tipe Kamar') }}</label>
                 <input type="text" id="add_more_room_type_display" disabled style="background: #f1f5f9;">
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -225,15 +225,15 @@
                     <input type="number" name="quantity" id="add_more_quantity" required min="1" value="10" oninput="updateAddMoreEndNumber()">
                 </div>
                 <div class="input-group">
-                    <label>Start Number</label>
+                    <label>{{ _('Nomor Awal') }}</label>
                     <input type="number" name="start_number" id="add_more_start_number" required min="1" oninput="updateAddMoreEndNumber()">
                 </div>
             </div>
             <div class="input-group">
-                <label>End Number</label>
+                <label>{{ _('Nomor Akhir') }}</label>
                 <input type="text" id="add_more_end_number" readonly style="background: #f1f5f9; cursor: not-allowed; border-style: dashed;">
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 0.5rem; background: var(--success); border-color: var(--success);">Generate Extra Rooms</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px; margin-top: 0.5rem; background: var(--success); border-color: var(--success);">{{ _('Buat Ekstra Kamar') }}</button>
         </form>
     </div>
 </div>
@@ -282,11 +282,65 @@ function openEditGroupModal(roomType, price, capacity) {
     document.getElementById('edit-room-group-modal').classList.add('active');
 }
 
-function openDeleteGroupModal(roomType) {
-    if(confirm(`Are you sure you want to delete ALL rooms of type '${roomType}'? This action cannot be undone.`)) {
-        document.getElementById('delete_room_type').value = roomType;
-        document.getElementById('delete-group-form').submit();
-    }
+function openDeleteGroupModal(roomType, roomCount) {
+    Swal.fire({
+        title: '{{ _("Hapus Grup Kamar?") }}',
+        text: `{{ _("Anda akan menghapus seluruh kamar pada grup ") }}"${roomType}"{{ _('" room group.') }}
+
+{{ _("Total kamar: ") }}${roomCount}
+
+{{ _("Tindakan ini tidak dapat dibatalkan.") }}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '{{ _("Hapus") }}',
+        cancelButtonText: '{{ _("Batal") }}',
+        reverseButtons: true,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel'
+        }
+    }).then(result => {
+        if (result.isConfirmed) {
+            document.getElementById('delete_room_type').value = roomType;
+            const form = document.getElementById('delete-group-form');
+            
+            Swal.fire({
+                title: '{{ _('Hapus') }}...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form)
+            }).then(response => response.text())
+            .then(html => {
+                if(html.includes('data-category="danger"')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '{{ _("Gagal!") }}',
+                        text: '{{ _("Grup kamar gagal dihapus.") }}'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '{{ _("Berhasil!") }}',
+                        text: '{{ _("Grup kamar berhasil dihapus.") }}'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            }).catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: '{{ _("Gagal!") }}',
+                    text: '{{ _("Grup kamar gagal dihapus.") }}'
+                });
+            });
+        }
+    });
 }
 
 window.onload = function() {

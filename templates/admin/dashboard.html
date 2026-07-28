@@ -21,7 +21,7 @@
         <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none"><path d="M4 19H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 15L9 11L13 15L19 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <span class="stat-label">Total Revenue</span>
+        <span class="stat-label">{{ _('Total Pendapatan') }}</span>
         <span class="stat-value">Rp {{ "{:,.0f}".format(revenue) }}</span>
         <span class="delta">+12.4% from last month</span>
     </div>
@@ -29,7 +29,7 @@
         <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 7V19H19V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16 3V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </div>
-        <span class="stat-label">Total Bookings</span>
+        <span class="stat-label">{{ _('Total Pesanan') }}</span>
         <span class="stat-value">{{ total_bookings }}</span>
         <span class="delta">{{ recent_bookings|length }} new this week</span>
     </div>
@@ -37,7 +37,7 @@
         <div class="stat-icon">
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="currentColor" stroke-width="1.8"/><path d="M4 20C4 16.6863 7.13401 14 11 14H13C16.866 14 20 16.6863 20 20" stroke="currentColor" stroke-width="1.8"/></svg>
         </div>
-        <span class="stat-label">Registered Customers</span>
+        <span class="stat-label">{{ _('Pelanggan Terdaftar') }}</span>
         <span class="stat-value">{{ customers }}</span>
         <span class="delta">Active customer base</span>
     </div>
@@ -74,8 +74,8 @@
                 <th>ID</th>
                 <th>Guest</th>
                 <th>Hotel</th>
-                <th>Status</th>
-                <th>Date</th>
+                <th>{{ _('{{ _('Status') }}') }}</th>
+                <th>{{ _('Tanggal') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -96,7 +96,7 @@
                 <td style="color: var(--subtext);">{{ booking.created_at.strftime('%Y-%m-%d') }}</td>
             </tr>
             {% else %}
-            <tr><td colspan="5" style="text-align: center; color: var(--subtext); padding: 2rem;">No recent bookings found.</td></tr>
+            <tr><td colspan="5" style="text-align: center; color: var(--subtext); padding: 2rem;">{{ _('Tidak ada pesanan terbaru.') }}</td></tr>
             {% endfor %}
         </tbody>
     </table>

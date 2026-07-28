@@ -1,6 +1,6 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}{{ 'Audit Trail' if request.args.get('view') == 'audit' else 'Bookings' }}{% endblock %}
+{% block title %}{{ 'Audit Trail' if request.args.get('view') == 'audit' else '{{ _('Pesanan') }}' }}{% endblock %}
 
 {% block page_description %}
 {% if request.args.get('view') == 'audit' %}
@@ -383,12 +383,12 @@ Manage guest reservations, payments, and booking status.
         <option value="admin">Admin</option>
     </select>
     <select id="audit-date" class="toolbar-select">
-        <option value="">All Time</option>
-        <option value="today">Today</option>
-        <option value="yesterday">Yesterday</option>
-        <option value="week">Last 7 Days</option>
-        <option value="last_30">Last 30 Days</option>
-        <option value="this_month">This Month</option>
+        <option value="">{{ _('Sepanjang Waktu') }}</option>
+        <option value="today">{{ _('Hari Ini') }}</option>
+        <option value="yesterday">{{ _('Kemarin') }}</option>
+        <option value="week">{{ _('7 Hari Terakhir') }}</option>
+        <option value="last_30">{{ _('30 Hari Terakhir') }}</option>
+        <option value="this_month">{{ _('Bulan Ini') }}</option>
     </select>
     <select id="audit-status" class="toolbar-select">
         <option value="">All Statuses</option>
@@ -439,20 +439,20 @@ Manage guest reservations, payments, and booking status.
             <circle cx="11" cy="11" r="7" />
             <path d="M21 21l-4.35-4.35" />
         </svg>
-        <input id="bookings-search" class="toolbar-input" type="search" placeholder="Search Bookings...">
+        <input id="bookings-search" class="toolbar-input" type="search" placeholder="{{ _('Cari Pesanan...') }}">
     </div>
     <select id="bookings-status" class="toolbar-select">
-        <option value="">All Status</option>
+        <option value="">{{ _('Semua Status') }}</option>
         <option value="Booked">Booked</option>
         <option value="Checked In">Checked In</option>
         <option value="Checked Out">Checked Out</option>
         <option value="Cancelled">Cancelled</option>
     </select>
     <select id="bookings-date" class="toolbar-select">
-        <option value="">Date</option>
-        <option value="today">Today</option>
-        <option value="week">This Week</option>
-        <option value="month">This Month</option>
+        <option value="">{{ _('Tanggal') }}</option>
+        <option value="today">{{ _('Hari Ini') }}</option>
+        <option value="week">{{ _('Minggu Ini') }}</option>
+        <option value="month">{{ _('Bulan Ini') }}</option>
     </select>
     <select id="bookings-sort" class="toolbar-select">
         <option value="newest">Newest</option>
@@ -471,7 +471,7 @@ Manage guest reservations, payments, and booking status.
     <div class="table-info"
         style="padding: 1.25rem 1.4rem; gap: 0.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
         <div>
-            <p class="table-title">Bookings</p>
+            <p class="table-title">{{ _('Pesanan') }}</p>
             <p>Review reservation details and manage booking actions.</p>
         </div>
     </div>
@@ -483,11 +483,11 @@ Manage guest reservations, payments, and booking status.
                     <th style="width: 14%;">Guest</th>
                     <th style="width: 15%;">Hotel</th>
                     <th style="width: 14%;">Room</th>
-                    <th style="width: 10%;">Check In</th>
-                    <th style="width: 10%;">Check Out</th>
-                    <th style="width: 12%;">Total Price</th>
-                    <th style="width: 12%;">Status</th>
-                    <th style="width: 6%; text-align: center;">Action</th>
+                    <th style="width: 10%;">{{ _('{{ _('Check In') }}') }}</th>
+                    <th style="width: 10%;">{{ _('{{ _('Check Out') }}') }}</th>
+                    <th style="width: 12%;">{{ _('Total Harga') }}</th>
+                    <th style="width: 12%;">{{ _('{{ _('Status') }}') }}</th>
+                    <th style="width: 6%; text-align: center;">{{ _('Aksi') }}</th>
                 </tr>
             </thead>
             <tbody id="bookings-tbody">
@@ -496,9 +496,9 @@ Manage guest reservations, payments, and booking status.
         </table>
     </div>
     <div class="pagination-modern">
-        <button type="button">Previous</button>
+        <button type="button">{{ _('Sebelumnya') }}</button>
         <button type="button" class="active-page">1</button>
-        <button type="button">Next</button>
+        <button type="button">{{ _('Selanjutnya') }}</button>
     </div>
 </div>
 {% else %}
@@ -556,8 +556,8 @@ Manage guest reservations, payments, and booking status.
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
-                    confirmButtonText: 'Delete',
-                    cancelButtonText: 'Cancel'
+                    confirmButtonText: '{{ _("Hapus") }}',
+                    cancelButtonText: '{{ _("Batal") }}'
                 }).then(result => {
                     if (result.isConfirmed) {
                         form.submit();

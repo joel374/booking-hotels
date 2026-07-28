@@ -24,7 +24,7 @@
                 {% if booking.status == 'Booked' %}
                 <button type="button" class="action-cancel" data-id="{{ booking.id }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>Cancel Booking</button>
                 {% endif %}
-                <button type="button" class="action-delete" data-id="{{ booking.id }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>Delete</button>
+                <button type="button" class="action-delete" data-id="{{ booking.id }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>{{ _('Hapus') }}</button>
             </div>
         </div>
         <form method="POST" action="{{ url_for('admin.bookings') }}" class="booking-cancel-form" data-id="{{ booking.id }}" style="display:none;">

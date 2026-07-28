@@ -317,21 +317,21 @@ endblock %}
     </div>
     <select id="report-type" class="toolbar-select">
         <option value="Dashboard Summary">Dashboard Summary</option>
-        <option value="Hotels">Hotels</option>
-        <option value="Rooms">Rooms</option>
-        <option value="Bookings">Bookings</option>
+        <option value="Hotels">{{ _('Hotel') }}</option>
+        <option value="Rooms">{{ _('Kamar') }}</option>
+        <option value="Bookings">{{ _('Pesanan') }}</option>
         <option value="Revenue Report">Revenue Report</option>
         <option value="Audit Report">Audit Report</option>
     </select>
     <select id="report-period" class="toolbar-select">
-        <option value="Today">Today</option>
-        <option value="Yesterday">Yesterday</option>
-        <option value="Last 7 Days">Last 7 Days</option>
-        <option value="Last 30 Days">Last 30 Days</option>
-        <option value="This Week">This Week</option>
-        <option value="This Month" selected>This Month</option>
-        <option value="This Year">This Year</option>
-        <option value="Custom Date">Custom Date</option>
+        <option value="Today">{{ _('Hari Ini') }}</option>
+        <option value="Yesterday">{{ _('Kemarin') }}</option>
+        <option value="Last 7 Days">{{ _('7 Hari Terakhir') }}</option>
+        <option value="Last 30 Days">{{ _('30 Hari Terakhir') }}</option>
+        <option value="This Week">{{ _('Minggu Ini') }}</option>
+        <option value="This Month" selected>{{ _('Bulan Ini') }}</option>
+        <option value="This Year">{{ _('Tahun Ini') }}</option>
+        <option value="Custom Date">{{ _('Tanggal Kustom') }}</option>
     </select>
     <div id="custom-date-group" style="display: none; gap: 0.5rem; align-items: center;">
         <input type="date" id="date-start" class="toolbar-input" style="padding-left: 1rem;">
@@ -346,7 +346,7 @@ endblock %}
         <option value="most_bookings">Most Bookings</option>
         <option value="least_bookings">Least Bookings</option>
     </select>
-    <button type="button" class="btn btn-primary" id="btn-generate-report">Generate Report</button>
+    <button type="button" class="btn btn-primary" id="btn-generate-report">{{ _('Buat Laporan') }}</button>
 </div>
 
 <div class="empty-state" id="report-empty-state">
@@ -403,19 +403,19 @@ endblock %}
     <h3 style="margin-bottom: 1rem;">Summary</h3>
     <div class="report-cards-grid">
         <div class="report-stat-card">
-            <span class="report-stat-label">Total Hotels</span>
+            <span class="report-stat-label">{{ _('Total Hotel') }}</span>
             <span class="report-stat-value" id="val-hotels">0</span>
         </div>
         <div class="report-stat-card">
-            <span class="report-stat-label">Total Rooms</span>
+            <span class="report-stat-label">{{ _('Total Kamar') }}</span>
             <span class="report-stat-value" id="val-rooms">0</span>
         </div>
         <div class="report-stat-card">
-            <span class="report-stat-label">Total Bookings</span>
+            <span class="report-stat-label">{{ _('Total Pesanan') }}</span>
             <span class="report-stat-value" id="val-bookings">0</span>
         </div>
         <div class="report-stat-card">
-            <span class="report-stat-label">Total Revenue</span>
+            <span class="report-stat-label">{{ _('Total Pendapatan') }}</span>
             <span class="report-stat-value" id="val-revenue">Rp 0</span>
         </div>
     </div>
@@ -440,7 +440,7 @@ endblock %}
                 <span class="report-stat-value" id="val-cancelled" style="color: var(--danger);">0</span>
             </div>
             <div class="report-stat-card" style="background: var(--primary); color: white; border: none;">
-                <span class="report-stat-label" style="color: rgba(255,255,255,0.8);">Occupancy Rate</span>
+                <span class="report-stat-label" style="color: rgba(255,255,255,0.8);">{{ _('Tingkat Hunian') }}</span>
                 <span class="report-stat-value" id="val-occupancy">0%</span>
             </div>
         </div>
@@ -471,7 +471,7 @@ endblock %}
 <div class="modal-overlay" id="emailModal">
     <div class="modal-card">
         <div class="modal-header">
-            <h3>Send Report via Email</h3>
+            <h3>{{ _('Kirim Laporan via Email') }}</h3>
             <button type="button" class="close-modal" onclick="closeEmailModal()">&times;</button>
         </div>
         <div class="modal-body">
@@ -480,11 +480,11 @@ endblock %}
                 <input type="email" id="email-recipient" placeholder="manager@example.com" required>
             </div>
             <div class="form-group">
-                <label>Subject</label>
+                <label>{{ _('Subjek') }}</label>
                 <input type="text" id="email-subject" value="Bhineka Hotels Report" required>
             </div>
             <div class="form-group">
-                <label>Message</label>
+                <label>{{ _('Pesan') }}</label>
                 <textarea id="email-message" required>Hello,
 
 Please find the attached report generated from Bhineka Hotels Property Management System.
@@ -493,8 +493,8 @@ Regards,
 Bhineka Hotels</textarea>
             </div>
             <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 2rem;">
-                <button type="button" class="btn btn-secondary" onclick="closeEmailModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" id="btn-send-email">Send Email</button>
+                <button type="button" class="btn btn-secondary" onclick="closeEmailModal()">{{ _('Batal') }}</button>
+                <button type="button" class="btn btn-primary" id="btn-send-email">{{ _('Kirim Email') }}</button>
             </div>
         </div>
     </div>
@@ -509,7 +509,7 @@ Bhineka Hotels</textarea>
     const previewContainer = document.getElementById('report-preview');
 
     reportPeriod.addEventListener('change', (e) => {
-        if (e.target.value === 'Custom Date') {
+        if (e.target.value === '{{ _('Tanggal Kustom') }}') {
             customDateGroup.style.display = 'flex';
         } else {
             customDateGroup.style.display = 'none';
@@ -542,7 +542,7 @@ Bhineka Hotels</textarea>
         const sort = document.getElementById('report-sort').value;
         let period = document.getElementById('report-period').value;
 
-        if (period === 'Custom Date') {
+        if (period === '{{ _('Tanggal Kustom') }}') {
             const start = document.getElementById('date-start').value;
             const end = document.getElementById('date-end').value;
             period = `${start} to ${end}`;
@@ -596,27 +596,27 @@ Bhineka Hotels</textarea>
             const formatRp = num => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
             if (type === 'Dashboard Summary') {
-                lbl1.textContent = 'Total Hotels'; val1.textContent = data.summary.total_hotels;
-                lbl2.textContent = 'Total Rooms'; val2.textContent = data.summary.total_rooms;
-                lbl3.textContent = 'Total Bookings'; val3.textContent = data.summary.total_bookings;
-                lbl4.textContent = 'Total Revenue'; val4.textContent = formatRp(data.summary.total_revenue);
-            } else if (type === 'Hotels') {
-                lbl1.textContent = 'Total Hotels'; val1.textContent = data.summary.total_hotels;
-                lbl2.textContent = 'Total Rooms'; val2.textContent = data.summary.total_rooms;
-                lbl3.textContent = 'Available Rooms'; val3.textContent = data.summary.available_rooms;
-                lbl4.textContent = 'Occupancy Rate'; val4.textContent = data.summary.occupancy_rate + '%';
-            } else if (type === 'Rooms') {
-                lbl1.textContent = 'Total Rooms'; val1.textContent = data.summary.total_rooms;
-                lbl2.textContent = 'Booked Rooms'; val2.textContent = data.summary.total_rooms - data.summary.available_rooms;
-                lbl3.textContent = 'Available Rooms'; val3.textContent = data.summary.available_rooms;
-                lbl4.textContent = 'Occupancy Rate'; val4.textContent = data.summary.occupancy_rate + '%';
-            } else if (type === 'Bookings') {
-                lbl1.textContent = 'Total Bookings'; val1.textContent = data.summary.total_bookings;
+                lbl1.textContent = '{{ _('Total Hotel') }}'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = '{{ _('Total Kamar') }}'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = '{{ _('Total Pesanan') }}'; val3.textContent = data.summary.total_bookings;
+                lbl4.textContent = '{{ _('Total Pendapatan') }}'; val4.textContent = formatRp(data.summary.total_revenue);
+            } else if (type === '{{ _('Hotel') }}') {
+                lbl1.textContent = '{{ _('Total Hotel') }}'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = '{{ _('Total Kamar') }}'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = '{{ _('Kamar Tersedia') }}'; val3.textContent = data.summary.available_rooms;
+                lbl4.textContent = '{{ _('Tingkat Hunian') }}'; val4.textContent = data.summary.occupancy_rate + '%';
+            } else if (type === '{{ _('Kamar') }}') {
+                lbl1.textContent = '{{ _('Total Kamar') }}'; val1.textContent = data.summary.total_rooms;
+                lbl2.textContent = '{{ _('Kamar Dipesan') }}'; val2.textContent = data.summary.total_rooms - data.summary.available_rooms;
+                lbl3.textContent = '{{ _('Kamar Tersedia') }}'; val3.textContent = data.summary.available_rooms;
+                lbl4.textContent = '{{ _('Tingkat Hunian') }}'; val4.textContent = data.summary.occupancy_rate + '%';
+            } else if (type === '{{ _('Pesanan') }}') {
+                lbl1.textContent = '{{ _('Total Pesanan') }}'; val1.textContent = data.summary.total_bookings;
                 lbl2.textContent = 'Booked'; val2.textContent = data.summary.status_booked;
                 lbl3.textContent = 'Checked In'; val3.textContent = data.summary.status_checked_in;
                 lbl4.textContent = 'Cancelled'; val4.textContent = data.summary.status_cancelled;
             } else if (type === 'Revenue Report') {
-                lbl1.textContent = 'Total Revenue'; val1.textContent = formatRp(data.summary.total_revenue);
+                lbl1.textContent = '{{ _('Total Pendapatan') }}'; val1.textContent = formatRp(data.summary.total_revenue);
                 lbl2.textContent = 'Avg Revenue'; val2.textContent = formatRp(data.summary.avg_revenue);
                 lbl3.textContent = 'Transactions'; val3.textContent = data.summary.total_transactions;
                 lbl4.textContent = 'Top Hotel'; val4.textContent = data.summary.highest_revenue_hotel;
@@ -626,10 +626,10 @@ Bhineka Hotels</textarea>
                 lbl3.textContent = 'Admin Actions'; val3.textContent = data.summary.admin_actions;
                 lbl4.textContent = 'System Actions'; val4.textContent = data.summary.system_actions;
             } else {
-                lbl1.textContent = 'Total Hotels'; val1.textContent = data.summary.total_hotels;
-                lbl2.textContent = 'Total Rooms'; val2.textContent = data.summary.total_rooms;
-                lbl3.textContent = 'Total Bookings'; val3.textContent = data.summary.total_bookings;
-                lbl4.textContent = 'Total Revenue'; val4.textContent = formatRp(data.summary.total_revenue);
+                lbl1.textContent = '{{ _('Total Hotel') }}'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = '{{ _('Total Kamar') }}'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = '{{ _('Total Pesanan') }}'; val3.textContent = data.summary.total_bookings;
+                lbl4.textContent = '{{ _('Total Pendapatan') }}'; val4.textContent = formatRp(data.summary.total_revenue);
             }
 
             const extraSummary = document.getElementById('dashboard-extra-summary');
@@ -656,13 +656,13 @@ Bhineka Hotels</textarea>
                     tbody.innerHTML = '';
 
                     let headRow = '<tr>';
-                    if (type === 'Hotels') {
-                        headRow += '<th>Hotel</th><th>Location</th><th>Rooms</th><th>Status</th>';
+                    if (type === '{{ _('Hotel') }}') {
+                        headRow += '<th>Hotel</th><th>{{ _('Lokasi') }}</th><th>{{ _('Kamar') }}</th><th>{{ _('{{ _('Status') }}') }}</th>';
                         data.details.forEach(row => {
                             tbody.innerHTML += `<tr><td>${row.hotel}</td><td>${row.location}</td><td>${row.rooms}</td><td><span class="room-badge available">${row.status}</span></td></tr>`;
                         });
-                    } else if (type === 'Rooms') {
-                    headRow += '<th>Hotel</th><th>Room Type</th><th>Total Rooms</th><th>Available Rooms</th><th>Booked Rooms</th><th>Occupancy Rate</th>';
+                    } else if (type === '{{ _('Kamar') }}') {
+                    headRow += '<th>Hotel</th><th>{{ _('Tipe Kamar') }}</th><th>{{ _('Total Kamar') }}</th><th>{{ _('Kamar Tersedia') }}</th><th>{{ _('Kamar Dipesan') }}</th><th>{{ _('Tingkat Hunian') }}</th>';
                     let lastHotel = null;
                     data.details.forEach(row => {
                         let hotelName = (row.hotel === lastHotel) ? '' : row.hotel;
@@ -670,20 +670,20 @@ Bhineka Hotels</textarea>
                         // Use a subtle border or spacing for the first row of a group if desired, but we keep it simple
                         tbody.innerHTML += `<tr><td><strong>${hotelName}</strong></td><td>${row.room_type}</td><td>${row.total_rooms}</td><td>${row.available}</td><td>${row.booked}</td><td>${row.occupancy}</td></tr>`;
                     });
-                    } else if (type === 'Bookings') {
-                        headRow += '<th>Booking ID</th><th>Guest</th><th>Hotel</th><th>Date</th><th>Status</th>';
+                    } else if (type === '{{ _('Pesanan') }}') {
+                        headRow += '<th>{{ _('ID Pesanan') }}</th><th>Guest</th><th>Hotel</th><th>{{ _('Tanggal') }}</th><th>{{ _('{{ _('Status') }}') }}</th>';
                         data.details.forEach(row => {
                             let badgeClass = row.status === 'Checked Out' ? 'maintenance' : (row.status === 'Cancelled' ? 'occupied' : 'available');
                             tbody.innerHTML += `<tr><td>#${row.booking_id}</td><td>${row.guest}</td><td>${row.hotel}</td><td>${row.date}</td><td><span class="room-badge ${badgeClass}">${row.status}</span></td></tr>`;
                         });
                     } else if (type === 'Revenue Report') {
-                        headRow += '<th>Hotel</th><th>Room Type</th><th>Bookings</th><th>Total Revenue</th>';
+                        headRow += '<th>Hotel</th><th>{{ _('Tipe Kamar') }}</th><th>{{ _('Pesanan') }}</th><th>{{ _('Total Pendapatan') }}</th>';
                         data.details.forEach(row => {
                             const revenue = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(row.total_revenue);
                             tbody.innerHTML += `<tr><td>${row.hotel}</td><td>${row.room_type}</td><td>${row.total_bookings}</td><td>${revenue}</td></tr>`;
                         });
                     } else if (type === 'Audit Report') {
-                        headRow += '<th>Booking ID</th><th>Guest</th><th>Admin</th><th>Action/Status</th><th>Date</th>';
+                        headRow += '<th>{{ _('ID Pesanan') }}</th><th>Guest</th><th>Admin</th><th>Action/Status</th><th>{{ _('Tanggal') }}</th>';
                         data.details.forEach(row => {
                             let badgeClass = row.action === 'Booked' ? 'available' : row.action === 'Checked In' ? 'available' : row.action === 'Checked Out' ? 'maintenance' : 'occupied';
                             tbody.innerHTML += `<tr><td>#${row.booking_id}</td><td>${row.guest}</td><td>${row.admin}</td><td><span class="room-badge ${badgeClass}">${row.action}</span></td><td>${row.date}</td></tr>`;
@@ -748,7 +748,7 @@ Bhineka Hotels</textarea>
             .then(data => {
                 if (data.success) {
                     closeEmailModal();
-                    Swal.fire('Success', data.message, 'success');
+                    Swal.fire('{{ _("Berhasil!") }}', data.message, 'success');
                 } else {
                     Swal.fire('Error', data.error || 'Failed to send email.', 'error');
                 }
@@ -757,7 +757,7 @@ Bhineka Hotels</textarea>
                 Swal.fire('Error', 'An unexpected error occurred.', 'error');
             })
             .finally(() => {
-                btn.textContent = 'Send Email';
+                btn.textContent = '{{ _('Kirim Email') }}';
                 btn.disabled = false;
             });
     });

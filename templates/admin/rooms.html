@@ -357,7 +357,7 @@
         <input id="rooms-search" class="toolbar-input" type="search" placeholder="Search Rooms...">
     </div>
     <select id="rooms-category" class="toolbar-select">
-        <option value="">Category</option>
+        <option value="">{{ _('Kategori') }}</option>
         <option value="has_images">With images</option>
         <option value="no_images">Without images</option>
     </select>
@@ -379,7 +379,7 @@
         <div class="room-card-image">
             <div class="image-placeholder">
                 <span class="placeholder-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg></span>
-                <strong>No Image Available</strong>
+                <strong>{{ _('Tidak Ada Gambar') }}</strong>
             </div>
         </div>
         {% endif %}
@@ -439,7 +439,7 @@
                 </select>
             </div>
             <div class="input-group">
-                <label>Room Type</label>
+                <label>{{ _('Tipe Kamar') }}</label>
                 <input type="text" name="room_type" placeholder="e.g. Deluxe Room" required>
             </div>
             <div class="input-group">
@@ -453,8 +453,8 @@
             <div class="input-group">
                 <label>Room Images</label>
                 <div class="dropzone">
-                    <p>Drag & drop images here, or click to browse</p>
-                    <p style="font-size:0.84rem; color: var(--subtext);">Supports JPG, PNG, WEBP. Max 16MB per file.</p>
+                    <p>{{ _('Seret & lepas gambar di sini, atau klik untuk menelusuri') }}</p>
+                    <p style="font-size:0.84rem; color: var(--subtext);">{{ _('Mendukung JPG, PNG, WEBP. Maks 16MB per file.') }}</p>
                     <input type="file" name="images" multiple accept="image/png, image/jpeg, image/webp" required>
                 </div>
                 <div class="preview-grid"></div>
@@ -471,7 +471,7 @@
         <p style="margin:0 0 1rem; color: var(--subtext);">Update room details or replace gallery images.</p>
         <form id="editRoomForm" method="POST" enctype="multipart/form-data">
             <div class="input-group">
-                <label>Room Type</label>
+                <label>{{ _('Tipe Kamar') }}</label>
                 <input type="text" name="room_type" id="edit_room_type" required>
             </div>
             <div class="input-group">
@@ -490,7 +490,7 @@
                 </div>
                 <div class="preview-grid"></div>
             </div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="submit" class="btn btn-primary">{{ _('Simpan Perubahan') }}</button>
         </form>
     </div>
 </div>
@@ -554,7 +554,7 @@ function initRoomPage() {
             pagination.appendChild(button);
         };
 
-        addButton('Previous', currentPage - 1, currentPage === 1);
+        addButton('{{ _('Sebelumnya') }}', currentPage - 1, currentPage === 1);
 
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(pageCount, currentPage + 2);
@@ -576,7 +576,7 @@ function initRoomPage() {
             addButton(String(pageCount), pageCount);
         }
 
-        addButton('Next', currentPage + 1, currentPage === pageCount);
+        addButton('{{ _('Selanjutnya') }}', currentPage + 1, currentPage === pageCount);
     };
 
     const renderPage = () => {
@@ -651,7 +651,7 @@ function initRoomPage() {
                 const status = card.querySelector('.room-card-meta span:nth-child(2) span')?.textContent || '';
                 Swal.fire({
                     title: title,
-                    html: `<p style="text-align:left; margin:0.5rem 0;"><strong>Hotel</strong>: ${hotel}</p><p style="text-align:left; margin:0.5rem 0;"><strong>Room</strong>: ${roomNumber}</p><p style="text-align:left; margin:0.5rem 0;"><strong>Price</strong>: ${price}</p><p style="text-align:left; margin:0.5rem 0;"><strong>Status</strong>: ${status}</p>`,
+                    html: `<p style="text-align:left; margin:0.5rem 0;"><strong>Hotel</strong>: ${hotel}</p><p style="text-align:left; margin:0.5rem 0;"><strong>Room</strong>: ${roomNumber}</p><p style="text-align:left; margin:0.5rem 0;"><strong>{{ _('Harga') }}</strong>: ${price}</p><p style="text-align:left; margin:0.5rem 0;"><strong>{{ _('{{ _('Status') }}') }}</strong>: ${status}</p>`,
                     showCloseButton: true,
                     confirmButtonText: 'Close',
                     width: '28rem'
