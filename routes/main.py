@@ -1,3 +1,4 @@
+from utils import get_company_settings
 from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from datetime import datetime, timedelta
 from db import get_db_connection, cleanup_expired_bookings
@@ -257,6 +258,25 @@ def contact():
 
 @main_bp.route('/contact/submit', methods=['POST'])
 def contact_submit():
+    name = request.form.get('name')
+    email = request.form.get('email')
+    message = request.form.get('message')
+    
+    settings = get_company_settings()
+    company_email = settings.get('email')
+    
+    if company_email:
+        try:
+            from services.email_service import send_email
+            html_content = f"""
+            <h3>Pesan Baru dari {name}</h3>
+            <p><strong>Email Pengirim:</strong> {email}</p>
+            <p><strong>Pesan:</strong><br/>{message}</p>
+            """
+            send_email(company_email, f"Kontak Form: Pesan dari {name}", html_content)
+        except Exception as e:
+            print(f"Error sending contact email: {e}")
+            
     flash("Terima kasih! Pesan Anda telah kami terima dan akan segera kami balas.", "success")
     return redirect(url_for('main.contact'))
 
