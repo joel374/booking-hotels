@@ -11,9 +11,8 @@
         .content { padding: 2rem; color: #334155; }
         .content p { font-size: 1rem; line-height: 1.6; }
         .booking-details { background: #fee2e2; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; }
-        .booking-details h3 { margin-top: 0; color: #7f1d1d; border-bottom: 1px solid #fca5a5; padding-bottom: 0.5rem; }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
-        .detail-row strong { color: #475569; }
+        .booking-details h3 { margin-top: 0; color: #7f1d1d; border-bottom: 1px solid #fca5a5; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        .footer { background: #f8fafc; padding: 1.5rem; text-align: center; color: #64748b; font-size: 0.85rem; border-top: 1px solid #e2e8f0; }
         .footer { background: #f8fafc; padding: 1.5rem; text-align: center; color: #64748b; font-size: 0.85rem; border-top: 1px solid #e2e8f0; }
         .btn { display: inline-block; background: #3b82f6; color: white; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 6px; font-weight: bold; margin-top: 1rem; }
     </style>
@@ -31,15 +30,20 @@
 
             <div class="booking-details">
                 <h3>Rincian Pembatalan</h3>
-                <div class="detail-row">
-                    <strong>Check-in:</strong> <span>{{ booking.check_in.strftime('%d %b %Y') }}</span>
-                </div>
-                <div class="detail-row">
-                    <strong>Check-out:</strong> <span>{{ booking.check_out.strftime('%d %b %Y') }}</span>
-                </div>
-                <div class="detail-row">
-                    <strong>Status:</strong> <span style="font-weight: bold; color: #ef4444;">DIBATALKAN</span>
-                </div>
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td style="padding: 5px 0; color: #475569; font-weight: bold; width: 40%;">Check-in:</td>
+                        <td style="padding: 5px 0; text-align: right;">{{ booking.check_in.strftime('%d %b %Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 0; color: #475569; font-weight: bold;">Check-out:</td>
+                        <td style="padding: 5px 0; text-align: right;">{{ booking.check_out.strftime('%d %b %Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0 0 0; color: #475569; font-weight: bold; border-top: 1px solid #fca5a5; margin-top: 5px;">Status:</td>
+                        <td style="padding: 10px 0 0 0; text-align: right; font-weight: bold; color: #ef4444; border-top: 1px solid #fca5a5; margin-top: 5px;">DIBATALKAN</td>
+                    </tr>
+                </table>
             </div>
 
             <p>Jika Anda masih ingin menginap, silakan lakukan pemesanan ulang melalui aplikasi kami. Terima kasih telah menggunakan layanan Bhineka Hotels.</p>

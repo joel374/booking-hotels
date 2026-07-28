@@ -9,7 +9,7 @@
             <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--primary-color); margin-bottom: 0.5rem;">{{ _('Lokasi') }}</label>
             <div class="input-with-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <select name="city_id" class="custom-select-native" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; background: var(--card-bg); padding: 0.8rem 0.8rem 0.8rem 2.5rem; font-size: 1rem; color: var(--text-main); cursor: pointer;">
+                <select name="city_id" class="custom-select-native" style="width: 100%; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: var(--card-bg); padding: 0.8rem 0.8rem 0.8rem 2.5rem; font-size: 1rem; color: var(--text-main); cursor: pointer;">
                     {% for c in available_cities %}
                     <option value="{{ c.city_id }}" {% if city_id|string == c.city_id|string %}selected{% endif %}>
                         {{ c.city_name }}, {{ c.province }}
@@ -23,7 +23,7 @@
             <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--primary-color); margin-bottom: 0.5rem;">{{ _('Check-in') }}</label>
             <div class="input-with-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <input type="date" name="check_in" id="check_in" value="{{ check_in if check_in else '' }}" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; background: var(--card-bg); padding: 0.8rem 0.8rem 0.8rem 2.5rem; font-size: 1rem; color: var(--text-main);" required>
+                <input type="date" name="check_in" id="check_in" value="{{ check_in if check_in else '' }}" style="width: 100%; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: var(--card-bg); padding: 0.8rem 0.8rem 0.8rem 2.5rem; font-size: 1rem; color: var(--text-main);" required>
             </div>
         </div>
         
@@ -31,7 +31,7 @@
             <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--primary-color); margin-bottom: 0.5rem;">{{ _('Check-out') }}</label>
             <div class="input-with-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <input type="date" name="check_out" id="check_out" value="{{ check_out if check_out else '' }}" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; background: var(--card-bg); padding: 0.8rem 0.8rem 0.8rem 2.5rem; font-size: 1rem; color: var(--text-main);" required>
+                <input type="date" name="check_out" id="check_out" value="{{ check_out if check_out else '' }}" style="width: 100%; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: var(--card-bg); padding: 0.8rem 0.8rem 0.8rem 2.5rem; font-size: 1rem; color: var(--text-main);" required>
             </div>
         </div>
         
@@ -51,11 +51,11 @@
     <span style="font-weight: 600; font-size: 0.9rem; color: var(--primary-color);">{{ _('Filter:') }}</span>
     
     <div style="display: flex; gap: 0.5rem; flex: 1; min-width: 200px;">
-        <input type="number" id="filter-min-price" placeholder="{{ _('Harga Min (Rp)') }}" style="padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%; outline: none;">
-        <input type="number" id="filter-max-price" placeholder="{{ _('Harga Max (Rp)') }}" style="padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%; outline: none;">
+        <input type="number" id="filter-min-price" placeholder="{{ _('Harga Min (Rp)') }}" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; width: 100%; outline: none; background: var(--card-bg); color: var(--text-main);">
+        <input type="number" id="filter-max-price" placeholder="{{ _('Harga Max (Rp)') }}" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; width: 100%; outline: none; background: var(--card-bg); color: var(--text-main);">
     </div>
     
-    <select id="filter-sort-by" style="padding: 0.6rem; border: 1px solid var(--border-color, #e2e8f0); border-radius: 6px; outline: none; min-width: 180px; background: var(--card-bg); color: var(--text-main);">
+    <select id="filter-sort-by" style="padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; outline: none; min-width: 180px; background: var(--card-bg); color: var(--text-main);">
         <option value="">{{ _('Urutkan: Rekomendasi') }}</option>
         <option value="cheapest">{{ _('Termurah - Termahal') }}</option>
         <option value="expensive">{{ _('Termahal - Termurah') }}</option>

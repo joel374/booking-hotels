@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from datetime import datetime, timedelta
+import math
 import mysql.connector
 from db import get_db_connection, cleanup_expired_bookings
 from utils import login_required, add_notification
@@ -144,6 +145,7 @@ def book_room(hotel_id):
     conn.close()
     return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out, nights=nights, grand_total=grand_total)
 
+
 @booking_bp.route('/pay/<int:booking_id>', methods=['GET', 'POST'])
 @login_required
 def pay(booking_id):
@@ -244,6 +246,14 @@ def invoice(booking_id):
 @login_required
 def my_bookings():
 
+    status = request.args.get('status', 'Semua')
+    page = request.args.get('page', 1, type=int)
+    wl_page = request.args.get('wl_page', 1, type=int)
+    
+    per_page = 6
+    offset = (page - 1) * per_page
+    wl_offset = (wl_page - 1) * per_page
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cleanup_expired_bookings(cursor)
@@ -255,9 +265,23 @@ def my_bookings():
         JOIN rooms r ON b.room_id = r.id 
         JOIN hotels h ON r.hotel_id = h.id 
         WHERE b.user_id = %s 
-        ORDER BY b.created_at DESC
     """
-    cursor.execute(query, (session['user_id'],))
+    count_query = "SELECT COUNT(*) as count FROM bookings b WHERE b.user_id = %s"
+    params = [session['user_id']]
+    
+    if status != 'Semua':
+        query += " AND b.status = %s"
+        count_query += " AND b.status = %s"
+        params.append(status)
+        
+    query += " ORDER BY b.created_at DESC LIMIT %s OFFSET %s"
+    
+    cursor.execute(count_query, tuple(params))
+    total_bookings = cursor.fetchone()['count']
+    total_pages = math.ceil(total_bookings / per_page)
+    
+    params.extend([per_page, offset])
+    cursor.execute(query, tuple(params))
     bookings = cursor.fetchall()
     
     wl_query = """
@@ -267,8 +291,13 @@ def my_bookings():
         JOIN hotels h ON r.hotel_id = h.id 
         WHERE w.user_id = %s 
         ORDER BY w.created_at DESC
+        LIMIT %s OFFSET %s
     """
-    cursor.execute(wl_query, (session['user_id'],))
+    cursor.execute("SELECT COUNT(*) as count FROM waiting_lists WHERE user_id = %s", (session['user_id'],))
+    total_wl = cursor.fetchone()['count']
+    wl_total_pages = math.ceil(total_wl / per_page)
+    
+    cursor.execute(wl_query, (session['user_id'], per_page, wl_offset))
     waiting_lists = cursor.fetchall()
     
     cursor.close()
@@ -276,10 +305,12 @@ def my_bookings():
     
     now_date = datetime.now().date()
     for b in bookings:
-        b['can_review'] = (b['status'] == 'Checked Out')
-        b['can_cancel'] = (now_date < b['check_in'])
+        b['can_review'] = (b['status'] == 'Checked Out') and (b['has_reviewed'] == 0)
+        b['can_cancel'] = (b['status'] == 'Booked') and (now_date < b['check_in'])
         
-    return render_template('my_bookings.html', bookings=bookings, waiting_lists=waiting_lists)
+    return render_template('my_bookings.html', bookings=bookings, waiting_lists=waiting_lists, 
+                           status=status, page=page, total_pages=total_pages, 
+                           wl_page=wl_page, wl_total_pages=wl_total_pages)
 
 @booking_bp.route('/cancel/<int:booking_id>', methods=['POST'])
 @login_required
@@ -288,13 +319,19 @@ def cancel_booking(booking_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    cursor.execute("SELECT check_in FROM bookings WHERE id = %s AND user_id = %s", (booking_id, session['user_id']))
+    cursor.execute("SELECT check_in, status FROM bookings WHERE id = %s AND user_id = %s", (booking_id, session['user_id']))
     booking = cursor.fetchone()
     
     if not booking:
         cursor.close()
         conn.close()
         flash("Pesanan tidak ditemukan.", "danger")
+        return redirect(url_for('booking.my_bookings'))
+        
+    if booking['status'] != 'Booked':
+        cursor.close()
+        conn.close()
+        flash("Pesanan ini tidak dapat dibatalkan (mungkin sudah dibatalkan atau sudah check-in).", "danger")
         return redirect(url_for('booking.my_bookings'))
         
     if datetime.now().date() >= booking['check_in']:
@@ -327,20 +364,21 @@ def cancel_booking(booking_id):
         subject = f"Pesanan Dibatalkan - {booking_data['hotel_name']}"
         send_email(booking_data['user_email'], subject, html_content)
         
-        # Cek Waiting List
+        # Cek Waiting List (berdasarkan tipe kamar yang sama di hotel yang sama)
         cursor.execute("""
-            SELECT w.id, w.check_in, w.check_out, u.email as user_email, u.username, h.name as hotel_name, r.room_type, h.id as hotel_id
+            SELECT w.id, w.check_in, w.check_out, u.email as user_email, u.username, h.name as hotel_name, rw.room_type, h.id as hotel_id
             FROM waiting_lists w
             JOIN users u ON w.user_id = u.id
-            JOIN rooms r ON w.room_id = r.id
-            JOIN hotels h ON r.hotel_id = h.id
-            WHERE w.room_id = %s
+            JOIN rooms rw ON w.room_id = rw.id
+            JOIN hotels h ON rw.hotel_id = h.id
+            JOIN rooms rc ON rc.hotel_id = h.id AND rc.room_type = rw.room_type
+            WHERE rc.id = %s
             AND w.check_in < %s AND w.check_out > %s
         """, (booking_data['room_id'], booking_data['check_out'], booking_data['check_in']))
         waitlist_users = cursor.fetchall()
         
         for wu in waitlist_users:
-            # Pastikan benar-benar kosong untuk tanggal mereka
+            # Pastikan kamar yang dibatalkan ini benar-benar kosong untuk keseluruhan tanggal pengantre
             cursor.execute("""
                 SELECT id FROM bookings
                 WHERE room_id = %s
@@ -384,7 +422,36 @@ def join_waitlist(hotel_id):
         return redirect(url_for('main.index'))
 
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Try to find a specific room type first, or just any room in the hotel
+    if room_type:
+        cursor.execute("SELECT id FROM rooms WHERE hotel_id = %s AND room_type = %s LIMIT 1", (hotel_id, room_type))
+    else:
+        cursor.execute("SELECT id FROM rooms WHERE hotel_id = %s LIMIT 1", (hotel_id,))
+        
+    room = cursor.fetchone()
+    if not room:
+        cursor.close()
+        conn.close()
+        flash("Tidak ada kamar yang bisa diantre di hotel ini.", "danger")
+        return redirect(url_for('main.index'))
+        
+    room_id = room['id']
+    
+    # Cek apakah user sudah masuk waiting list untuk ruangan dan tanggal yang sama
+    cursor.execute("""
+        SELECT id FROM waiting_lists 
+        WHERE user_id = %s AND room_id = %s AND check_in = %s AND check_out = %s
+    """, (session['user_id'], room_id, check_in, check_out))
+    existing = cursor.fetchone()
+    
+    if existing:
+        cursor.close()
+        conn.close()
+        flash("Anda sudah berada dalam daftar antrean untuk tipe kamar dan tanggal ini.", "warning")
+        return redirect(url_for('booking.my_bookings'))
+    
     cursor.execute("INSERT INTO waiting_lists (user_id, room_id, check_in, check_out) VALUES (%s, %s, %s, %s)",
                    (session['user_id'], room_id, check_in, check_out))
     conn.commit()
@@ -409,6 +476,7 @@ def submit_review(booking_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
+    cursor.execute("SELECT r.hotel_id, b.check_out FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.id = %s AND b.user_id = %s AND b.status = 'Checked Out'", (booking_id, session['user_id']))
     cursor.execute("SELECT r.hotel_id, b.check_out FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.id = %s AND b.user_id = %s AND b.status = 'Checked Out'", (booking_id, session['user_id']))
     booking = cursor.fetchone()
     

@@ -16,6 +16,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --primary-color: #f8fafc;
   --bg-color: #0f172a;
   --card-bg: #1e293b;
@@ -231,9 +232,11 @@ h1, h2, h3, h4, .navbar-brand {
   box-sizing: border-box;
 }
 
-.search-group input:focus {
+.search-group input:focus,
+.search-group select:focus,
+#globalSearchInput:focus {
   outline: none;
-  border-color: var(--accent-color);
+  border-color: var(--accent-color) !important;
 }
 
 /* Main Container */
@@ -503,10 +506,10 @@ h1, h2, h3, h4, .navbar-brand {
   }
 }
 
-/* Flatpickr Premium Overrides (Forcing Light Theme to bypass cache) */
+/* Flatpickr Premium Overrides */
 .flatpickr-calendar, .flatpickr-month, .flatpickr-weekdays {
   background: var(--card-bg) !important;
-  color: #333333 !important;
+  color: var(--text-main) !important;
   border: none !important;
   box-shadow: var(--shadow-hover) !important;
   border-radius: 12px !important;
@@ -514,10 +517,10 @@ h1, h2, h3, h4, .navbar-brand {
 .flatpickr-current-month .flatpickr-monthDropdown-months,
 .flatpickr-current-month input.cur-year,
 span.flatpickr-weekday {
-  color: #333333 !important;
+  color: var(--text-main) !important;
 }
 .flatpickr-day {
-  color: #333333 !important;
+  color: var(--text-main) !important;
 }
 .flatpickr-day.selected {
   background: var(--accent-color) !important;
@@ -525,7 +528,7 @@ span.flatpickr-weekday {
   color: #fff !important;
 }
 .flatpickr-day:hover {
-  background: #f1f5f9 !important;
+  background: var(--border-color) !important;
 }
 
 /* Base generic form elements styling for other pages */
@@ -544,7 +547,7 @@ span.flatpickr-weekday {
 .form-control {
   width: 100%;
   padding: 0.8rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   background: var(--card-bg);
   font-family: 'Inter', sans-serif;
@@ -722,7 +725,7 @@ span.flatpickr-weekday {
   align-items: center;
   justify-content: space-between;
   padding: 0.8rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   background: var(--card-bg);
   cursor: pointer;
@@ -743,7 +746,7 @@ span.flatpickr-weekday {
   left: 0;
   right: 0;
   background: var(--card-bg);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   margin-top: 5px;
   box-shadow: var(--shadow-hover);
@@ -796,7 +799,7 @@ span.flatpickr-weekday {
   gap: 1rem;
   align-items: flex-end;
   flex-wrap: wrap;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .filter-group {
@@ -809,13 +812,13 @@ span.flatpickr-weekday {
   padding: 1rem;
   border-radius: var(--radius);
   margin-bottom: 1.5rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .status-badge {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 1.5rem;
+  right: 1.5rem;
   padding: 0.4rem 1rem;
   border-radius: 9999px;
   font-weight: 700;
@@ -1066,33 +1069,33 @@ span.flatpickr-weekday {
   width: 300px;
   background: var(--card-bg);
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-hover);
   margin-top: 8px;
   z-index: 2000;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .suggestion-header {
   padding: 0.5rem 1rem;
-  background: #f8fafc;
+  background: var(--bg-color);
   font-size: 0.75rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .suggestion-item {
   display: flex;
   align-items: center;
   padding: 0.8rem 1rem;
-  color: #334155;
+  color: var(--text-main) !important;
   text-decoration: none;
   font-size: 0.9rem;
-  border-bottom: 1px solid #f1f5f9;
-  transition: background-color 0.2s;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .suggestion-item:last-child {
@@ -1100,8 +1103,8 @@ span.flatpickr-weekday {
 }
 
 .suggestion-item:hover {
-  background-color: #f1f5f9;
-  color: var(--primary-color);
+  background-color: var(--border-color) !important;
+  color: var(--primary-color) !important;
 }
 
 @media (max-width: 1024px) {

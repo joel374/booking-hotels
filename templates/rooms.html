@@ -69,7 +69,7 @@
     padding: 1.5rem;
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
 }
 
 /* Room Carousel inside Room Card */
@@ -193,7 +193,11 @@
                 <div class="room-card-content" style="padding: 1.5rem;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 0.5rem;">{{ group.room_type }}</h3>
+                        {% if group.quantity > 0 %}
                         <span style="background: rgba(37,99,235,0.1); color: var(--primary-color); padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600;">{{ group.quantity }} Rooms Available</span>
+                        {% else %}
+                        <span style="background: rgba(239,68,68,0.1); color: #ef4444; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600;">Habis Terjual</span>
+                        {% endif %}
                     </div>
                     <p class="text-muted" style="font-size: 0.9rem; margin-top: 0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 0.25rem;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Kapasitas: {{ group.capacity }} Tamu</p>
 
@@ -202,41 +206,78 @@
                             <span style="font-size: 0.85rem; color: var(--text-muted);">Harga per malam</span>
                             <p style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin: 0.2rem 0 0 0;">Rp {{ "{:,.0f}".format(group.price) }}</p>
                         </div>
+                        {% if group.quantity > 0 %}
                         <a href="{{ url_for('booking.book_room', hotel_id=hotel.id, room_type=group.room_type, check_in=check_in, check_out=check_out) }}" class="btn btn-primary" style="padding: 0.8rem 1.5rem;">Pesan Sekarang</a>
+                        {% else %}
+                            {% if 'user_id' in session %}
+                            <form action="{{ url_for('booking.join_waitlist', hotel_id=hotel.id) }}" method="POST" style="margin: 0;">
+                                <input type="hidden" name="check_in" value="{{ check_in }}">
+                                <input type="hidden" name="check_out" value="{{ check_out }}">
+                                <input type="hidden" name="room_type" value="{{ group.room_type }}">
+                                <button type="submit" class="btn btn-primary" style="padding: 0.8rem 1.5rem; font-weight: 600;">Gabung Waiting List</button>
+                            </form>
+                            {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline" style="padding: 0.8rem 1.5rem; border-color: var(--border-color); color: var(--text-main);">Login untuk Waiting List</a>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <div style="padding: 3rem; text-align: center; background: var(--card-bg); border-radius: 12px; border: 1px dashed var(--border-color, #cbd5e1);">
-            <p class="text-muted" style="font-size: 1.1rem;">Maaf, tidak ada kamar yang tersedia untuk tanggal tersebut.</p>
+        <div style="padding: 3rem; text-align: center; background: var(--card-bg); border-radius: 12px; border: 1px dashed var(--border-color);">
+            <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 1.5rem;">Hotel ini belum memiliki kamar yang terdaftar.</p>
         </div>
         {% endif %}
         
         <h2 class="section-title mt-4" id="reviews-section" style="margin-top: 3rem;">Ulasan Tamu</h2>
         {% if reviews %}
         <div class="reviews-list">
-            {% for r in reviews %}
-            <div class="review-card" style="border-bottom: 1px solid #e2e8f0; padding: 1.5rem 0;">
+            {% for r in reviews[:3] %}
+            <div class="review-card" style="border-bottom: 1px solid var(--border-color); padding: 1.5rem 0;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <strong style="color: #0f172a;">{{ r.user_name }}</strong>
+                    <strong style="color: var(--text-main);">{{ r.user_name }}</strong>
                     <span style="color: #FFD700; font-size: 1.1rem; letter-spacing: 2px;">
                         {% for i in range(r.rating) %}★{% endfor %}{% for i in range(5 - r.rating) %}☆{% endfor %}
                     </span>
                 </div>
-                <div style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.8rem;">{{ r.created_at.strftime('%d %b %Y') }}</div>
+                <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.8rem;">{{ r.created_at.strftime('%d %b %Y') }}</div>
                 {% if r.comment %}
-                <p style="color: #475569; line-height: 1.5; font-size: 0.95rem; margin: 0;">{{ r.comment }}</p>
+                <p style="color: var(--text-main); line-height: 1.5; font-size: 0.95rem; margin: 0;">{{ r.comment }}</p>
                 {% endif %}
             </div>
             {% endfor %}
         </div>
+        {% if reviews|length > 3 %}
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <button id="show-all-reviews-btn" class="btn btn-outline" style="padding: 0.8rem 2rem; border-radius: 8px; border: 1px solid var(--border-color); background: transparent; color: var(--text-main); cursor: pointer;">
+                Lihat Semua {{ reviews|length }} Ulasan
+            </button>
+        </div>
+        {% endif %}
         {% else %}
-        <div style="padding: 2rem; text-align: center; background: var(--bg-color); border-radius: 12px; border: 1px dashed var(--border-color, #cbd5e1);">
+        <div style="padding: 2rem; text-align: center; background: var(--bg-color); border-radius: 12px; border: 1px dashed var(--border-color);">
             <p class="text-muted" style="margin: 0;">{{ _('Belum ada ulasan untuk penginapan ini.') }}</p>
         </div>
         {% endif %}
+        
+        <!-- Modal for All Reviews -->
+        <div id="reviews-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+            <div style="background: var(--card-bg); width: 90%; max-width: 600px; max-height: 80vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+                <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 1.25rem;">Semua Ulasan</h3>
+                    <button id="close-reviews-modal" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;">&times;</button>
+                </div>
+                <div id="reviews-modal-content" style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+                    <!-- Reviews will be loaded here via AJAX -->
+                    <div id="reviews-loading" style="text-align: center; padding: 1rem; color: var(--text-muted); display: none;">
+                        Memuat ulasan...
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     
     <!-- Right Column (Sidebar) -->
@@ -321,5 +362,99 @@
         dateFormat: "Y-m-d",
         locale: "id"
     });
+    
+    // Reviews Modal & Infinite Scroll
+    const modal = document.getElementById('reviews-modal');
+    const btn = document.getElementById('show-all-reviews-btn');
+    const closeBtn = document.getElementById('close-reviews-modal');
+    const content = document.getElementById('reviews-modal-content');
+    const loading = document.getElementById('reviews-loading');
+    
+    let currentPage = 1;
+    let isLoading = false;
+    let hasMore = true;
+    
+    if(btn) {
+        btn.addEventListener('click', () => {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            if (currentPage === 1) loadReviews();
+        });
+    }
+    
+    if(closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+    }
+    
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+    
+    if(content) {
+        content.addEventListener('scroll', () => {
+            if (content.scrollTop + content.clientHeight >= content.scrollHeight - 50) {
+                loadReviews();
+            }
+        });
+    }
+    
+    function loadReviews() {
+        if (isLoading || !hasMore) return;
+        
+        isLoading = true;
+        loading.style.display = 'block';
+        
+        fetch(`/api/reviews/{{ hotel.id }}?page=${currentPage}`)
+            .then(res => res.json())
+            .then(data => {
+                loading.style.display = 'none';
+                
+                if (data.reviews.length === 0) {
+                    hasMore = false;
+                    if (currentPage === 1) {
+                        const emptyMsg = document.createElement('div');
+                        emptyMsg.style.textAlign = 'center';
+                        emptyMsg.style.color = 'var(--text-muted)';
+                        emptyMsg.innerText = 'Belum ada ulasan.';
+                        content.insertBefore(emptyMsg, loading);
+                    }
+                    return;
+                }
+                
+                data.reviews.forEach(r => {
+                    const card = document.createElement('div');
+                    card.className = 'review-card';
+                    card.style.cssText = 'border-bottom: 1px solid var(--border-color); padding: 1.5rem 0;';
+                    
+                    let stars = '';
+                    for(let i=0; i<r.rating; i++) stars += '★';
+                    for(let i=0; i<5-r.rating; i++) stars += '☆';
+                    
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong style="color: var(--text-main);">${r.user_name}</strong>
+                            <span style="color: #FFD700; font-size: 1.1rem; letter-spacing: 2px;">${stars}</span>
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.8rem;">${r.created_at_str}</div>
+                        ${r.comment ? `<p style="color: var(--text-main); line-height: 1.5; font-size: 0.95rem; margin: 0;">${r.comment}</p>` : ''}
+                    `;
+                    content.insertBefore(card, loading);
+                });
+                
+                currentPage++;
+                isLoading = false;
+            })
+            .catch(err => {
+                console.error(err);
+                loading.style.display = 'none';
+                isLoading = false;
+            });
+    }
 </script>
 {% endblock %}

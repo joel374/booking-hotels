@@ -11,15 +11,16 @@ def get_available_rooms(hotel_id, check_in, check_out, min_price=None, max_price
     conn.commit()
 
     query = """
-        SELECT r.room_type, r.price, r.capacity, COUNT(r.id) as quantity, MIN(r.room_number) as start_number
+        SELECT r.room_type, r.price, r.capacity, MIN(r.room_number) as start_number,
+               SUM(CASE WHEN r.id NOT IN (
+                   SELECT b.room_id FROM bookings b
+                   WHERE b.status IN ('Booked', 'Checked In')
+                   AND (b.check_in < %s AND b.check_out > %s)
+               ) THEN 1 ELSE 0 END) as quantity
         FROM rooms r
-        WHERE r.hotel_id = %s AND r.is_deleted = 0 AND r.id NOT IN (
-            SELECT b.room_id FROM bookings b
-            WHERE b.status IN ('Booked', 'Checked In')
-            AND (b.check_in < %s AND b.check_out > %s)
-        )
+        WHERE r.hotel_id = %s AND r.is_deleted = 0
     """
-    params = [hotel_id, check_out, check_in]
+    params = [check_out, check_in, hotel_id]
 
     if min_price:
         query += " AND r.price >= %s"
@@ -364,3 +365,33 @@ def set_language():
         cursor.close()
         conn.close()
     return {"status": "success", "language": language}
+
+@main_bp.route('/api/reviews/<int:hotel_id>')
+def api_reviews(hotel_id):
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    offset = (page - 1) * per_page
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT r.*, u.username as user_name 
+        FROM reviews r 
+        JOIN users u ON r.user_id = u.id 
+        WHERE r.hotel_id = %s 
+        ORDER BY r.created_at DESC
+        LIMIT %s OFFSET %s
+    """, (hotel_id, per_page, offset))
+    reviews = cursor.fetchall()
+    
+    # Convert dates to string for JSON serialization
+    for r in reviews:
+        if r.get('created_at'):
+            r['created_at_str'] = r['created_at'].strftime('%d %b %Y')
+            del r['created_at'] # Remove datetime object
+            
+    cursor.close()
+    conn.close()
+    
+    return jsonify({'reviews': reviews})
