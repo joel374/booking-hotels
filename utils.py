@@ -112,3 +112,32 @@ def add_notification(title, description, icon_type='info'):
         conn.close()
     except Exception as e:
         print(f"Error adding notification: {e}")
+
+def get_company_settings():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM company_settings LIMIT 1")
+        settings = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        if settings:
+            return settings
+    except Exception as e:
+        print(f"Error getting company settings: {e}")
+    
+    # Fallback default settings
+    return {
+        'company_name': 'Bhineka Hotels',
+        'tagline': 'Property Management System',
+        'phone': '+62 811 2233 4455',
+        'whatsapp': '+62 811 2233 4455',
+        'email': 'info@bhinekahotels.com',
+        'website': 'www.bhinekahotels.com',
+        'street_address': 'Jl. Gatot Subroto No. 123',
+        'city': 'Jakarta',
+        'province': 'DKI Jakarta',
+        'postal_code': '12345',
+        'country': 'Indonesia',
+        'business_hours': '08:00 - 17:00'
+    }

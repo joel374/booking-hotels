@@ -1839,7 +1839,15 @@ border-radius: 12px;
                     </svg>
                     Reports
                 </a>
-            </nav>
+                    <a href="{{ url_for('admin.company_settings') }}"
+                        class="sidebar-link {% if request.endpoint == 'admin.company_settings' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Company Settings
+                    </a>
+                </nav>
             <div class="sidebar-footer">
                 <a href="{{ url_for('main.index') }}" target="_blank">Website</a>
                 <a href="{{ url_for('auth.logout') }}">Logout</a>

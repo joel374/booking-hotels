@@ -253,7 +253,7 @@ def about():
 
 @main_bp.route('/contact')
 def contact():
-    return render_template('contact.html')
+    return render_template('contact.html', settings=get_company_settings())
 
 @main_bp.route('/contact/submit', methods=['POST'])
 def contact_submit():

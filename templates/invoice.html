@@ -227,7 +227,7 @@
     <div id="invoice-content">
         <div class="invoice-header">
             <div>
-                <div class="invoice-brand">Bhineka Hotels</div>
+                <div class="invoice-brand">{{ settings.company_name }}</div>
             </div>
             <div class="invoice-meta">
                 <div style="margin-bottom: 0.5rem; display: flex; justify-content: flex-end;">
@@ -321,7 +321,7 @@
             <div style="margin-top: 3rem; text-align: center;">
                 <div style="width: 50px; height: 2px; background: var(--border-color, #e2e8f0); margin: 0 auto 1rem auto;"></div>
                 <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">
-                    {{ _('Ini adalah bukti pemesanan yang sah dari') }} <strong style="color: var(--text-main);">Bhineka Hotels</strong>.<br>
+                    {{ _('Ini adalah bukti pemesanan yang sah dari') }} <strong style="color: var(--text-main);">{{ settings.company_name }}</strong>.<br>
                     <span style="font-size: 0.75rem; margin-top: 0.3rem; display: inline-block;">Email: support@bookinghotels.com | {{ _('Telepon:') }} +62 811-1234-5678</span>
                 </div>
             </div>

@@ -1801,3 +1801,52 @@ def settings_update():
     flash("Settings updated successfully.", "success")
     return redirect(url_for('admin.settings'))
 
+
+@admin_bp.route('/company-settings', methods=['GET', 'POST'])
+@admin_required
+def company_settings():
+    from utils import get_company_settings
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    if request.method == 'POST':
+        company_name = request.form.get('company_name', '').strip()
+        tagline = request.form.get('tagline', '').strip()
+        phone = request.form.get('phone', '').strip()
+        whatsapp = request.form.get('whatsapp', '').strip()
+        email = request.form.get('email', '').strip()
+        website = request.form.get('website', '').strip()
+        street_address = request.form.get('street_address', '').strip()
+        city = request.form.get('city', '').strip()
+        province = request.form.get('province', '').strip()
+        postal_code = request.form.get('postal_code', '').strip()
+        country = request.form.get('country', '').strip()
+        business_hours = request.form.get('business_hours', '').strip()
+        
+        cursor.execute("SELECT id FROM company_settings LIMIT 1")
+        row = cursor.fetchone()
+        
+        if row:
+            cursor.execute("""
+                UPDATE company_settings 
+                SET company_name=%s, tagline=%s, phone=%s, whatsapp=%s, email=%s, website=%s, 
+                    street_address=%s, city=%s, province=%s, postal_code=%s, country=%s, business_hours=%s
+                WHERE id=%s
+            """, (company_name, tagline, phone, whatsapp, email, website, street_address, city, province, postal_code, country, business_hours, row['id']))
+        else:
+            cursor.execute("""
+                INSERT INTO company_settings (
+                    company_name, tagline, phone, whatsapp, email, website, 
+                    street_address, city, province, postal_code, country, business_hours
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (company_name, tagline, phone, whatsapp, email, website, street_address, city, province, postal_code, country, business_hours))
+            
+        conn.commit()
+        add_notification(title="Pengaturan Diperbarui", description="Profil perusahaan berhasil diperbarui.", icon_type="settings")
+        flash("Pengaturan perusahaan berhasil disimpan.", "success")
+        return redirect(url_for('admin.company_settings'))
+        
+    settings = get_company_settings()
+    cursor.close()
+    conn.close()
+    return render_template('admin/company_settings.html', active_page='settings', settings=settings)
