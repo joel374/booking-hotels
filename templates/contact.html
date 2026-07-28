@@ -23,21 +23,21 @@
             <div style="color: var(--accent-color); font-size: 1.5rem;">📍</div>
             <div>
                 <strong style="color: var(--primary-color); display: block; margin-bottom: 0.3rem; font-size: 1.1rem;">{{ _('Alamat Kantor Pusat:') }}</strong>
-                <span style="color: var(--text-muted); line-height: 1.6;">{{ _('Gedung Bhineka Lt. 42<br>Jl. Jend. Sudirman Kav 1, Jakarta 10220') | safe }}</span>
+                <span style="color: var(--text-muted); line-height: 1.6;">{{ _('{{ settings.street_address }}<br>{{ settings.city }}, {{ settings.province }} {{ settings.postal_code }}') | safe }}</span>
             </div>
         </div>
         <div style="margin-bottom: 2rem; display: flex; gap: 1rem;">
             <div style="color: var(--accent-color); font-size: 1.5rem;">✉️</div>
             <div>
                 <strong style="color: var(--primary-color); display: block; margin-bottom: 0.3rem; font-size: 1.1rem;">{{ _('Email Support:') }}</strong>
-                <span style="color: var(--text-muted);">support@bhinekahotels.com</span>
+                <span style="color: var(--text-muted);">{{ settings.email }}</span>
             </div>
         </div>
         <div style="margin-bottom: 2rem; display: flex; gap: 1rem;">
             <div style="color: var(--accent-color); font-size: 1.5rem;">📞</div>
             <div>
                 <strong style="color: var(--primary-color); display: block; margin-bottom: 0.3rem; font-size: 1.1rem;">{{ _('Hotline 24/7:') }}</strong>
-                <span style="color: var(--text-muted);">+62 800 123 4567</span>
+                <span style="color: var(--text-muted);">{{ settings.phone }}</span>
             </div>
         </div>
     </div>

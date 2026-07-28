@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import math
 import mysql.connector
 from db import get_db_connection, cleanup_expired_bookings
-from utils import login_required, add_notification
+from utils import login_required, add_notification, get_company_settings
 
 booking_bp = Blueprint('booking', __name__)
 
@@ -166,7 +166,7 @@ def pay(booking_id):
         return redirect(url_for('main.index'))
 
     if booking_record['status'] in ('Booked', 'Checked In', 'Checked Out'):
-        return render_template('invoice.html', booking=booking_record)
+        return render_template('invoice.html', settings=get_company_settings(), booking=booking_record)
 
     expiry_time = booking_record['created_at'] + timedelta(minutes=15)
     now = datetime.now()
@@ -240,7 +240,7 @@ def invoice(booking_id):
     nights = (booking_record['check_out'] - booking_record['check_in']).days
     grand_total = booking_record['price'] * nights
         
-    return render_template('invoice.html', booking=booking_record, nights=nights, grand_total=grand_total)
+    return render_template('invoice.html', settings=get_company_settings(), booking=booking_record, nights=nights, grand_total=grand_total)
 
 @booking_bp.route('/my-bookings')
 @login_required

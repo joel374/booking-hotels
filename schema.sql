@@ -198,3 +198,35 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   `created_at`  DATETIME     DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- Tabel: company_settings
+-- Pengaturan identitas dan profil perusahaan
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `company_settings` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `company_name` VARCHAR(100) NOT NULL,
+  `tagline` VARCHAR(255) DEFAULT NULL,
+  `phone` VARCHAR(50) DEFAULT NULL,
+  `whatsapp` VARCHAR(50) DEFAULT NULL,
+  `email` VARCHAR(100) DEFAULT NULL,
+  `website` VARCHAR(100) DEFAULT NULL,
+  `street_address` TEXT DEFAULT NULL,
+  `city` VARCHAR(100) DEFAULT NULL,
+  `province` VARCHAR(100) DEFAULT NULL,
+  `postal_code` VARCHAR(20) DEFAULT NULL,
+  `country` VARCHAR(50) DEFAULT NULL,
+  `business_hours` VARCHAR(100) DEFAULT NULL,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO `company_settings` (
+    id, company_name, tagline, phone, whatsapp, email, website, 
+    street_address, city, province, postal_code, country, business_hours
+) VALUES (
+    1, 'Bhineka Hotels', 'Property Management System', '+62 811 2233 4455', '+62 811 2233 4455', 
+    'info@bhinekahotels.com', 'www.bhinekahotels.com',
+    'Jl. Gatot Subroto No. 123', 'Jakarta', 'DKI Jakarta', '12345', 'Indonesia', '08:00 - 17:00'
+);

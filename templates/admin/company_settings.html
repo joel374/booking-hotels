@@ -1,0 +1,101 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Company Settings{% endblock %}
+
+{% block content %}
+<div class="welcome-banner" style="margin-bottom: 2rem;">
+    <div class="welcome-grid">
+        <div class="welcome-copy">
+            <h2>Company Settings</h2>
+            <p>Kelola identitas perusahaan, informasi kontak, dan alamat untuk keperluan invoice, email, dan laporan.</p>
+        </div>
+    </div>
+</div>
+
+<div class="cards-grid" style="grid-template-columns: 1fr;">
+    <div class="stat-card" style="padding: 2rem;">
+        <form method="POST" action="{{ url_for('admin.company_settings') }}">
+            
+            <h3 style="margin-bottom: 1.5rem; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Informasi Utama</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="company_name" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Nama Perusahaan *</label>
+                    <input type="text" id="company_name" name="company_name" value="{{ settings.company_name or '' }}" required style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="tagline" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Tagline / Deskripsi Singkat</label>
+                    <input type="text" id="tagline" name="tagline" value="{{ settings.tagline or '' }}" style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 1.5rem; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-top: 2rem;">Informasi Kontak</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="email" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Alamat Email</label>
+                    <input type="email" id="email" name="email" value="{{ settings.email or '' }}" style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="website" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Website</label>
+                    <input type="text" id="website" name="website" value="{{ settings.website or '' }}" placeholder="www.example.com" style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="phone" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Nomor Telepon</label>
+                    <input type="text" id="phone" name="phone" value="{{ settings.phone or '' }}" placeholder="+62..." style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="whatsapp" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Nomor WhatsApp</label>
+                    <input type="text" id="whatsapp" name="whatsapp" value="{{ settings.whatsapp or '' }}" placeholder="+62..." style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 1.5rem; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-top: 2rem;">Alamat & Operasional</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="street_address" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Alamat Lengkap (Jalan)</label>
+                    <textarea id="street_address" name="street_address" rows="3" style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: vertical;">{{ settings.street_address or '' }}</textarea>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="city" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Kota</label>
+                    <input type="text" id="city" name="city" value="{{ settings.city or '' }}" style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="province" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Provinsi</label>
+                    <input type="text" id="province" name="province" value="{{ settings.province or '' }}" style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="postal_code" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Kode Pos</label>
+                    <input type="text" id="postal_code" name="postal_code" value="{{ settings.postal_code or '' }}" style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="country" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Negara</label>
+                    <input type="text" id="country" name="country" value="{{ settings.country or 'Indonesia' }}" style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="business_hours" style="font-weight: 500; font-size: 0.9rem; color: var(--text-main);">Jam Operasional</label>
+                    <input type="text" id="business_hours" name="business_hours" value="{{ settings.business_hours or '' }}" placeholder="Senin-Jumat: 08:00 - 17:00" style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2rem; font-size: 1rem;">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
