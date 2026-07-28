@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
-from extensions import oauth
+from extensions import oauth, limiter
 from utils import login_required, add_notification, save_file, delete_image_file
 
 auth_bp = Blueprint('auth', __name__)
@@ -14,6 +14,15 @@ auth_bp = Blueprint('auth', __name__)
 
 def valid_email(address):
     return re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', address)
+
+def is_strong_password(password):
+    if len(password) < 8: return False
+    if not re.search(r"[a-z]", password): return False
+    if not re.search(r"[A-Z]", password): return False
+    if not re.search(r"[0-9]", password): return False
+    # Pengecekan karakter khusus yang lebih universal (selain huruf dan angka)
+    if not re.search(r"[^A-Za-z0-9]", password): return False
+    return True
 
 
 def send_welcome_email(email, username):
@@ -131,11 +140,13 @@ def send_login_notification(email, username, ip_address="Unknown"):
         return False
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
 def register():
     if request.method == 'POST':
         username = request.form['username'].strip()
         email = request.form['email'].strip()
         phone = request.form['phone'].strip()
+        phone = phone if phone else None
         password = request.form['password']
         confirm_password = request.form.get('confirm_password', '')
 
@@ -144,11 +155,11 @@ def register():
             return render_template('register.html')
 
         if password != confirm_password:
-            flash("Password and confirmation do not match.", "danger")
+            flash("Konfirmasi password tidak sesuai dengan password baru.", "danger")
             return render_template('register.html')
 
-        if len(password) < 8:
-            flash("Password must be at least 8 characters long.", "danger")
+        if not is_strong_password(password):
+            flash("Password harus terdiri dari minimal 8 karakter serta mengandung huruf besar, huruf kecil, angka, dan karakter khusus.", "danger")
             return render_template('register.html')
 
         if not valid_email(email):
@@ -158,9 +169,9 @@ def register():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         try:
-            cursor.execute("SELECT id FROM users WHERE username = %s OR email = %s", (username, email))
+            cursor.execute("SELECT id FROM users WHERE username = %s OR email = %s OR (phone IS NOT NULL AND phone = %s)", (username, email, phone))
             if cursor.fetchone():
-                flash("Username or email already in use.", "danger")
+                flash("Username, email, atau nomor telepon sudah terdaftar.", "danger")
                 return render_template('register.html')
 
             hashed_password = generate_password_hash(password)
@@ -181,11 +192,16 @@ def register():
     return render_template('register.html')
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
 def login():
     if request.method == 'POST':
         identifier = request.form['identifier'].strip()
         password = request.form['password']
         remember_me = request.form.get('remember_me') == 'on'
+
+        if not identifier or not password:
+            flash("Username dan password tidak boleh kosong.", "danger")
+            return render_template('login.html')
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -340,6 +356,7 @@ def profile():
         username = request.form['username'].strip()
         email = request.form['email'].strip()
         phone = request.form['phone'].strip()
+        phone = phone if phone else None
         current_password = request.form.get('current_password', '')
         new_password = request.form.get('new_password', '')
         confirm_password = request.form.get('confirm_password', '')
@@ -352,38 +369,55 @@ def profile():
             flash("Please enter a valid email address.", "danger")
             return redirect(url_for('auth.profile'))
 
-        cursor.execute("SELECT id FROM users WHERE (username = %s OR email = %s) AND id != %s", (username, email, session['user_id']))
+        cursor.execute("SELECT id FROM users WHERE (username = %s OR email = %s OR (phone IS NOT NULL AND phone = %s)) AND id != %s", (username, email, phone, session['user_id']))
         if cursor.fetchone():
-            flash("Username or email already in use.", "danger")
+            flash("Username, email, atau nomor telepon sudah digunakan oleh akun lain.", "danger")
             return redirect(url_for('auth.profile'))
 
         if new_password or confirm_password:
             if new_password != confirm_password:
-                flash("New password and confirmation do not match.", "danger")
+                flash("Konfirmasi password tidak sesuai dengan password baru.", "danger")
                 return redirect(url_for('auth.profile'))
-            if len(new_password) < 8:
-                flash("New password must be at least 8 characters long.", "danger")
+            if not is_strong_password(new_password):
+                flash("Password harus terdiri dari minimal 8 karakter serta mengandung huruf besar, huruf kecil, angka, dan karakter khusus.", "danger")
                 return redirect(url_for('auth.profile'))
-            if not current_password:
-                flash("Current password is required to change your password.", "danger")
-                return redirect(url_for('auth.profile'))
+                
             cursor.execute("SELECT password_hash FROM users WHERE id = %s", (session['user_id'],))
             user = cursor.fetchone()
-            if not user or not user.get('password_hash') or not check_password_hash(user['password_hash'], current_password):
-                flash("Current password is incorrect.", "danger")
-                return redirect(url_for('auth.profile'))
-            new_password_hash = generate_password_hash(new_password)
-            cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (new_password_hash, session['user_id']))
+            
+            if user and user.get('password_hash'):
+                if not current_password:
+                    flash("Current password is required to change your password.", "danger")
+                    return redirect(url_for('auth.profile'))
+                if not check_password_hash(user['password_hash'], current_password):
+                    flash("Password saat ini yang Anda masukkan tidak valid.", "danger")
+                    return redirect(url_for('auth.profile'))
+                if new_password == current_password:
+                    # UX Fix: Jangan tolak pembaruan profil yang lain jika user iseng/tidak sengaja
+                    # mengetik password yang sama persis. Abaikan saja pembaruan password.
+                    flash("Info: Password tidak diubah karena Anda memasukkan password yang masih aktif.", "info")
+                    new_password_hash = None
+                else:
+                    new_password_hash = generate_password_hash(new_password)
+            else:
+                new_password_hash = generate_password_hash(new_password)
+                
+            if new_password_hash:
+                cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (new_password_hash, session['user_id']))
 
         file = request.files.get('photo')
+        remove_photo = request.form.get('remove_photo') == 'true'
         photo_url = None
-        if file and file.filename != '':
+        
+        if remove_photo or (file and file.filename != ''):
+            cursor.execute("SELECT photo_url FROM users WHERE id = %s", (session['user_id'],))
+            old_photo_row = cursor.fetchone()
+            if old_photo_row and old_photo_row.get('photo_url'):
+                delete_image_file(old_photo_row['photo_url'], current_app.root_path)
+
+        if file and file.filename != '' and not remove_photo:
             try:
                 photo_url = save_file(file, current_app.config['USER_UPLOAD_FOLDER'], 'uploads/users')
-                cursor.execute("SELECT photo_url FROM users WHERE id = %s", (session['user_id'],))
-                old_photo_row = cursor.fetchone()
-                if old_photo_row and old_photo_row.get('photo_url'):
-                    delete_image_file(old_photo_row['photo_url'], current_app.root_path)
             except Exception as e:
                 flash(f"Error uploading photo: {e}", 'danger')
                 cursor.close()
@@ -392,6 +426,8 @@ def profile():
 
         if photo_url:
             cursor.execute("UPDATE users SET username = %s, email = %s, phone = %s, photo_url = %s WHERE id = %s", (username, email, phone, photo_url, session['user_id']))
+        elif remove_photo:
+            cursor.execute("UPDATE users SET username = %s, email = %s, phone = %s, photo_url = NULL WHERE id = %s", (username, email, phone, session['user_id']))
         else:
             cursor.execute("UPDATE users SET username = %s, email = %s, phone = %s WHERE id = %s", (username, email, phone, session['user_id']))
             
@@ -402,7 +438,7 @@ def profile():
         conn.close()
         return redirect(url_for('auth.profile'))
 
-    cursor.execute("SELECT username, email, phone, photo_url FROM users WHERE id = %s", (session['user_id'],))
+    cursor.execute("SELECT username, email, phone, photo_url, password_hash FROM users WHERE id = %s", (session['user_id'],))
     user = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -410,6 +446,7 @@ def profile():
 
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def forgot_password():
     if request.method == 'POST':
         email = request.form['email'].strip()
@@ -430,7 +467,7 @@ def forgot_password():
 
         if user:
             reset_token = secrets.token_urlsafe(32)
-            expires_at = datetime.utcnow() + timedelta(hours=1)
+            expires_at = datetime.now() + timedelta(hours=1)
             cursor.execute(
                 "UPDATE users SET password_reset_token = %s, password_reset_expires = %s WHERE id = %s",
                 (reset_token, expires_at, user['id'])
@@ -465,8 +502,8 @@ def reset_password(token):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute(
-        "SELECT id FROM users WHERE password_reset_token = %s AND password_reset_expires > %s",
-        (token, datetime.utcnow())
+        "SELECT id, password_hash FROM users WHERE password_reset_token = %s AND password_reset_expires > %s",
+        (token, datetime.now())
     )
     user = cursor.fetchone()
     
@@ -481,11 +518,15 @@ def reset_password(token):
         confirm_password = request.form.get('confirm_password', '')
         
         if new_password != confirm_password:
-            flash("Password tidak cocok.", "danger")
+            flash("Konfirmasi password tidak sesuai dengan password baru.", "danger")
             return render_template('reset_password.html', token=token)
         
-        if len(new_password) < 8:
-            flash("Password minimal 8 karakter.", "danger")
+        if not is_strong_password(new_password):
+            flash("Password harus terdiri dari minimal 8 karakter serta mengandung huruf besar, huruf kecil, angka, dan karakter khusus.", "danger")
+            return render_template('reset_password.html', token=token)
+            
+        if user.get('password_hash') and check_password_hash(user['password_hash'], new_password):
+            flash("Anda memasukkan password yang saat ini sedang aktif digunakan. Silakan login atau buat password yang benar-benar baru.", "warning")
             return render_template('reset_password.html', token=token)
         
         new_password_hash = generate_password_hash(new_password)

@@ -5,7 +5,7 @@ from flask_mail import Mail
 from dotenv import load_dotenv
 
 # Import utilities and extensions
-from extensions import init_oauth
+from extensions import init_oauth, csrf, limiter
 from routes.main import main_bp
 from routes.auth import auth_bp
 from routes.admin import admin_bp
@@ -82,8 +82,10 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_REFRESH_EACH_REQUEST"] = True
 Session(app)
 
-# Initialize OAuth
+# Initialize Extensions
 init_oauth(app)
+csrf.init_app(app)
+limiter.init_app(app)
 
 import traceback
 from werkzeug.exceptions import HTTPException
@@ -141,6 +143,21 @@ def auto_update_booking_statuses():
         conn.close()
     except Exception as e:
         app.logger.error(f"Error auto-updating statuses: {e}")
+
+@app.before_request
+def validate_session():
+    if 'user_id' in session:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            if not user:
+                session.clear()
+        except Exception:
+            pass
 
 # Register Blueprints
 app.register_blueprint(main_bp)

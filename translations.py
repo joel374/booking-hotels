@@ -161,6 +161,7 @@ TRANSLATIONS = {
     "Minimal 8 karakter": "Minimum 8 characters",
     "Konfirmasi Password": "Confirm Password",
     "Ketik ulang password Anda": "Retype your password",
+    "Ketik ulang password baru Anda": "Retype your new password",
     "Register": "Register",
     "Daftar dengan Google": "Sign up with Google",
     "Sudah punya akun?": "Already have an account?",

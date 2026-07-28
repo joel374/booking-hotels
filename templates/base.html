@@ -140,6 +140,7 @@
                       toast: true,
                       position: toastPosition,
                       showConfirmButton: false,
+                      showCloseButton: true,
                       timer: 5000,
                       timerProgressBar: true,
                       background: 'var(--card-bg)',
@@ -153,7 +154,7 @@
 
                     Toast.fire({
                       icon: iconType,
-                      title: '{{ message }}'
+                      title: '{{ _(message) }}'
                     });
                 {% endfor %}
             {% endif %}
