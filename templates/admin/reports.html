@@ -445,19 +445,6 @@ endblock %}
             </div>
         </div>
     </div>
-        <div class="report-stat-card">
-            <span class="report-stat-label">Total Rooms</span>
-            <span class="report-stat-value" id="val-rooms">0</span>
-        </div>
-        <div class="report-stat-card">
-            <span class="report-stat-label">Total Bookings</span>
-            <span class="report-stat-value" id="val-bookings">0</span>
-        </div>
-        <div class="report-stat-card">
-            <span class="report-stat-label">Total Revenue</span>
-            <span class="report-stat-value" id="val-revenue">Rp 0</span>
-        </div>
-    </div>
 
     <div id="details-section" style="display: none;">
         <h3 style="margin-bottom: 1rem;" id="details-title">Details</h3>
@@ -582,11 +569,54 @@ Bhineka Hotels</textarea>
             document.getElementById('pdf-search').value = search;
             document.getElementById('pdf-sort').value = sort;
 
-            // Update Summary
-            document.getElementById('val-hotels').textContent = data.summary.total_hotels;
-            document.getElementById('val-rooms').textContent = data.summary.total_rooms;
-            document.getElementById('val-bookings').textContent = data.summary.total_bookings;
-            document.getElementById('val-revenue').textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(data.summary.total_revenue);
+            // Update Summary Dynamically
+            const lbl1 = document.getElementById('val-hotels').previousElementSibling;
+            const val1 = document.getElementById('val-hotels');
+            const lbl2 = document.getElementById('val-rooms').previousElementSibling;
+            const val2 = document.getElementById('val-rooms');
+            const lbl3 = document.getElementById('val-bookings').previousElementSibling;
+            const val3 = document.getElementById('val-bookings');
+            const lbl4 = document.getElementById('val-revenue').previousElementSibling;
+            const val4 = document.getElementById('val-revenue');
+            
+            const formatRp = num => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+
+            if (type === 'Dashboard Summary') {
+                lbl1.textContent = 'Total Hotels'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = 'Total Rooms'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = 'Total Bookings'; val3.textContent = data.summary.total_bookings;
+                lbl4.textContent = 'Total Revenue'; val4.textContent = formatRp(data.summary.total_revenue);
+            } else if (type === 'Hotels') {
+                lbl1.textContent = 'Total Hotels'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = 'Total Rooms'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = 'Available Rooms'; val3.textContent = data.summary.available_rooms;
+                lbl4.textContent = 'Occupancy Rate'; val4.textContent = data.summary.occupancy_rate + '%';
+            } else if (type === 'Rooms') {
+                lbl1.textContent = 'Total Rooms'; val1.textContent = data.summary.total_rooms;
+                lbl2.textContent = 'Booked Rooms'; val2.textContent = data.summary.total_rooms - data.summary.available_rooms;
+                lbl3.textContent = 'Available Rooms'; val3.textContent = data.summary.available_rooms;
+                lbl4.textContent = 'Occupancy Rate'; val4.textContent = data.summary.occupancy_rate + '%';
+            } else if (type === 'Bookings') {
+                lbl1.textContent = 'Total Bookings'; val1.textContent = data.summary.total_bookings;
+                lbl2.textContent = 'Booked'; val2.textContent = data.summary.status_booked;
+                lbl3.textContent = 'Checked In'; val3.textContent = data.summary.status_checked_in;
+                lbl4.textContent = 'Cancelled'; val4.textContent = data.summary.status_cancelled;
+            } else if (type === 'Revenue Report') {
+                lbl1.textContent = 'Total Revenue'; val1.textContent = formatRp(data.summary.total_revenue);
+                lbl2.textContent = 'Avg Revenue'; val2.textContent = formatRp(data.summary.avg_revenue);
+                lbl3.textContent = 'Transactions'; val3.textContent = data.summary.total_transactions;
+                lbl4.textContent = 'Top Hotel'; val4.textContent = data.summary.highest_revenue_hotel;
+            } else if (type === 'Audit Report') {
+                lbl1.textContent = 'Total Audit Logs'; val1.textContent = data.summary.total_audit_logs;
+                lbl2.textContent = 'Today\'s Logs'; val2.textContent = data.summary.today_logs;
+                lbl3.textContent = 'Admin Actions'; val3.textContent = data.summary.admin_actions;
+                lbl4.textContent = 'System Actions'; val4.textContent = data.summary.system_actions;
+            } else {
+                lbl1.textContent = 'Total Hotels'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = 'Total Rooms'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = 'Total Bookings'; val3.textContent = data.summary.total_bookings;
+                lbl4.textContent = 'Total Revenue'; val4.textContent = formatRp(data.summary.total_revenue);
+            }
 
             const extraSummary = document.getElementById('dashboard-extra-summary');
             const detailsSection = document.getElementById('details-section');
@@ -618,11 +648,14 @@ Bhineka Hotels</textarea>
                             tbody.innerHTML += `<tr><td>${row.hotel}</td><td>${row.location}</td><td>${row.rooms}</td><td><span class="room-badge available">${row.status}</span></td></tr>`;
                         });
                     } else if (type === 'Rooms') {
-                        headRow += '<th>Room</th><th>Hotel</th><th>Room Number</th><th>Price</th><th>Status</th>';
-                        data.details.forEach(row => {
-                            const price = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(row.price);
-                            tbody.innerHTML += `<tr><td>${row.room}</td><td>${row.hotel}</td><td>${row.room_number}</td><td>${price}</td><td><span class="room-badge available">${row.status}</span></td></tr>`;
-                        });
+                    headRow += '<th>Hotel</th><th>Room Type</th><th>Total Rooms</th><th>Available Rooms</th><th>Booked Rooms</th><th>Occupancy Rate</th>';
+                    let lastHotel = null;
+                    data.details.forEach(row => {
+                        let hotelName = (row.hotel === lastHotel) ? '' : row.hotel;
+                        lastHotel = row.hotel;
+                        // Use a subtle border or spacing for the first row of a group if desired, but we keep it simple
+                        tbody.innerHTML += `<tr><td><strong>${hotelName}</strong></td><td>${row.room_type}</td><td>${row.total_rooms}</td><td>${row.available}</td><td>${row.booked}</td><td>${row.occupancy}</td></tr>`;
+                    });
                     } else if (type === 'Bookings') {
                         headRow += '<th>Booking ID</th><th>Guest</th><th>Hotel</th><th>Date</th><th>Status</th>';
                         data.details.forEach(row => {
