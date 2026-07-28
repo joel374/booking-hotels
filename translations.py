@@ -161,6 +161,7 @@ TRANSLATIONS = {
     "Minimal 8 karakter": "Minimum 8 characters",
     "Konfirmasi Password": "Confirm Password",
     "Ketik ulang password Anda": "Retype your password",
+    "Ketik ulang password baru Anda": "Retype your new password",
     "Register": "Register",
     "Daftar dengan Google": "Sign up with Google",
     "Sudah punya akun?": "Already have an account?",
@@ -248,5 +249,23 @@ TRANSLATIONS = {
     "Ingat password Anda?": "Remembered your password?",
     "Reset Password": "Reset Password",
     "Masukkan password baru untuk mengamankan akun Anda. Password harus minimal 8 karakter.": "Enter a new password to secure your account. Password must be at least 8 characters.",
-    "Ketik ulang password baru": "Retype new password"
+    "Ketik ulang password baru": "Retype new password",
+    
+    # Profile & Auth Flash Messages
+    "Hapus Foto": "Delete Photo",
+    "Username and email cannot be empty.": "Username and email cannot be empty.",
+    "Please enter a valid email address.": "Please enter a valid email address.",
+    "Username or email already in use.": "Username or email already in use.",
+    "New password and confirmation do not match.": "New password and confirmation do not match.",
+    "New password must be at least 8 characters long.": "New password must be at least 8 characters long.",
+    "Current password is required to change your password.": "Current password is required to change your password.",
+    "Password baru tidak boleh sama dengan password lama.": "New password cannot be the same as the current password.",
+    "Current password is incorrect.": "Current password is incorrect.",
+    "Profile updated successfully.": "Profile updated successfully.",
+    
+    # New Password Validations
+    "Konfirmasi password tidak sesuai dengan password baru.": "Password confirmation does not match the new password.",
+    "Password harus terdiri dari minimal 8 karakter serta mengandung huruf besar, huruf kecil, angka, dan karakter khusus.": "Password must be at least 8 characters long and contain uppercase, lowercase, numbers, and special characters.",
+    "Password saat ini yang Anda masukkan tidak valid.": "The current password you entered is invalid.",
+    "Password baru tidak boleh sama dengan password sebelumnya.": "New password cannot be the same as the previous password."
 }

@@ -710,6 +710,7 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - **[NEW]** Standarisasi seluruh _Template_ Email (Konfirmasi, Batal, Waiting List) menggunakan _Table Layout_ klasik agar 100% _cross-client compatible_.
   - **[NEW]** Implementasi Halaman Profil Pengguna (`/profile`) dengan fitur ubah data diri, foto profil, dan password.
   - **[NEW]** Fitur Lupa Password dan Reset Password melalui tautan token unik via email.
+  - **[NEW]** Peningkatan keamanan Modul 1 (Security Fixes): Implementasi perlindungan CSRF (Flask-WTF), *Rate Limiting* (Flask-Limiter) anti *brute-force*, mitigasi *Session Hijacking*, penyempurnaan validasi karakter spesial pada *password*, dan perbaikan UX/UI form pendaftaran & pembaruan profil.
 
 ---
 

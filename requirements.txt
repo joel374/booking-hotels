@@ -8,3 +8,5 @@ reportlab
 Flask-Mail
 requests
 Pillow
+Flask-WTF
+Flask-Limiter
