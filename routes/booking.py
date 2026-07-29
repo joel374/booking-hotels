@@ -82,8 +82,9 @@ def book_room(hotel_id):
 
         cleanup_expired_bookings(cursor)
 
-        # LOCK THE ROOM ROW to prevent race conditions (Double Booking)
-        # However, to be totally safe we should query again WITH FOR UPDATE
+        # LOCK THE HOTEL ROW to serialize bookings for this hotel and strictly prevent Double Booking race conditions
+        cursor.execute("SELECT id FROM hotels WHERE id = %s FOR UPDATE", (hotel_id,))
+        
         cursor.execute("""
             SELECT id FROM rooms 
             WHERE hotel_id = %s AND room_type = %s AND is_deleted = 0 
@@ -92,7 +93,7 @@ def book_room(hotel_id):
                 WHERE status IN ('Booked', 'Checked In')
                 AND (check_in < %s AND check_out > %s)
             )
-            ORDER BY room_number ASC LIMIT 1 FOR UPDATE
+            ORDER BY room_number ASC LIMIT 1
         """, (hotel_id, room_type, check_out, check_in))
         locked_room = cursor.fetchone()
         
@@ -146,77 +147,6 @@ def book_room(hotel_id):
     return render_template('booking_form.html', room=room, check_in=check_in, check_out=check_out, nights=nights, grand_total=grand_total)
 
 
-@booking_bp.route('/pay/<int:booking_id>', methods=['GET', 'POST'])
-@login_required
-def pay(booking_id):
-
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cleanup_expired_bookings(cursor)
-    
-    cursor.execute("SELECT * FROM bookings WHERE id = %s AND user_id = %s", (booking_id, session['user_id']))
-    booking_record = cursor.fetchone()
-
-    if not booking_record:
-        flash("Booking not found or you don't have permission.", "danger")
-        return redirect(url_for('main.index'))
-
-    if booking_record['status'] == 'Cancelled':
-        flash("Your booking session has expired.", "warning")
-        return redirect(url_for('main.index'))
-
-    if booking_record['status'] in ('Booked', 'Checked In', 'Checked Out'):
-        return render_template('invoice.html', settings=get_company_settings(), booking=booking_record)
-
-    expiry_time = booking_record['created_at'] + timedelta(minutes=15)
-    now = datetime.now()
-    if now > expiry_time:
-        cursor.execute("UPDATE bookings SET status = 'Cancelled' WHERE id = %s", (booking_id,))
-        conn.commit()
-        flash("Your booking session has expired.", "warning")
-        return redirect(url_for('main.index'))
-
-    time_left_seconds = (expiry_time - now).total_seconds()
-
-    if request.method == 'POST':
-        cursor.execute("UPDATE bookings SET status = 'Booked' WHERE id = %s", (booking_id,))
-        conn.commit()
-        
-        # Ambil data lengkap untuk email konfirmasi
-        cursor.execute("""
-            SELECT b.*, r.room_number, r.room_type, r.price, h.name as hotel_name, u.email as user_email
-            FROM bookings b 
-            JOIN rooms r ON b.room_id = r.id 
-            JOIN hotels h ON r.hotel_id = h.id 
-            JOIN users u ON b.user_id = u.id
-            WHERE b.id = %s
-        """, (booking_id,))
-        booking_data = cursor.fetchone()
-        
-        cursor.close()
-        conn.close()
-        
-        if booking_data and booking_data.get('user_email'):
-            from services.email_service import send_email
-
-            
-            html_content = render_template('emails/booking_confirmation.html', booking=booking_data)
-            subject = f"Konfirmasi Pemesanan - {booking_data['hotel_name']} (INV-{booking_data['id']})"
-            send_email(booking_data['user_email'], subject, html_content)
-            
-        flash("Payment successful! Room booked.", "success")
-        return redirect(url_for('booking.invoice', booking_id=booking_id))
-
-    cursor.execute("SELECT * FROM rooms r JOIN hotels h ON r.hotel_id = h.id WHERE r.id = %s", (booking_record['room_id'],))
-    room = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    
-    nights = (booking_record['check_out'] - booking_record['check_in']).days
-    grand_total = room['price'] * nights
-    
-    return render_template('pay.html', booking=booking_record, room=room, time_left_seconds=int(time_left_seconds), nights=nights, grand_total=grand_total)
-
 @booking_bp.route('/invoice/<int:booking_id>')
 @login_required
 def invoice(booking_id):
@@ -249,6 +179,12 @@ def my_bookings():
     status = request.args.get('status', 'Semua')
     page = request.args.get('page', 1, type=int)
     wl_page = request.args.get('wl_page', 1, type=int)
+    
+    # Ensure page numbers are at least 1 to prevent SQL negative offset errors
+    if not page or page < 1:
+        page = 1
+    if not wl_page or wl_page < 1:
+        wl_page = 1
     
     per_page = 6
     offset = (page - 1) * per_page
@@ -402,8 +338,12 @@ def cancel_booking(booking_id):
 def join_waitlist(hotel_id):
     room_type = request.args.get('room_type') or request.form.get('room_type')
 
-    check_in = request.form['check_in']
-    check_out = request.form['check_out']
+    check_in = request.form.get('check_in')
+    check_out = request.form.get('check_out')
+
+    if not check_in or not check_out:
+        flash("Tanggal check-in dan check-out wajib diisi.", "danger")
+        return redirect(url_for('main.index'))
 
     try:
         ci_date = datetime.strptime(check_in, '%Y-%m-%d').date()
@@ -424,11 +364,11 @@ def join_waitlist(hotel_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    # Try to find a specific room type first, or just any room in the hotel
+    # Try to find a specific room type first, or just any room in the hotel (excluding deleted rooms)
     if room_type:
-        cursor.execute("SELECT id FROM rooms WHERE hotel_id = %s AND room_type = %s LIMIT 1", (hotel_id, room_type))
+        cursor.execute("SELECT id FROM rooms WHERE hotel_id = %s AND room_type = %s AND is_deleted = 0 LIMIT 1", (hotel_id, room_type))
     else:
-        cursor.execute("SELECT id FROM rooms WHERE hotel_id = %s LIMIT 1", (hotel_id,))
+        cursor.execute("SELECT id FROM rooms WHERE hotel_id = %s AND is_deleted = 0 LIMIT 1", (hotel_id,))
         
     room = cursor.fetchone()
     if not room:
@@ -476,7 +416,6 @@ def submit_review(booking_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    cursor.execute("SELECT r.hotel_id, b.check_out FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.id = %s AND b.user_id = %s AND b.status = 'Checked Out'", (booking_id, session['user_id']))
     cursor.execute("SELECT r.hotel_id, b.check_out FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.id = %s AND b.user_id = %s AND b.status = 'Checked Out'", (booking_id, session['user_id']))
     booking = cursor.fetchone()
     
