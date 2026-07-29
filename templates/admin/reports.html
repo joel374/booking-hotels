@@ -373,7 +373,8 @@ endblock %}
             <div><strong>Period:</strong> <span id="preview-period"></span></div>
             <div class="report-actions">
                 <form id="form-download-pdf" action="{{ url_for('admin.api_reports_download_pdf') }}" method="POST"
-                    target="_blank">
+                      target="_blank">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="type" id="pdf-type">
                     <input type="hidden" name="period" id="pdf-period">
                     <input type="hidden" name="search" id="pdf-search">
@@ -509,7 +510,7 @@ Bhineka Hotels</textarea>
     const previewContainer = document.getElementById('report-preview');
 
     reportPeriod.addEventListener('change', (e) => {
-        if (e.target.value === '{{ _('Tanggal Kustom') }}') {
+        if (e.target.value === "{{ _("Tanggal Kustom") }}") {
             customDateGroup.style.display = 'flex';
         } else {
             customDateGroup.style.display = 'none';
@@ -542,7 +543,7 @@ Bhineka Hotels</textarea>
         const sort = document.getElementById('report-sort').value;
         let period = document.getElementById('report-period').value;
 
-        if (period === '{{ _('Tanggal Kustom') }}') {
+        if (period === "{{ _("Tanggal Kustom") }}") {
             const start = document.getElementById('date-start').value;
             const end = document.getElementById('date-end').value;
             period = `${start} to ${end}`;
@@ -562,7 +563,7 @@ Bhineka Hotels</textarea>
         console.log("Sending preview request", { type, period, search, sort });
         fetch("{{ url_for('admin.api_reports_preview') }}", {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
             body: JSON.stringify({ type, period, search, sort, page: window.currentPage, limit: window.itemsPerPage }),
             credentials: 'same-origin'
         })
@@ -596,27 +597,27 @@ Bhineka Hotels</textarea>
             const formatRp = num => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
             if (type === 'Dashboard Summary') {
-                lbl1.textContent = '{{ _('Total Hotel') }}'; val1.textContent = data.summary.total_hotels;
-                lbl2.textContent = '{{ _('Total Kamar') }}'; val2.textContent = data.summary.total_rooms;
-                lbl3.textContent = '{{ _('Total Pesanan') }}'; val3.textContent = data.summary.total_bookings;
-                lbl4.textContent = '{{ _('Total Pendapatan') }}'; val4.textContent = formatRp(data.summary.total_revenue);
-            } else if (type === '{{ _('Hotel') }}') {
-                lbl1.textContent = '{{ _('Total Hotel') }}'; val1.textContent = data.summary.total_hotels;
-                lbl2.textContent = '{{ _('Total Kamar') }}'; val2.textContent = data.summary.total_rooms;
-                lbl3.textContent = '{{ _('Kamar Tersedia') }}'; val3.textContent = data.summary.available_rooms;
-                lbl4.textContent = '{{ _('Tingkat Hunian') }}'; val4.textContent = data.summary.occupancy_rate + '%';
-            } else if (type === '{{ _('Kamar') }}') {
-                lbl1.textContent = '{{ _('Total Kamar') }}'; val1.textContent = data.summary.total_rooms;
-                lbl2.textContent = '{{ _('Kamar Dipesan') }}'; val2.textContent = data.summary.total_rooms - data.summary.available_rooms;
-                lbl3.textContent = '{{ _('Kamar Tersedia') }}'; val3.textContent = data.summary.available_rooms;
-                lbl4.textContent = '{{ _('Tingkat Hunian') }}'; val4.textContent = data.summary.occupancy_rate + '%';
-            } else if (type === '{{ _('Pesanan') }}') {
-                lbl1.textContent = '{{ _('Total Pesanan') }}'; val1.textContent = data.summary.total_bookings;
+                lbl1.textContent = "{{ _("Total Hotel") }}"; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = "{{ _("Total Kamar") }}"; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = "{{ _("Total Pesanan") }}"; val3.textContent = data.summary.total_bookings;
+                lbl4.textContent = "{{ _("Total Pendapatan") }}"; val4.textContent = formatRp(data.summary.total_revenue);
+            } else if (type === 'Hotels') {
+                lbl1.textContent = "{{ _("Total Hotel") }}"; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = "{{ _("Total Kamar") }}"; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = "{{ _("Kamar Tersedia") }}"; val3.textContent = data.summary.available_rooms;
+                lbl4.textContent = "{{ _("Tingkat Hunian") }}"; val4.textContent = data.summary.occupancy_rate + '%';
+            } else if (type === 'Rooms') {
+                lbl1.textContent = "{{ _("Total Kamar") }}"; val1.textContent = data.summary.total_rooms;
+                lbl2.textContent = "{{ _("Kamar Dipesan") }}"; val2.textContent = data.summary.total_rooms - data.summary.available_rooms;
+                lbl3.textContent = "{{ _("Kamar Tersedia") }}"; val3.textContent = data.summary.available_rooms;
+                lbl4.textContent = "{{ _("Tingkat Hunian") }}"; val4.textContent = data.summary.occupancy_rate + '%';
+            } else if (type === 'Bookings') {
+                lbl1.textContent = "{{ _("Total Pesanan") }}"; val1.textContent = data.summary.total_bookings;
                 lbl2.textContent = 'Booked'; val2.textContent = data.summary.status_booked;
                 lbl3.textContent = 'Checked In'; val3.textContent = data.summary.status_checked_in;
                 lbl4.textContent = 'Cancelled'; val4.textContent = data.summary.status_cancelled;
             } else if (type === 'Revenue Report') {
-                lbl1.textContent = '{{ _('Total Pendapatan') }}'; val1.textContent = formatRp(data.summary.total_revenue);
+                lbl1.textContent = "{{ _("Total Pendapatan") }}"; val1.textContent = formatRp(data.summary.total_revenue);
                 lbl2.textContent = 'Avg Revenue'; val2.textContent = formatRp(data.summary.avg_revenue);
                 lbl3.textContent = 'Transactions'; val3.textContent = data.summary.total_transactions;
                 lbl4.textContent = 'Top Hotel'; val4.textContent = data.summary.highest_revenue_hotel;
@@ -626,10 +627,10 @@ Bhineka Hotels</textarea>
                 lbl3.textContent = 'Admin Actions'; val3.textContent = data.summary.admin_actions;
                 lbl4.textContent = 'System Actions'; val4.textContent = data.summary.system_actions;
             } else {
-                lbl1.textContent = '{{ _('Total Hotel') }}'; val1.textContent = data.summary.total_hotels;
-                lbl2.textContent = '{{ _('Total Kamar') }}'; val2.textContent = data.summary.total_rooms;
-                lbl3.textContent = '{{ _('Total Pesanan') }}'; val3.textContent = data.summary.total_bookings;
-                lbl4.textContent = '{{ _('Total Pendapatan') }}'; val4.textContent = formatRp(data.summary.total_revenue);
+                lbl1.textContent = "{{ _("Total Hotel") }}"; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = "{{ _("Total Kamar") }}"; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = "{{ _("Total Pesanan") }}"; val3.textContent = data.summary.total_bookings;
+                lbl4.textContent = "{{ _("Total Pendapatan") }}"; val4.textContent = formatRp(data.summary.total_revenue);
             }
 
             const extraSummary = document.getElementById('dashboard-extra-summary');
@@ -656,13 +657,13 @@ Bhineka Hotels</textarea>
                     tbody.innerHTML = '';
 
                     let headRow = '<tr>';
-                    if (type === '{{ _('Hotel') }}') {
-                        headRow += '<th>Hotel</th><th>{{ _('Lokasi') }}</th><th>{{ _('Kamar') }}</th><th>{{ _('{{ _('Status') }}') }}</th>';
+                    if (type === 'Hotels') {
+                        headRow += '<th>Hotel</th><th>{{ _("Lokasi") }}</th><th>{{ _("Kamar") }}</th><th>{{ _("Status") }}</th>';
                         data.details.forEach(row => {
                             tbody.innerHTML += `<tr><td>${row.hotel}</td><td>${row.location}</td><td>${row.rooms}</td><td><span class="room-badge available">${row.status}</span></td></tr>`;
                         });
-                    } else if (type === '{{ _('Kamar') }}') {
-                    headRow += '<th>Hotel</th><th>{{ _('Tipe Kamar') }}</th><th>{{ _('Total Kamar') }}</th><th>{{ _('Kamar Tersedia') }}</th><th>{{ _('Kamar Dipesan') }}</th><th>{{ _('Tingkat Hunian') }}</th>';
+                    } else if (type === 'Rooms') {
+                    headRow += '<th>Hotel</th><th>{{ _("Tipe Kamar") }}</th><th>{{ _("Total Kamar") }}</th><th>{{ _("Kamar Tersedia") }}</th><th>{{ _("Kamar Dipesan") }}</th><th>{{ _("Tingkat Hunian") }}</th>';
                     let lastHotel = null;
                     data.details.forEach(row => {
                         let hotelName = (row.hotel === lastHotel) ? '' : row.hotel;
@@ -670,20 +671,20 @@ Bhineka Hotels</textarea>
                         // Use a subtle border or spacing for the first row of a group if desired, but we keep it simple
                         tbody.innerHTML += `<tr><td><strong>${hotelName}</strong></td><td>${row.room_type}</td><td>${row.total_rooms}</td><td>${row.available}</td><td>${row.booked}</td><td>${row.occupancy}</td></tr>`;
                     });
-                    } else if (type === '{{ _('Pesanan') }}') {
-                        headRow += '<th>{{ _('ID Pesanan') }}</th><th>Guest</th><th>Hotel</th><th>{{ _('Tanggal') }}</th><th>{{ _('{{ _('Status') }}') }}</th>';
+                    } else if (type === 'Bookings') {
+                        headRow += '<th>{{ _("ID Pesanan") }}</th><th>Guest</th><th>Hotel</th><th>{{ _("Tanggal") }}</th><th>{{ _("Status") }}</th>';
                         data.details.forEach(row => {
                             let badgeClass = row.status === 'Checked Out' ? 'maintenance' : (row.status === 'Cancelled' ? 'occupied' : 'available');
                             tbody.innerHTML += `<tr><td>#${row.booking_id}</td><td>${row.guest}</td><td>${row.hotel}</td><td>${row.date}</td><td><span class="room-badge ${badgeClass}">${row.status}</span></td></tr>`;
                         });
                     } else if (type === 'Revenue Report') {
-                        headRow += '<th>Hotel</th><th>{{ _('Tipe Kamar') }}</th><th>{{ _('Pesanan') }}</th><th>{{ _('Total Pendapatan') }}</th>';
+                        headRow += '<th>Hotel</th><th>{{ _("Tipe Kamar") }}</th><th>{{ _("Pesanan") }}</th><th>{{ _("Total Pendapatan") }}</th>';
                         data.details.forEach(row => {
                             const revenue = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(row.total_revenue);
                             tbody.innerHTML += `<tr><td>${row.hotel}</td><td>${row.room_type}</td><td>${row.total_bookings}</td><td>${revenue}</td></tr>`;
                         });
                     } else if (type === 'Audit Report') {
-                        headRow += '<th>{{ _('ID Pesanan') }}</th><th>Guest</th><th>Admin</th><th>Action/Status</th><th>{{ _('Tanggal') }}</th>';
+                        headRow += '<th>{{ _("ID Pesanan") }}</th><th>Guest</th><th>Admin</th><th>Action/Status</th><th>{{ _("Tanggal") }}</th>';
                         data.details.forEach(row => {
                             let badgeClass = row.action === 'Booked' ? 'available' : row.action === 'Checked In' ? 'available' : row.action === 'Checked Out' ? 'maintenance' : 'occupied';
                             tbody.innerHTML += `<tr><td>#${row.booking_id}</td><td>${row.guest}</td><td>${row.admin}</td><td><span class="room-badge ${badgeClass}">${row.action}</span></td><td>${row.date}</td></tr>`;
@@ -741,13 +742,13 @@ Bhineka Hotels</textarea>
 
         fetch("{{ url_for('admin.api_reports_send_email') }}", {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
             body: JSON.stringify({ type, period, search, sort, email, subject, message })
         })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    closeEmailModal();
+                closeEmailModal();
+                if (data.success || data.status === 'success') {
                     Swal.fire('{{ _("Berhasil!") }}', data.message, 'success');
                 } else {
                     Swal.fire('Error', data.error || 'Failed to send email.', 'error');
@@ -757,7 +758,7 @@ Bhineka Hotels</textarea>
                 Swal.fire('Error', 'An unexpected error occurred.', 'error');
             })
             .finally(() => {
-                btn.textContent = '{{ _('Kirim Email') }}';
+                btn.textContent = "{{ _("Kirim Email") }}";
                 btn.disabled = false;
             });
     });

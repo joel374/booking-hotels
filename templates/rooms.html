@@ -211,6 +211,7 @@
                         {% else %}
                             {% if 'user_id' in session %}
                             <form action="{{ url_for('booking.join_waitlist', hotel_id=hotel.id) }}" method="POST" style="margin: 0;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="check_in" value="{{ check_in }}">
                                 <input type="hidden" name="check_out" value="{{ check_out }}">
                                 <input type="hidden" name="room_type" value="{{ group.room_type }}">

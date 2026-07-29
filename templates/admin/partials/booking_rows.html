@@ -28,10 +28,12 @@
             </div>
         </div>
         <form method="POST" action="{{ url_for('admin.bookings') }}" class="booking-cancel-form" data-id="{{ booking.id }}" style="display:none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="booking_id" value="{{ booking.id }}">
             <input type="hidden" name="cancel_reason" class="cancel-reason-input" value="">
         </form>
-        <form method="POST" action="{{ url_for('admin.delete_booking', id=booking.id) }}" class="booking-delete-form" data-id="{{ booking.id }}" style="display:none;"></form>
+        <form method="POST" action="{{ url_for('admin.delete_booking', id=booking.id) }}" class="booking-delete-form" data-id="{{ booking.id }}" style="display:none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form>
     </td>
 </tr>
 {% endfor %}

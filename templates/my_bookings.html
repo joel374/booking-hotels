@@ -1,5 +1,19 @@
 {% extends "base.html" %}
 
+{% block head %}
+    <style>
+        .status-filter-btn { padding: 0.5rem 1rem; border-radius: 20px; text-decoration: none; border: 1px solid var(--border-color); color: var(--text-main); background: transparent; transition: 0.2s; }
+        .status-filter-btn.active { color: var(--card-bg) !important; background: var(--primary-color) !important; }
+        .page-btn { padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; text-decoration: none; color: var(--text-main); background: transparent; }
+        .page-btn.active { color: var(--card-bg) !important; background: var(--primary-color) !important; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card-bg); width: 90%; max-width: 500px; border-radius: 16px; padding: 2.5rem; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: modalSlideUp 0.3s ease-out forwards; }
+        @keyframes modalSlideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .star-rating label:hover, .star-rating label:hover ~ label, .star-rating input:checked ~ label { color: #FFD700 !important; transform: scale(1.1); }
+        .swal2-textarea-custom { background: var(--bg-color) !important; color: var(--text-main) !important; border: 1px solid var(--border-color) !important; }
+    </style>
+{% endblock %}
+
 {% block content %}
 <div class="pt-4">
     <div style="margin-bottom: 4rem;">
@@ -8,7 +22,7 @@
         <div style="margin-bottom: 2rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
             {% set statuses = ['Semua', 'Booked', 'Checked In', 'Checked Out', 'Cancelled'] %}
             {% for s in statuses %}
-            <a href="{{ url_for('booking.my_bookings', status=s, wl_page=wl_page) }}" class="btn" style="padding: 0.5rem 1rem; border-radius: 20px; text-decoration: none; border: 1px solid var(--border-color); color: {% if status == s %}var(--card-bg){% else %}var(--text-main){% endif %}; background: {% if status == s %}var(--primary-color){% else %}transparent{% endif %}; transition: 0.2s;">{{ _(s) }}</a>
+            <a href="{{ url_for('booking.my_bookings', status=s, wl_page=wl_page) }}" class="btn status-filter-btn {% if status == s %}active{% endif %}">{{ _(s) }}</a>
             {% endfor %}
         </div>
         
@@ -60,12 +74,13 @@
                         {% endif %}
                         
                         {% if booking.status == 'Checked Out' and booking.has_reviewed == 0 and booking.can_review %}
-                            <button type="button" class="btn btn-primary" onclick="openReviewModal({{ booking.id }}, '{{ booking.hotel_name | escape }}')" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 42px; box-sizing: border-box; background: var(--bg-color); color: var(--primary-color); border: 1px solid var(--primary-color);">{{ _('Tulis Ulasan') }}</button>
+                            <button type="button" class="btn btn-primary" onclick="openReviewModal('{{ booking.id }}', '{{ booking.hotel_name | escape }}')" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; border-radius: 6px; text-align: center; margin: 0; min-height: 42px; box-sizing: border-box; background: var(--bg-color); color: var(--primary-color); border: 1px solid var(--primary-color);">{{ _('Tulis Ulasan') }}</button>
                         {% endif %}
 
                         {% if booking.status == 'Booked' %}
                             {% if booking.can_cancel %}
                             <form action="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" method="POST" style="flex: 1; margin: 0; display: flex;" class="cancel-booking-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0.6rem; font-size: 0.85rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; text-align: center; margin: 0; min-height: 42px; box-sizing: border-box;">{{ _('Batal') }}</button>
                             </form>
                             {% else %}
@@ -87,7 +102,7 @@
             {% endif %}
             
             {% for p in range(1, total_pages + 1) %}
-            <a href="{{ url_for('booking.my_bookings', status=status, page=p, wl_page=wl_page) }}" class="btn" style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; text-decoration: none; color: {% if page == p %}var(--card-bg){% else %}var(--text-main){% endif %}; background: {% if page == p %}var(--primary-color){% else %}transparent{% endif %};">{{ p }}</a>
+            <a href="{{ url_for('booking.my_bookings', status=status, page=p, wl_page=wl_page) }}" class="btn page-btn {% if page == p %}active{% endif %}">{{ p }}</a>
             {% endfor %}
             
             {% if page < total_pages %}
@@ -136,7 +151,7 @@
             {% endif %}
             
             {% for p in range(1, wl_total_pages + 1) %}
-            <a href="{{ url_for('booking.my_bookings', status=status, page=page, wl_page=p) }}" class="btn" style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; text-decoration: none; color: {% if wl_page == p %}var(--card-bg){% else %}var(--text-main){% endif %}; background: {% if wl_page == p %}var(--primary-color){% else %}transparent{% endif %};">{{ p }}</a>
+            <a href="{{ url_for('booking.my_bookings', status=status, page=page, wl_page=p) }}" class="btn page-btn {% if wl_page == p %}active{% endif %}">{{ p }}</a>
             {% endfor %}
             
             {% if wl_page < wl_total_pages %}
@@ -161,6 +176,7 @@
         <p class="text-muted" style="margin-bottom: 1.5rem;">{{ _('Bagikan pengalaman Anda menginap di') }} <strong id="modal-hotel-name"></strong>.</p>
         
         <form id="review-form" method="POST" action="">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ _('Penilaian (Rating)') }}</label>
                 <div style="display: flex; gap: 5px; flex-direction: row-reverse; justify-content: flex-end;" class="star-rating">

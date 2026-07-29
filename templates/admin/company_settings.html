@@ -15,6 +15,7 @@
 <div class="cards-grid" style="grid-template-columns: 1fr;">
     <div class="stat-card" style="padding: 2rem;">
         <form method="POST" action="{{ url_for('admin.company_settings') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             
             <h3 style="margin-bottom: 1.5rem; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Informasi Utama</h3>
             

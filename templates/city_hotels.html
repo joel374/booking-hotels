@@ -124,7 +124,7 @@
             ratingHtml = `<div class="badge-rating"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="margin-right: 2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>${hotel.rating}</div>`;
         }
         
-        let priceHtml = hotel.min_price > 0 ? `${formatRupiah(hotel.min_price)}<span style="font-size: 0.85rem;"> / {{ _('malam') }}</span>` : 'TBA';
+        let priceHtml = hotel.min_price > 0 ? `${formatRupiah(hotel.min_price)}<span style="font-size: 0.85rem;"> / {{ _("malam") }}</span>` : 'TBA';
         
         const description = hotel.description ? hotel.description.substring(0, 80) + '...' : '';
         
@@ -143,13 +143,13 @@
                 <p style="font-size: 0.95rem; margin-bottom: 1.5rem; color: var(--text-main); flex: 1;">${description}</p>
                 <div class="hotel-footer">
                     <div class="hotel-price">
-                        <span>{{ _('Mulai dari') }}</span><br>
+                        <span>{{ _("Mulai dari") }}</span><br>
                         ${priceHtml}
                     </div>
                     <form action="/hotel/${hotel.id}" method="GET" style="margin: 0;">
                         <input type="hidden" name="check_in" value="${document.getElementById('check_in').value}">
                         <input type="hidden" name="check_out" value="${document.getElementById('check_out').value}">
-                        <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1rem;">{{ _('Lihat Kamar') }}</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1rem;">{{ _("Lihat Kamar") }}</button>
                     </form>
                 </div>
             </div>
@@ -173,7 +173,7 @@
                 hasMore = false;
                 spinner.style.display = 'none';
                 if (currentPage === 1) {
-                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem;">{{ _('Belum ada hotel yang tersedia untuk kota ini.') }}</div>`;
+                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem;">{{ _("Belum ada hotel yang tersedia untuk kota ini.") }}</div>`;
                 }
             }
             

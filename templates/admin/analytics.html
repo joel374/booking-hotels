@@ -135,7 +135,7 @@
 </div>
 
 <div class="table-card fade-in" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-    <strong style="margin-right: 0.5rem; color: var(--subtext);">{{ _('{{ _('Filter') }}') }}</strong>
+    <strong style="margin-right: 0.5rem; color: var(--subtext);">{{ _('Filter') }}</strong>
     <select id="filterPeriod" class="form-control" style="width: auto; display: inline-block;">
         <option value="Today">{{ _('Hari Ini') }}</option>
         <option value="This Week">{{ _('Minggu Ini') }}</option>
@@ -331,7 +331,7 @@
                             <th>Hotel</th>
                             <th>Check-in</th>
                             <th>Check-out</th>
-                            <th>{{ _('{{ _('Status') }}') }}</th>
+                            <th>{{ _('Status') }}</th>
                         </tr>
                     </thead>
                     <tbody id="recentBookingsTable">
@@ -367,6 +367,7 @@
         <h2>Export Analytics</h2>
         <p style="margin:0 0 1rem; color: var(--subtext);">Generate professional PDF report based on current insights.</p>
         <form id="formExportAnalytics" method="POST" action="{{ url_for('admin.api_reports_download_pdf') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
                 <label>{{ _('Tipe Laporan') }}</label>
                 <select name="type" class="form-control" required>
@@ -532,7 +533,7 @@
                         tbody.appendChild(tr);
                     });
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--subtext); padding: 2rem;">{{ _('Tidak ada pesanan terbaru.') }}</td></tr>';
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--subtext); padding: 2rem;">{{ _("Tidak ada pesanan terbaru.") }}</td></tr>`;
                 }
 
                 // Render Charts
@@ -552,7 +553,7 @@
                 initChart('chartBookingTrend', 'bar', {
                     labels: data.charts.booking_trend.map(d => d.label),
                     datasets: [{
-                        label: '{{ _('Pesanan') }}',
+                        label: "{{ _("Pesanan") }}",
                         data: data.charts.booking_trend.map(d => d.value),
                         backgroundColor: '#10B981',
                         borderRadius: 4
@@ -571,7 +572,7 @@
                 initChart('chartTopHotels', 'bar', {
                     labels: data.charts.top_hotels.map(d => d.label),
                     datasets: [{
-                        label: '{{ _('Pesanan') }}',
+                        label: "{{ _("Pesanan") }}",
                         data: data.charts.top_hotels.map(d => d.value),
                         backgroundColor: '#4F46E5',
                         borderRadius: 4

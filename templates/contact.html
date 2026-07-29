@@ -46,6 +46,7 @@
     <div style="background: var(--card-bg); padding: 3rem; border-radius: var(--radius); box-shadow: var(--shadow-hover);">
         <h3 style="margin-top: 0; color: var(--primary-color); margin-bottom: 2rem; font-size: 1.8rem;">{{ _('Kirim Pesan') }}</h3>
         <form action="{{ url_for('main.contact_submit') }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-main);">{{ _('Nama Lengkap') }}</label>
                 <input type="text" name="name" class="form-control" required>

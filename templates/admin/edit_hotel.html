@@ -25,6 +25,7 @@
     <div class="form-card" style="max-width: 800px;">
         <h2 style="margin-top: 0;">Hotel Information</h2>
         <form method="POST" action="{{ url_for('admin.edit_hotel', id=hotel.id) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
                 <label>{{ _('Nama Hotel') }}</label>
                 <input type="text" name="name" value="{{ hotel.name }}" required>
@@ -109,9 +110,9 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
-                    <button type="button" class="btn btn-primary" style="flex:1; background: var(--success); border-color: var(--success);" onclick="openAddMoreRoomsModal('{{ group.room_type }}', {{ group.max_number if group.max_number else 100 }})">+ Add</button>
+                    <button type="button" class="btn btn-primary" style="flex:1; background: var(--success); border-color: var(--success);" onclick="openAddMoreRoomsModal('{{ group.room_type }}', '{{ group.max_number if group.max_number else 100 }}')">+ Add</button>
                     <button type="button" class="btn btn-secondary" style="flex:1;" onclick="openEditGroupModal('{{ group.room_type }}', '{{ group.price }}', '{{ group.capacity }}')">{{ _('Ubah') }}</button>
-                    <button type="button" class="btn btn-outline" style="flex:1; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);" onclick="openDeleteGroupModal('{{ group.room_type }}', {{ group.quantity }})">{{ _('Hapus') }}</button>
+                    <button type="button" class="btn btn-outline" style="flex:1; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);" onclick="openDeleteGroupModal('{{ group.room_type }}', '{{ group.quantity }}')">{{ _('Hapus') }}</button>
                 </div>
             </div>
         </div>
@@ -133,6 +134,7 @@
         <h2 style="margin-top: 0;">Add Room Group</h2>
         <p style="margin:0 0 1.5rem; color: var(--subtext);">Create a new block of identical rooms.</p>
         <form method="POST" action="{{ url_for('admin.hotel_add_room_group', hotel_id=hotel.id) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
                 <label>{{ _('Tipe Kamar') }}</label>
                 <input type="text" name="room_type" required placeholder="e.g. Deluxe Room">
@@ -177,6 +179,7 @@
         <h2 style="margin-top: 0;">Edit Room Group</h2>
         <p style="margin:0 0 1.5rem; color: var(--subtext);">{{ _('Perbarui detail untuk semua kamar di grup ini.') }}</p>
         <form method="POST" action="{{ url_for('admin.hotel_edit_room_group', hotel_id=hotel.id) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="old_room_type" id="edit_old_room_type">
             <div class="input-group">
                 <label>{{ _('Tipe Kamar') }}</label>
@@ -214,6 +217,7 @@
         <h2 style="margin-top: 0;">{{ _('Tambah Kamar') }}</h2>
         <p style="margin:0 0 1.5rem; color: var(--subtext);">Generate extra rooms for this room group. They will automatically inherit the price, capacity, and image.</p>
         <form method="POST" action="{{ url_for('admin.hotel_add_more_rooms', hotel_id=hotel.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="room_type" id="add_more_room_type">
             <div class="input-group">
                 <label>{{ _('Tipe Kamar') }}</label>
@@ -240,6 +244,7 @@
 
 <!-- Delete Room Group Form (Hidden) -->
 <form id="delete-group-form" method="POST" action="{{ url_for('admin.hotel_delete_room_group', hotel_id=hotel.id) }}" style="display:none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="room_type" id="delete_room_type">
 </form>
 
@@ -285,7 +290,7 @@ function openEditGroupModal(roomType, price, capacity) {
 function openDeleteGroupModal(roomType, roomCount) {
     Swal.fire({
         title: '{{ _("Hapus Grup Kamar?") }}',
-        text: `{{ _("Anda akan menghapus seluruh kamar pada grup ") }}"${roomType}"{{ _('" room group.') }}
+        text: `{{ _("Anda akan menghapus seluruh kamar pada grup ") }}"${roomType}"{{ _("" room group.") }}
 
 {{ _("Total kamar: ") }}${roomCount}
 
@@ -305,7 +310,7 @@ function openDeleteGroupModal(roomType, roomCount) {
             const form = document.getElementById('delete-group-form');
             
             Swal.fire({
-                title: '{{ _('Hapus') }}...',
+                title: '{{ _("Hapus") }}...',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();

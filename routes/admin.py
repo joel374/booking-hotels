@@ -1424,7 +1424,6 @@ def api_reports_send_email():
             server.starttls()
             server.login(smtp_user, smtp_pass)
             server.send_message(msg)
-        server.quit()
         
         add_notification(
             title="Report Dikirim",

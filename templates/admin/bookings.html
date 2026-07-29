@@ -1,6 +1,6 @@
 {% extends 'admin/base_admin.html' %}
 
-{% block title %}{{ 'Audit Trail' if request.args.get('view') == 'audit' else '{{ _('Pesanan') }}' }}{% endblock %}
+{% block title %}{{ 'Audit Trail' if request.args.get('view') == 'audit' else _('Pesanan') }}{% endblock %}
 
 {% block page_description %}
 {% if request.args.get('view') == 'audit' %}
@@ -483,10 +483,10 @@ Manage guest reservations, payments, and booking status.
                     <th style="width: 14%;">Guest</th>
                     <th style="width: 15%;">Hotel</th>
                     <th style="width: 14%;">Room</th>
-                    <th style="width: 10%;">{{ _('{{ _('Check In') }}') }}</th>
-                    <th style="width: 10%;">{{ _('{{ _('Check Out') }}') }}</th>
+                    <th style="width: 10%;">{{ _('Check In') }}</th>
+                    <th style="width: 10%;">{{ _('Check Out') }}</th>
                     <th style="width: 12%;">{{ _('Total Harga') }}</th>
-                    <th style="width: 12%;">{{ _('{{ _('Status') }}') }}</th>
+                    <th style="width: 12%;">{{ _('Status') }}</th>
                     <th style="width: 6%; text-align: center;">{{ _('Aksi') }}</th>
                 </tr>
             </thead>

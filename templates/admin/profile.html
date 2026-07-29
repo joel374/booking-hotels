@@ -9,6 +9,7 @@
     <div class="form-card">
         <h3 style="margin-bottom: 1.5rem; color: var(--primary);">{{ _('Informasi Profil') }}</h3>
         <form method="POST" action="{{ url_for('admin.profile_edit') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div style="text-align: center; margin-bottom: 1.5rem;">
                 <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--border); margin: 0 auto; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #fff; font-weight: bold; margin-bottom: 1rem;">
                     {% if user.photo_url %}
@@ -31,7 +32,7 @@
                     <input type="text" id="full_name" name="full_name" value="{{ user.full_name or '' }}" required>
                 </div>
                 <div>
-                    <label for="email">{{ _('{{ _('Email') }}') }}</label>
+                    <label for="email">{{ _('Email') }}</label>
                     <input type="email" id="email" name="email" value="{{ user.email }}" required>
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
@@ -59,6 +60,7 @@
     <div class="form-card">
         <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Change Password</h3>
         <form method="POST" action="{{ url_for('admin.profile_password') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
                 {% if user.password_hash %}
                 <div>

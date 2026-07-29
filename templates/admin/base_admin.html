@@ -2019,7 +2019,7 @@ border-radius: 12px;
                             if (submit) {
                                 submit.disabled = true;
                                 submit.dataset.originalText = submit.textContent;
-                                submit.textContent = '{{ _('Hapus') }}...';
+                                submit.textContent = '{{ _("Hapus") }}...';
                             }
                             form.submit();
                         }
@@ -2088,14 +2088,14 @@ border-radius: 12px;
         }
 
         function setupLoadingButtons() {
-            document.querySelectorAll('form:not(.js-delete-form)').forEach(form => {
+            document.querySelectorAll('form:not(.js-delete-form):not(#formExportAnalytics):not(#form-download-pdf)').forEach(form => {
                 form.addEventListener('submit', event => {
                     if (form.dataset.deleting === 'true') return;
                     const submit = form.querySelector('[type="submit"]');
                     if (submit) {
                         submit.disabled = true;
                         submit.dataset.originalText = submit.textContent;
-                        submit.textContent = '{{ _('Memuat...') }}';
+                        submit.textContent = "{{ _("Memuat...") }}";
                     }
                 });
             });
@@ -2257,7 +2257,7 @@ border-radius: 12px;
             function renderNotifications(notifs) {
                 body.innerHTML = '';
                 if (notifs.length === 0) {
-                    body.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">{{ _('Belum ada notifikasi.') }}</div>';
+                    body.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">{{ _("Belum ada notifikasi.") }}</div>';
                     return;
                 }
 
@@ -2289,7 +2289,7 @@ border-radius: 12px;
 
             // Mark Single Read
             function markAsRead(id, element) {
-                fetch(`/admin/api/notifications/read/${id}`, { method: 'POST' })
+                fetch(`/admin/api/notifications/read/${id}`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token() }}' } })
                     .then(res => res.json())
                     .then(data => {
                         if (data.status === 'success') {
@@ -2306,7 +2306,7 @@ border-radius: 12px;
             // Mark All Read
             if (markAllBtn) {
                 markAllBtn.addEventListener('click', () => {
-                    fetch('/admin/api/notifications/read_all', { method: 'POST' })
+                    fetch('/admin/api/notifications/read_all', { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token() }}' } })
                         .then(res => res.json())
                         .then(data => {
                             if (data.status === 'success') {
@@ -2447,7 +2447,7 @@ border-radius: 12px;
                             })
                             .catch(err => {
                                 console.error(err);
-                                resultsBox.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--danger);">{{ _('Terjadi kesalahan saat mengambil data.') }}</div>';
+                                resultsBox.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--danger);">{{ _("Terjadi kesalahan saat mengambil data.") }}</div>';
                             });
                     }, 300);
                 });
@@ -2512,45 +2512,45 @@ border-radius: 12px;
             // Translation Dictionary
             const i18n = {
                 'id': {
-                    '{{ _('Dasbor') }}': 'Dasbor',
+                    "{{ _("Dasbor") }}": 'Dasbor',
                     'Overview': 'Ringkasan',
-                    '{{ _('Hotel') }}': 'Hotel',
-                    '{{ _('Kamar') }}': 'Kamar',
-                    '{{ _('Pesanan') }}': 'Pemesanan',
+                    "{{ _("Hotel") }}": 'Hotel',
+                    "{{ _("Kamar") }}": 'Kamar',
+                    "{{ _("Pesanan") }}": 'Pemesanan',
                     'Audit': 'Audit',
-                    '{{ _('Laporan') }}': 'Laporan',
+                    "{{ _("Laporan") }}": 'Laporan',
                     'Website': 'Situs Web',
-                    '{{ _('Keluar') }}': 'Keluar',
+                    "{{ _("Keluar") }}": 'Keluar',
                     'Business Analytics': 'Analisis Bisnis',
                     'Notification': 'Notifikasi',
-                    '{{ _('Notifikasi') }}': 'Notifikasi',
+                    "{{ _("Notifikasi") }}": 'Notifikasi',
                     'Search': 'Cari',
                     'Search hotels, rooms, guests, bookings...': 'Cari hotel, kamar, tamu, pemesanan...',
                     'Save': 'Simpan',
                     'Cancel': 'Batal',
                     'Settings': 'Pengaturan',
-                    '{{ _('Buat Laporan') }}': 'Buat Laporan',
-                    '{{ _('Profil') }}': 'Profil',
+                    "{{ _("Buat Laporan") }}": 'Buat Laporan',
+                    "{{ _("Profil") }}": 'Profil',
                     'My Profile': 'Profil Saya',
                     'Change Password': 'Ubah Kata Sandi',
                     'Manage your admin operations with confidence.': 'Kelola operasi admin Anda dengan percaya diri.',
                     'Hotel Administrator': 'Administrator Hotel',
-                    '{{ _('Tema') }}': 'Tema',
-                    '{{ _('Bahasa') }}': 'Bahasa',
+                    "{{ _("Tema") }}": 'Tema',
+                    "{{ _("Bahasa") }}": 'Bahasa',
                     'Bahasa Indonesia': 'Bahasa Indonesia',
                     'English': 'English',
                     'System': 'Sistem',
                     'Light': 'Terang',
                     'Dark': 'Gelap',
-                    '{{ _('Tandai semua dibaca') }}': 'Tandai semua dibaca',
-                    '{{ _('Total Pendapatan') }}': 'Total Pendapatan',
+                    "{{ _("Tandai semua dibaca") }}": 'Tandai semua dibaca',
+                    "{{ _("Total Pendapatan") }}": 'Total Pendapatan',
                     'Active Bookings': 'Pemesanan Aktif',
                     'Total Users': 'Total Pengguna',
                     'Rooms Available': 'Kamar Tersedia',
                     'Revenue Trends': 'Tren Pendapatan',
-                    '{{ _('Pesanan Terbaru') }}': 'Pemesanan Terbaru',
-                    '{{ _('Status') }}': '{{ _('Status') }}',
-                    '{{ _('Aksi') }}': 'Aksi'
+                    "{{ _("Pesanan Terbaru") }}": 'Pemesanan Terbaru',
+                    "{{ _("Status") }}": "{{ _("Status") }}",
+                    "{{ _("Aksi") }}": 'Aksi'
                 }
             };
 

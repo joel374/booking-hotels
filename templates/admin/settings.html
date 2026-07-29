@@ -8,6 +8,7 @@
     <div class="form-card">
         <h3 style="margin-bottom: 1.5rem; color: var(--primary);">{{ _('Pengaturan Sistem') }}</h3>
         <form method="POST" action="{{ url_for('admin.settings_update') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
                 <div>
                     <label for="theme">{{ _('Tema') }}</label>

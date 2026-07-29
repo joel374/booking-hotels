@@ -711,6 +711,7 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - **[NEW]** Implementasi Halaman Profil Pengguna (`/profile`) dengan fitur ubah data diri, foto profil, dan password.
   - **[NEW]** Fitur Lupa Password dan Reset Password melalui tautan token unik via email.
   - **[NEW]** Peningkatan keamanan Modul 1 (Security Fixes): Implementasi perlindungan CSRF (Flask-WTF), *Rate Limiting* (Flask-Limiter) anti *brute-force*, mitigasi *Session Hijacking*, penyempurnaan validasi karakter spesial pada *password*, dan perbaikan UX/UI form pendaftaran & pembaruan profil.
+  - **[NEW]** Stabilisasi & Bug Fix Modul 2 (Admin): Perbaikan *error* SMTP saat kirim laporan, penyelesaian *bug* *infinite loading* pada tombol ekspor PDF, injeksi CSRF Token yang hilang di berbagai form admin, serta perbaikan *syntax collision* (IDE *false-positives*) pada Jinja Javascript & inline CSS.
 
 ---
 

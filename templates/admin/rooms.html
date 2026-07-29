@@ -412,6 +412,7 @@
                 </div>
             </div>
             <form method="POST" action="{{ url_for('admin.delete_room', id=room.id) }}" class="js-delete-form" style="display:none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" style="display:none;"></button>
             </form>
         </div>
@@ -429,6 +430,7 @@
         <h2>Add New Room</h2>
         <p style="margin:0 0 1rem; color: var(--subtext);">Fill in room details and upload images for the new listing.</p>
         <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
                 <label>Select Hotel</label>
                 <select name="hotel_id" required>
@@ -470,6 +472,7 @@
         <h2>Edit Room</h2>
         <p style="margin:0 0 1rem; color: var(--subtext);">Update room details or replace gallery images.</p>
         <form id="editRoomForm" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
                 <label>{{ _('Tipe Kamar') }}</label>
                 <input type="text" name="room_type" id="edit_room_type" required>
@@ -554,7 +557,7 @@ function initRoomPage() {
             pagination.appendChild(button);
         };
 
-        addButton('{{ _('Sebelumnya') }}', currentPage - 1, currentPage === 1);
+        addButton("{{ _("Sebelumnya") }}", currentPage - 1, currentPage === 1);
 
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(pageCount, currentPage + 2);
@@ -576,7 +579,7 @@ function initRoomPage() {
             addButton(String(pageCount), pageCount);
         }
 
-        addButton('{{ _('Selanjutnya') }}', currentPage + 1, currentPage === pageCount);
+        addButton("{{ _("Selanjutnya") }}", currentPage + 1, currentPage === pageCount);
     };
 
     const renderPage = () => {
@@ -651,7 +654,7 @@ function initRoomPage() {
                 const status = card.querySelector('.room-card-meta span:nth-child(2) span')?.textContent || '';
                 Swal.fire({
                     title: title,
-                    html: `<p style="text-align:left; margin:0.5rem 0;"><strong>Hotel</strong>: ${hotel}</p><p style="text-align:left; margin:0.5rem 0;"><strong>Room</strong>: ${roomNumber}</p><p style="text-align:left; margin:0.5rem 0;"><strong>{{ _('Harga') }}</strong>: ${price}</p><p style="text-align:left; margin:0.5rem 0;"><strong>{{ _('{{ _('Status') }}') }}</strong>: ${status}</p>`,
+                    html: `<p style="text-align:left; margin:0.5rem 0;"><strong>Hotel</strong>: ${hotel}</p><p style="text-align:left; margin:0.5rem 0;"><strong>Room</strong>: ${roomNumber}</p><p style="text-align:left; margin:0.5rem 0;"><strong>{{ _("Harga") }}</strong>: ${price}</p><p style="text-align:left; margin:0.5rem 0;"><strong>{{ _("Status") }}</strong>: ${status}</p>`,
                     showCloseButton: true,
                     confirmButtonText: 'Close',
                     width: '28rem'

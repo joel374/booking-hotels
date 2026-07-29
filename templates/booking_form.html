@@ -52,6 +52,7 @@
     </div>
 
     <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="check_in" value="{{ check_in }}">
         <input type="hidden" name="check_out" value="{{ check_out }}">
 
@@ -137,11 +138,11 @@
         if (!nValid || !pValid) {
             e.preventDefault();
             Swal.fire({
-                title: "{{ _('Data Belum Lengkap') }}",
-                text: "{{ _('Mohon periksa kembali form pengisian Anda. Pastikan Nama dan Nomor HP telah terisi dengan benar.') }}",
+                title: "{{ _("Data Belum Lengkap") }}",
+                text: "{{ _("Mohon periksa kembali form pengisian Anda. Pastikan Nama dan Nomor HP telah terisi dengan benar.") }}",
                 icon: 'warning',
                 confirmButtonColor: '#f59e0b',
-                confirmButtonText: "{{ _('Baik, saya lengkapi') }}"
+                confirmButtonText: "{{ _("Baik, saya lengkapi") }}"
             });
         } else {
             // Show loading state to prevent double submission
