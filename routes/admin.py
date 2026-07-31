@@ -125,11 +125,14 @@ def hotels():
 
             files = request.files.getlist('images')
             saved_image_urls = []
+            image_data = []
             for file in files:
                 if file and file.filename != '':
                     image_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
                     saved_image_urls.append(image_url)
-                    cursor.execute("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", (hotel_id, image_url))
+                    image_data.append((hotel_id, image_url))
+            if image_data:
+                cursor.executemany("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", image_data)
             
             conn.commit()
             saved_image_urls = [] # Clear so we do not delete committed images
@@ -302,11 +305,14 @@ def edit_hotel(id):
 
         saved_image_urls = []
         try:
+            image_data = []
             for file in files:
                 if file and file.filename != '':
                     image_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
                     saved_image_urls.append(image_url)
-                    cursor.execute("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", (id, image_url))
+                    image_data.append((id, image_url))
+            if image_data:
+                cursor.executemany("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", image_data)
         except ValueError as e:
             for image_url in saved_image_urls:
                 delete_image_file(image_url, current_app.root_path)
@@ -436,11 +442,14 @@ def hotel_delete_room_group(hotel_id):
 
         saved_image_urls = []
         try:
+            image_data = []
             for file in files:
                 if file and file.filename != '':
                     image_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
                     saved_image_urls.append(image_url)
-                    cursor.execute("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", (id, image_url))
+                    image_data.append((id, image_url))
+            if image_data:
+                cursor.executemany("INSERT INTO hotel_images (hotel_id, image_url) VALUES (%s, %s)", image_data)
         except ValueError as e:
             for image_url in saved_image_urls:
                 delete_image_file(image_url, current_app.root_path)

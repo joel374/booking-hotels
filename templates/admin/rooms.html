@@ -557,7 +557,7 @@ function initRoomPage() {
             pagination.appendChild(button);
         };
 
-        addButton("{{ _("Sebelumnya") }}", currentPage - 1, currentPage === 1);
+        addButton('{{ _("Sebelumnya") }}', currentPage - 1, currentPage === 1);
 
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(pageCount, currentPage + 2);
@@ -579,7 +579,7 @@ function initRoomPage() {
             addButton(String(pageCount), pageCount);
         }
 
-        addButton("{{ _("Selanjutnya") }}", currentPage + 1, currentPage === pageCount);
+        addButton('{{ _("Selanjutnya") }}', currentPage + 1, currentPage === pageCount);
     };
 
     const renderPage = () => {

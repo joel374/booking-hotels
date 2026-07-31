@@ -7,7 +7,7 @@
     <div class="welcome-grid">
         <div class="welcome-copy">
             <h2>Welcome back, Hotel Administrator</h2>
-            <p>Track performance, manage inventory, and keep booking operations running smoothly from a polished partner dashboard.</p>
+            <p>{{ _('Pantau performa, kelola inventaris, dan pastikan operasional pemesanan berjalan lancar melalui dasbor mitra yang modern.') }}</p>
         </div>
         <div class="welcome-actions">
             <a href="{{ url_for('admin.reports') }}" class="btn btn-primary" style="text-decoration: none;">Create Report</a>
@@ -55,7 +55,7 @@
     <div class="table-info">
         <div>
             <p class="table-title">Latest Bookings</p>
-            <p>Review the latest transactions and booking statuses.</p>
+            <p>{{ _('Tinjau transaksi terbaru dan status pemesanan.') }}</p>
         </div>
         <div class="toolbar-group">
             <input id="bookings-search" class="toolbar-input" type="search" placeholder="Search bookings...">

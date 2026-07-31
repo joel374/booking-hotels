@@ -379,8 +379,8 @@ Manage guest reservations, payments, and booking status.
         <input id="audit-search" class="toolbar-input" type="search" placeholder="Search Audit...">
     </div>
     <select id="audit-user" class="toolbar-select">
-        <option value="">All Users</option>
-        <option value="admin">Admin</option>
+        <option value="">{{ _('Semua Pengguna') }}</option>
+        <option value="admin">{{ _('Admin') }}</option>
     </select>
     <select id="audit-date" class="toolbar-select">
         <option value="">{{ _('Sepanjang Waktu') }}</option>
@@ -391,11 +391,11 @@ Manage guest reservations, payments, and booking status.
         <option value="this_month">{{ _('Bulan Ini') }}</option>
     </select>
     <select id="audit-status" class="toolbar-select">
-        <option value="">All Statuses</option>
-        <option value="Booked">Booked</option>
-        <option value="Checked In">Checked In</option>
-        <option value="Checked Out">Checked Out</option>
-        <option value="Cancelled">Cancelled</option>
+        <option value="">{{ _('Semua Status') }}</option>
+        <option value="Booked">{{ _('Booked') }}</option>
+        <option value="Checked In">{{ _('Checked In') }}</option>
+        <option value="Checked Out">{{ _('Checked Out') }}</option>
+        <option value="Cancelled">{{ _('Cancelled') }}</option>
     </select>
 </div>
 
@@ -443,10 +443,10 @@ Manage guest reservations, payments, and booking status.
     </div>
     <select id="bookings-status" class="toolbar-select">
         <option value="">{{ _('Semua Status') }}</option>
-        <option value="Booked">Booked</option>
-        <option value="Checked In">Checked In</option>
-        <option value="Checked Out">Checked Out</option>
-        <option value="Cancelled">Cancelled</option>
+        <option value="Booked">{{ _('Booked') }}</option>
+        <option value="Checked In">{{ _('Checked In') }}</option>
+        <option value="Checked Out">{{ _('Checked Out') }}</option>
+        <option value="Cancelled">{{ _('Cancelled') }}</option>
     </select>
     <select id="bookings-date" class="toolbar-select">
         <option value="">{{ _('Tanggal') }}</option>
@@ -455,14 +455,14 @@ Manage guest reservations, payments, and booking status.
         <option value="month">{{ _('Bulan Ini') }}</option>
     </select>
     <select id="bookings-sort" class="toolbar-select">
-        <option value="newest">Newest</option>
-        <option value="oldest">Oldest</option>
-        <option value="guest_asc">Guest Name A-Z</option>
-        <option value="guest_desc">Guest Name Z-A</option>
-        <option value="checkin_new">Check-in Terbaru</option>
-        <option value="checkin_old">Check-in Terlama</option>
-        <option value="price_desc">Highest Total Price</option>
-        <option value="price_asc">Lowest Total Price</option>
+        <option value="newest">{{ _('Terbaru') }}</option>
+        <option value="oldest">{{ _('Terlama') }}</option>
+        <option value="guest_asc">{{ _('Nama Tamu A-Z') }}</option>
+        <option value="guest_desc">{{ _('Nama Tamu Z-A') }}</option>
+        <option value="checkin_new">{{ _('Check-in Terbaru') }}</option>
+        <option value="checkin_old">{{ _('Check-in Terlama') }}</option>
+        <option value="price_desc">{{ _('Harga Tertinggi') }}</option>
+        <option value="price_asc">{{ _('Harga Terendah') }}</option>
     </select>
 </div>
 

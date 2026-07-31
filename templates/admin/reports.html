@@ -510,7 +510,7 @@ Bhineka Hotels</textarea>
     const previewContainer = document.getElementById('report-preview');
 
     reportPeriod.addEventListener('change', (e) => {
-        if (e.target.value === "{{ _("Tanggal Kustom") }}") {
+        if (e.target.value === '{{ _("Tanggal Kustom") }}') {
             customDateGroup.style.display = 'flex';
         } else {
             customDateGroup.style.display = 'none';
@@ -543,7 +543,7 @@ Bhineka Hotels</textarea>
         const sort = document.getElementById('report-sort').value;
         let period = document.getElementById('report-period').value;
 
-        if (period === "{{ _("Tanggal Kustom") }}") {
+        if (period === '{{ _("Tanggal Kustom") }}') {
             const start = document.getElementById('date-start').value;
             const end = document.getElementById('date-end').value;
             period = `${start} to ${end}`;
@@ -597,27 +597,27 @@ Bhineka Hotels</textarea>
             const formatRp = num => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
             if (type === 'Dashboard Summary') {
-                lbl1.textContent = "{{ _("Total Hotel") }}"; val1.textContent = data.summary.total_hotels;
-                lbl2.textContent = "{{ _("Total Kamar") }}"; val2.textContent = data.summary.total_rooms;
-                lbl3.textContent = "{{ _("Total Pesanan") }}"; val3.textContent = data.summary.total_bookings;
-                lbl4.textContent = "{{ _("Total Pendapatan") }}"; val4.textContent = formatRp(data.summary.total_revenue);
+                lbl1.textContent = '{{ _("Total Hotel") }}'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = '{{ _("Total Kamar") }}'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = '{{ _("Total Pesanan") }}'; val3.textContent = data.summary.total_bookings;
+                lbl4.textContent = '{{ _("Total Pendapatan") }}'; val4.textContent = formatRp(data.summary.total_revenue);
             } else if (type === 'Hotels') {
-                lbl1.textContent = "{{ _("Total Hotel") }}"; val1.textContent = data.summary.total_hotels;
-                lbl2.textContent = "{{ _("Total Kamar") }}"; val2.textContent = data.summary.total_rooms;
-                lbl3.textContent = "{{ _("Kamar Tersedia") }}"; val3.textContent = data.summary.available_rooms;
-                lbl4.textContent = "{{ _("Tingkat Hunian") }}"; val4.textContent = data.summary.occupancy_rate + '%';
+                lbl1.textContent = '{{ _("Total Hotel") }}'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = '{{ _("Total Kamar") }}'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = '{{ _("Kamar Tersedia") }}'; val3.textContent = data.summary.available_rooms;
+                lbl4.textContent = '{{ _("Tingkat Hunian") }}'; val4.textContent = data.summary.occupancy_rate + '%';
             } else if (type === 'Rooms') {
-                lbl1.textContent = "{{ _("Total Kamar") }}"; val1.textContent = data.summary.total_rooms;
-                lbl2.textContent = "{{ _("Kamar Dipesan") }}"; val2.textContent = data.summary.total_rooms - data.summary.available_rooms;
-                lbl3.textContent = "{{ _("Kamar Tersedia") }}"; val3.textContent = data.summary.available_rooms;
-                lbl4.textContent = "{{ _("Tingkat Hunian") }}"; val4.textContent = data.summary.occupancy_rate + '%';
+                lbl1.textContent = '{{ _("Total Kamar") }}'; val1.textContent = data.summary.total_rooms;
+                lbl2.textContent = '{{ _("Kamar Dipesan") }}'; val2.textContent = data.summary.total_rooms - data.summary.available_rooms;
+                lbl3.textContent = '{{ _("Kamar Tersedia") }}'; val3.textContent = data.summary.available_rooms;
+                lbl4.textContent = '{{ _("Tingkat Hunian") }}'; val4.textContent = data.summary.occupancy_rate + '%';
             } else if (type === 'Bookings') {
-                lbl1.textContent = "{{ _("Total Pesanan") }}"; val1.textContent = data.summary.total_bookings;
+                lbl1.textContent = '{{ _("Total Pesanan") }}'; val1.textContent = data.summary.total_bookings;
                 lbl2.textContent = 'Booked'; val2.textContent = data.summary.status_booked;
                 lbl3.textContent = 'Checked In'; val3.textContent = data.summary.status_checked_in;
                 lbl4.textContent = 'Cancelled'; val4.textContent = data.summary.status_cancelled;
             } else if (type === 'Revenue Report') {
-                lbl1.textContent = "{{ _("Total Pendapatan") }}"; val1.textContent = formatRp(data.summary.total_revenue);
+                lbl1.textContent = '{{ _("Total Pendapatan") }}'; val1.textContent = formatRp(data.summary.total_revenue);
                 lbl2.textContent = 'Avg Revenue'; val2.textContent = formatRp(data.summary.avg_revenue);
                 lbl3.textContent = 'Transactions'; val3.textContent = data.summary.total_transactions;
                 lbl4.textContent = 'Top Hotel'; val4.textContent = data.summary.highest_revenue_hotel;
@@ -627,10 +627,10 @@ Bhineka Hotels</textarea>
                 lbl3.textContent = 'Admin Actions'; val3.textContent = data.summary.admin_actions;
                 lbl4.textContent = 'System Actions'; val4.textContent = data.summary.system_actions;
             } else {
-                lbl1.textContent = "{{ _("Total Hotel") }}"; val1.textContent = data.summary.total_hotels;
-                lbl2.textContent = "{{ _("Total Kamar") }}"; val2.textContent = data.summary.total_rooms;
-                lbl3.textContent = "{{ _("Total Pesanan") }}"; val3.textContent = data.summary.total_bookings;
-                lbl4.textContent = "{{ _("Total Pendapatan") }}"; val4.textContent = formatRp(data.summary.total_revenue);
+                lbl1.textContent = '{{ _("Total Hotel") }}'; val1.textContent = data.summary.total_hotels;
+                lbl2.textContent = '{{ _("Total Kamar") }}'; val2.textContent = data.summary.total_rooms;
+                lbl3.textContent = '{{ _("Total Pesanan") }}'; val3.textContent = data.summary.total_bookings;
+                lbl4.textContent = '{{ _("Total Pendapatan") }}'; val4.textContent = formatRp(data.summary.total_revenue);
             }
 
             const extraSummary = document.getElementById('dashboard-extra-summary');
@@ -758,7 +758,7 @@ Bhineka Hotels</textarea>
                 Swal.fire('Error', 'An unexpected error occurred.', 'error');
             })
             .finally(() => {
-                btn.textContent = "{{ _("Kirim Email") }}";
+                btn.textContent = '{{ _("Kirim Email") }}';
                 btn.disabled = false;
             });
     });
