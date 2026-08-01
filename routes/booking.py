@@ -164,7 +164,12 @@ def invoice(booking_id):
     cursor.close()
     conn.close()
     
-    if not booking_record or booking_record['status'] != 'Booked':
+    # Invoice tetap dapat diakses selama pesanan tidak dibatalkan.
+    # Status berubah otomatis (Booked -> Checked In -> Checked Out) oleh scheduler
+    # di app.py, jadi membatasi ke 'Booked' saja membuat invoice hilang begitu
+    # tanggal check-in tiba. Daftar status ini disamakan dengan my_bookings.html.
+    if not booking_record or booking_record['status'] not in ('Booked', 'Checked In', 'Checked Out'):
+        flash("Invoice tidak tersedia untuk pesanan ini.", "warning")
         return redirect(url_for('main.index'))
         
     nights = (booking_record['check_out'] - booking_record['check_in']).days
@@ -273,7 +278,7 @@ def cancel_booking(booking_id):
     if datetime.now().date() >= booking['check_in']:
         cursor.close()
         conn.close()
-        flash("Pesanan tidak dapat dibatalkan karena sudah melewati batas waktu (24 jam sebelum check-in).", "danger")
+        flash("Pesanan tidak dapat dibatalkan karena sudah memasuki tanggal check-in.", "danger")
         return redirect(url_for('booking.my_bookings'))
 
     cancel_reason = request.form.get('cancel_reason', 'Dibatalkan oleh Pengguna')
@@ -292,15 +297,17 @@ def cancel_booking(booking_id):
     """, (booking_id,))
     booking_data = cursor.fetchone()
     
-    if booking_data and booking_data.get('user_email'):
+    if booking_data:
         from services.email_service import send_email
 
-        
-        html_content = render_template('emails/booking_cancelled.html', booking=booking_data)
-        subject = f"Pesanan Dibatalkan - {booking_data['hotel_name']}"
-        send_email(booking_data['user_email'], subject, html_content)
-        
-        # Cek Waiting List (berdasarkan tipe kamar yang sama di hotel yang sama)
+        if booking_data.get('user_email'):
+            html_content = render_template('emails/booking_cancelled.html', booking=booking_data)
+            subject = f"Pesanan Dibatalkan - {booking_data['hotel_name']}"
+            send_email(booking_data['user_email'], subject, html_content)
+
+        # Cek Waiting List (berdasarkan tipe kamar yang sama di hotel yang sama).
+        # Blok ini TIDAK boleh bergantung pada email si pembatal, karena pengantre
+        # adalah orang lain yang punya alamat email sendiri.
         cursor.execute("""
             SELECT w.id, w.check_in, w.check_out, u.email as user_email, u.username, h.name as hotel_name, rw.room_type, h.id as hotel_id
             FROM waiting_lists w

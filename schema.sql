@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS `rooms` (
   `room_number` VARCHAR(10)     NOT NULL,
   `room_type`   VARCHAR(50)     NOT NULL,
   `price`       DECIMAL(10, 2)  NOT NULL,
+  `capacity`    INT             NOT NULL DEFAULT 2,   -- Jumlah tamu maksimal per kamar
   `is_deleted`  TINYINT(1)      DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `hotel_id` (`hotel_id`),

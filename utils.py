@@ -1,7 +1,7 @@
 import os
 import uuid
 from functools import wraps
-from flask import session, flash, redirect, url_for
+from flask import session, flash, redirect, url_for, request
 from werkzeug.utils import secure_filename
 from db import get_db_connection
 from PIL import Image
@@ -95,7 +95,9 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             flash("Please login to continue.", "warning")
-            return redirect(url_for('auth.login'))
+            # Bawa URL tujuan agar setelah login user kembali ke halaman yang dituju
+            # (mis. form booking beserta room_type & tanggalnya), bukan ke beranda.
+            return redirect(url_for('auth.login', next=request.full_path))
         return f(*args, **kwargs)
     return decorated_function
 

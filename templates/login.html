@@ -8,6 +8,7 @@
 
     <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form" autocomplete="off">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <input type="hidden" name="next" value="{{ request.args.get('next', '') }}"/>
       <input type="text" name="username_fake" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;top:-9999px;" />
       <input type="password" name="password_fake" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;top:-9999px;" />
       <div class="form-group">

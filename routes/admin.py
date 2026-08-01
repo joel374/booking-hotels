@@ -80,7 +80,7 @@ def dashboard():
     cursor.execute("SELECT COUNT(*) as count FROM bookings")
     total_bookings = cursor.fetchone()['count']
     
-    cursor.execute("SELECT IFNULL(SUM(r.price), 0) as revenue FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out')")
+    cursor.execute("SELECT IFNULL(SUM(r.price * GREATEST(1, DATEDIFF(b.check_out, b.check_in))), 0) as revenue FROM bookings b JOIN rooms r ON b.room_id = r.id WHERE b.status IN ('Booked', 'Checked In', 'Checked Out')")
     revenue = cursor.fetchone()['revenue']
     
     cursor.execute("SELECT COUNT(*) as count FROM users WHERE role = 'customer'")
@@ -481,6 +481,7 @@ def delete_hotel(id):
     return redirect(url_for('admin.hotels'))
 
 @admin_bp.route('/api/cities/<province_id>')
+@admin_required
 def get_cities(province_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)

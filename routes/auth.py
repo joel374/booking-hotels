@@ -12,6 +12,21 @@ from utils import login_required, add_notification, save_file, delete_image_file
 auth_bp = Blueprint('auth', __name__)
 
 
+def _safe_next_target():
+    """
+    Ambil parameter `next` hanya jika berupa path relatif di aplikasi ini.
+    Menolak URL absolut / protocol-relative agar tidak menjadi celah open redirect.
+    """
+    target = request.form.get('next') or request.args.get('next')
+    if not target:
+        return None
+    if '://' in target or target.startswith('//') or target.startswith('\\'):
+        return None
+    if not target.startswith('/'):
+        return None
+    return target
+
+
 def valid_email(address):
     return re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', address)
 
@@ -239,7 +254,7 @@ def login():
                     icon_type="login"
                 )
                 return redirect(url_for('admin.dashboard'))
-            return redirect(url_for('main.index'))
+            return redirect(_safe_next_target() or url_for('main.index'))
 
         if user and user.get('auth_provider') == 'google':
             flash("Akun ini terdaftar dengan Google. Silakan masuk melalui Google.", "warning")

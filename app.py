@@ -89,7 +89,7 @@ limiter.init_app(app)
 
 import traceback
 from werkzeug.exceptions import HTTPException
-from flask import flash, redirect, url_for
+from flask import flash, redirect, url_for, request, jsonify
 
 @app.errorhandler(Exception)
 def handle_global_error(e):
@@ -100,7 +100,12 @@ def handle_global_error(e):
     # Log the error for debugging
     app.logger.error(f"Global Error: {str(e)}")
     app.logger.error(traceback.format_exc())
-    
+
+    # Endpoint AJAX/JSON harus tetap menerima JSON. Mengembalikan redirect HTML
+    # ke sini membuat infinite scroll, live search, dan fetch() lain gagal parse.
+    if request.path.startswith('/api/') or request.path.startswith('/admin/api/'):
+        return jsonify({'error': 'Terjadi masalah pada sistem. Mohon coba beberapa saat lagi.'}), 500
+
     # Show user-friendly SweetAlert flash message instead of ugly debugger
     flash("Terdapat masalah pada sistem atau tindakan tidak valid. Mohon coba beberapa saat lagi.", "danger")
     return redirect(url_for('main.index'))

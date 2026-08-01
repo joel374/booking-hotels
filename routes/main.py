@@ -162,6 +162,9 @@ def api_hotels():
     sort_by = request.args.get('sort_by')
     
     per_page = 14
+    # Cegah OFFSET negatif (?page=0 atau page negatif) yang membuat MySQL error
+    if not page or page < 1:
+        page = 1
     offset = (page - 1) * per_page
     
     conn = get_db_connection()
@@ -319,7 +322,16 @@ def hotel_rooms(hotel_id):
         WHERE h.id = %s AND h.is_deleted = 0
     """, (hotel_id,))
     hotel = cursor.fetchone()
-    
+
+    # Hotel yang sudah di-soft-delete tetap memiliki baris rooms dengan is_deleted = 0,
+    # sehingga available_rooms bisa terisi walau hotel-nya None. Tanpa guard ini,
+    # pemanggilan hotel.get('images') di bawah melempar AttributeError (HTTP 500).
+    if not hotel:
+        cursor.close()
+        conn.close()
+        flash("Hotel tidak ditemukan atau sudah tidak tersedia.", "warning")
+        return redirect(url_for('main.index'))
+
     if hotel:
         cursor.execute("SELECT image_url FROM hotel_images WHERE hotel_id = %s", (hotel_id,))
         hotel['images'] = [img['image_url'] for img in cursor.fetchall()]
@@ -391,6 +403,9 @@ def set_language():
 def api_reviews(hotel_id):
     page = request.args.get('page', 1, type=int)
     per_page = 5
+    # Cegah OFFSET negatif (?page=0 atau page negatif) yang membuat MySQL error
+    if not page or page < 1:
+        page = 1
     offset = (page - 1) * per_page
     
     conn = get_db_connection()
