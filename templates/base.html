@@ -105,7 +105,10 @@
                 try {
                     await fetch('/api/set-theme', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        },
                         body: JSON.stringify({theme: newTheme})
                     });
                 } catch (e) { console.error('Error saving theme', e); }
@@ -118,7 +121,10 @@
                 try {
                     await fetch('/api/set-language', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        },
                         body: JSON.stringify({language: newLang})
                     });
                     window.location.reload();

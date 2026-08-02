@@ -84,6 +84,7 @@ def book_room(hotel_id):
 
         # LOCK THE HOTEL ROW to serialize bookings for this hotel and strictly prevent Double Booking race conditions
         cursor.execute("SELECT id FROM hotels WHERE id = %s FOR UPDATE", (hotel_id,))
+        cursor.fetchone()
         
         cursor.execute("""
             SELECT id FROM rooms 

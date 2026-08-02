@@ -373,9 +373,13 @@ def hotel_rooms(hotel_id):
                            sort_by=sort_by,
                            reviews=reviews)
 
+from extensions import csrf
+
 @main_bp.route('/api/set-theme', methods=['POST'])
+@csrf.exempt
 def set_theme():
-    theme = request.json.get('theme', 'light')
+    data = request.get_json(silent=True) or {}
+    theme = data.get('theme', 'light')
     session['theme'] = theme
     if 'user_id' in session:
         conn = get_db_connection()
@@ -387,8 +391,10 @@ def set_theme():
     return {"status": "success", "theme": theme}
 
 @main_bp.route('/api/set-language', methods=['POST'])
+@csrf.exempt
 def set_language():
-    language = request.json.get('language', 'id')
+    data = request.get_json(silent=True) or {}
+    language = data.get('language', 'id')
     session['language'] = language
     if 'user_id' in session:
         conn = get_db_connection()
