@@ -712,6 +712,9 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - **[NEW]** Fitur Lupa Password dan Reset Password melalui tautan token unik via email.
   - **[NEW]** Peningkatan keamanan Modul 1 (Security Fixes): Implementasi perlindungan CSRF (Flask-WTF), *Rate Limiting* (Flask-Limiter) anti *brute-force*, mitigasi *Session Hijacking*, penyempurnaan validasi karakter spesial pada *password*, dan perbaikan UX/UI form pendaftaran & pembaruan profil.
   - **[NEW]** Stabilisasi & Bug Fix Modul 2 (Admin): Perbaikan *error* SMTP saat kirim laporan, penyelesaian *bug* *infinite loading* pada tombol ekspor PDF, injeksi CSRF Token yang hilang di berbagai form admin, serta perbaikan *syntax collision* (IDE *false-positives*) pada Jinja Javascript & inline CSS.
+  - **[NEW]** Bug Fix & Stabilisasi Modul 3 (Booking): Mitigasi *race condition* *double booking* dengan *hotel-level row locking* (`SELECT FOR UPDATE`), pembersihan *dead code* rute `/pay`, penanganan `cursor.fetchone()` untuk mencegah *Unread result found error*, sanitasi `page` & `wl_page` anti-*negative offset* SQL error, serta validasi safe parameter `request.form.get()` dan filter `is_deleted = 0` di *waiting list*.
+  - **[NEW]** Stabilitas API & Proteksi CSRF: Penanganan `@csrf.exempt` dan `request.get_json(silent=True)` pada endpoint `/api/set-theme` dan `/api/set-language` serta penambahan header `X-CSRFToken` pada pemanggilan AJAX `fetch()` di `base.html` untuk membasmi error HTTP 400.
+  - **[NEW]** Penyempurnaan Tampilan Dark Mode: Refaktorisasi CSS `.input-valid`, `.input-invalid`, dan `-webkit-autofill` di `booking_form.html` menggunakan transparansi `rgba()` agar warna *input* menyatu secara mulus tanpa kontras tinggi ("belang") di tema gelap maupun terang.
 
 ---
 
@@ -730,6 +733,6 @@ Proyek ini telah dikonfigurasi untuk rilis ke lingkungan *Production* (VPS) seca
 
 ---
 
-**Last Updated:** July 28, 2026  
-**Version:** 1.9  
+**Last Updated:** August 2, 2026  
+**Version:** 2.0  
 **Status:** Active Development (Distributed to 3 Team Members)
