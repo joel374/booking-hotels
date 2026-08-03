@@ -715,6 +715,7 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - **[NEW]** Bug Fix & Stabilisasi Modul 3 (Booking): Mitigasi *race condition* *double booking* dengan *hotel-level row locking* (`SELECT FOR UPDATE`), pembersihan *dead code* rute `/pay`, penanganan `cursor.fetchone()` untuk mencegah *Unread result found error*, sanitasi `page` & `wl_page` anti-*negative offset* SQL error, serta validasi safe parameter `request.form.get()` dan filter `is_deleted = 0` di *waiting list*.
   - **[NEW]** Stabilitas API & Proteksi CSRF: Penanganan `@csrf.exempt` dan `request.get_json(silent=True)` pada endpoint `/api/set-theme` dan `/api/set-language` serta penambahan header `X-CSRFToken` pada pemanggilan AJAX `fetch()` di `base.html` untuk membasmi error HTTP 400.
   - **[NEW]** Penyempurnaan Tampilan Dark Mode: Refaktorisasi CSS `.input-valid`, `.input-invalid`, dan `-webkit-autofill` di `booking_form.html` menggunakan transparansi `rgba()` agar warna *input* menyatu secara mulus tanpa kontras tinggi ("belang") di tema gelap maupun terang.
+  - **[NEW]** UI/UX & Terjemahan Modul 3: Memperbaiki bug logika *infinite scroll* yang menampilkan pesan kosong (*empty state*) ketika kartu hotel masih tersedia, serta membungkus sisa frasa statis ke dalam tag penerjemah Jinja (`{{ _(...) }}`) pada *template* Beranda, Detail Hotel, dan Eksplorasi Kota.
 
 ---
 

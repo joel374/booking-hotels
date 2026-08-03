@@ -44,6 +44,8 @@ def format_date(value):
     except Exception:
         return value
 
+from utils import get_company_settings
+
 @app.context_processor
 def inject_globals():
     # Translation function
@@ -56,7 +58,8 @@ def inject_globals():
     return dict(
         _ = translate,
         current_theme = session.get('theme', 'light'),
-        current_language = session.get('language', 'id')
+        current_language = session.get('language', 'id'),
+        settings = get_company_settings()
     )
 
 # Setup File Uploads

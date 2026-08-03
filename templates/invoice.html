@@ -322,7 +322,7 @@
                 <div style="width: 50px; height: 2px; background: var(--border-color, #e2e8f0); margin: 0 auto 1rem auto;"></div>
                 <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">
                     {{ _('Ini adalah bukti pemesanan yang sah dari') }} <strong style="color: var(--text-main);">{{ settings.company_name }}</strong>.<br>
-                    <span style="font-size: 0.75rem; margin-top: 0.3rem; display: inline-block;">Email: support@bookinghotels.com | {{ _('Telepon:') }} +62 811-1234-5678</span>
+                    <span style="font-size: 0.75rem; margin-top: 0.3rem; display: inline-block;">Email: {{ settings.email }} | {{ _('Telepon:') }} {{ settings.phone }}</span>
                 </div>
             </div>
         </div>

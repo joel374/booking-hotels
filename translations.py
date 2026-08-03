@@ -92,6 +92,12 @@ TRANSLATIONS = {
     "Belum ada ulasan untuk penginapan ini.": "No reviews for this property yet.",
     "Tidak ada foto": "No photos available",
     "Belum ada hotel yang tersedia untuk kota ini.": "No hotels available for this city.",
+    "Eksplorasi di": "Explore in",
+    "Temukan berbagai penginapan terbaik untuk perjalanan Anda.": "Discover the best accommodations for your journey.",
+    "Semua Lokasi": "All Locations",
+    "Pilih Tanggal": "Select Date",
+    "Ulasan": "Reviews",
+
     
     # Extra my_bookings
     "Semua": "All",
