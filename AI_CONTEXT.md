@@ -716,6 +716,10 @@ Proyek ini dirancang agar dapat dikerjakan secara paralel oleh 3 orang tanpa men
   - **[NEW]** Stabilitas API & Proteksi CSRF: Penanganan `@csrf.exempt` dan `request.get_json(silent=True)` pada endpoint `/api/set-theme` dan `/api/set-language` serta penambahan header `X-CSRFToken` pada pemanggilan AJAX `fetch()` di `base.html` untuk membasmi error HTTP 400.
   - **[NEW]** Penyempurnaan Tampilan Dark Mode: Refaktorisasi CSS `.input-valid`, `.input-invalid`, dan `-webkit-autofill` di `booking_form.html` menggunakan transparansi `rgba()` agar warna *input* menyatu secara mulus tanpa kontras tinggi ("belang") di tema gelap maupun terang.
   - **[NEW]** UI/UX & Terjemahan Modul 3: Memperbaiki bug logika *infinite scroll* yang menampilkan pesan kosong (*empty state*) ketika kartu hotel masih tersedia, serta membungkus sisa frasa statis ke dalam tag penerjemah Jinja (`{{ _(...) }}`) pada *template* Beranda, Detail Hotel, dan Eksplorasi Kota.
+  - **[NEW]** Fitur Audit Trail Administrator: Mencatat seluruh aktivitas kelola Administrator (seperti CRUD Hotel/Kamar, Edit Pengaturan, Soft Delete/Cancel Pesanan, serta riwayat Login/Logout) ke dalam tabel `audit_logs` dan ditayangkan secara *live* pada tab "Audit".
+  - **[NEW]** Perbaikan Sistem Ekspor Laporan (PDF): Optimalisasi struktur tabel ReportLab untuk mencegah *text overflow* ke luar margin melalui alokasi lebar kolom yang proporsional, *auto text wrapping* berbasis `Paragraph` flowable, serta penyelarasan baris.
+  - **[NEW]** Validasi Keamanan Berlapis pada *Company Settings*: Implementasi form atribut HTML5 (*pattern*, *inputmode*) di sisi Klien serta validasi filter Regex ekstra ketat di sisi Server untuk mencegah format email tidak valid dan input alfabetis pada nomor telepon/kodepos.
+  - **[NEW]** Multiple Room Images Gallery & Interactive Lightbox: Mengimplementasikan galeri gambar *multi-thumbnail* dengan kemampuan *slider* dan *fullscreen lightbox modal* (dukungan navigasi *keyboard*) pada halaman detail kamar untuk sisi *customer*.
 
 ---
 
@@ -734,6 +738,6 @@ Proyek ini telah dikonfigurasi untuk rilis ke lingkungan *Production* (VPS) seca
 
 ---
 
-**Last Updated:** August 2, 2026  
+**Last Updated:** August 4, 2026  
 **Version:** 2.0  
 **Status:** Active Development (Distributed to 3 Team Members)

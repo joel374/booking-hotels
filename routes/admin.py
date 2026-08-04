@@ -1969,6 +1969,30 @@ def company_settings():
         country = request.form.get('country', '').strip()
         business_hours = request.form.get('business_hours', '').strip()
         
+        errors = []
+        
+        if email and not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+            errors.append("Format email perusahaan tidak valid.")
+        
+        if phone and not re.match(r'^[\d\s\+\-\(\)]+$', phone):
+            errors.append("Nomor telepon hanya boleh berisi angka, spasi, +, -, dan ().")
+            
+        if whatsapp and not re.match(r'^[\d\s\+\-\(\)]+$', whatsapp):
+            errors.append("Nomor WhatsApp hanya boleh berisi angka, spasi, +, -, dan ().")
+            
+        if postal_code and not re.match(r'^\d{1,10}$', postal_code):
+            errors.append("Kode pos hanya boleh berisi angka maksimal 10 digit.")
+            
+        if business_hours and not re.match(r'^(\d{2}:\d{2}\s*-\s*\d{2}:\d{2}|24\s*[Hh]ours|24\s*[Jj]am)$', business_hours):
+            errors.append("Format jam operasional tidak valid (contoh: 08:00 - 17:00 atau 24 Hours).")
+            
+        if errors:
+            for error in errors:
+                flash(error, "danger")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('admin.company_settings'))
+        
         cursor.execute("SELECT id FROM company_settings LIMIT 1")
         row = cursor.fetchone()
         
