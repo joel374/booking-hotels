@@ -1407,11 +1407,21 @@ def generate_pdf_bytes(report_type, period, summary, details):
     elif report_type != 'Dashboard Summary' and details:
         elements.append(Paragraph(f"{report_type.upper()} DETAILS", heading_style))
         
+        # Calculate available width: Letter (612) - Margins (40+40=80) = 532
+        avail_w = 532
+        
         if report_type == 'Hotels':
             headers = ['Hotel', 'Location', 'Rooms', 'Status']
             table_data = [headers]
             for row in details:
-                table_data.append([row['hotel'], row['location'], str(row['rooms']), row['status']])
+                table_data.append([
+                    Paragraph(row['hotel'], normal_style), 
+                    Paragraph(row['location'], normal_style), 
+                    str(row['rooms']), 
+                    row['status']
+                ])
+            col_widths = [avail_w * 0.35, avail_w * 0.40, avail_w * 0.10, avail_w * 0.15]
+            
         elif report_type == 'Rooms':
             headers = ['Hotel', 'Room Type', 'Total Rooms', 'Available', 'Booked', 'Occupancy']
             table_data = [headers]
@@ -1419,31 +1429,63 @@ def generate_pdf_bytes(report_type, period, summary, details):
             for row in details:
                 hotel_name = "" if row['hotel'] == last_hotel else row['hotel']
                 last_hotel = row['hotel']
-                table_data.append([hotel_name, row['room_type'], str(row['total_rooms']), str(row['available']), str(row['booked']), row['occupancy']])
+                table_data.append([
+                    Paragraph(hotel_name, normal_style), 
+                    Paragraph(row['room_type'], normal_style), 
+                    str(row['total_rooms']), 
+                    str(row['available']), 
+                    str(row['booked']), 
+                    row['occupancy']
+                ])
+            col_widths = [avail_w * 0.25, avail_w * 0.25, avail_w * 0.15, avail_w * 0.12, avail_w * 0.10, avail_w * 0.13]
+            
         elif report_type == 'Bookings':
             headers = ['Booking ID', 'Guest', 'Hotel', 'Date', 'Status']
             table_data = [headers]
             for row in details:
-                table_data.append([str(row['booking_id']), row['guest'], row['hotel'], row['date'], row['status']])
+                table_data.append([
+                    str(row['booking_id']), 
+                    Paragraph(row['guest'], normal_style), 
+                    Paragraph(row['hotel'], normal_style), 
+                    Paragraph(row['date'], normal_style), 
+                    row['status']
+                ])
+            col_widths = [avail_w * 0.15, avail_w * 0.25, avail_w * 0.25, avail_w * 0.20, avail_w * 0.15]
+            
         elif report_type == 'Revenue Report':
             headers = ['Hotel', 'Room Type', 'Bookings', 'Total Revenue']
             table_data = [headers]
             for row in details:
-                table_data.append([row['hotel'], row['room_type'], str(row['total_bookings']), f"Rp {row['total_revenue']:,.0f}".replace(',', '.')])
+                table_data.append([
+                    Paragraph(row['hotel'], normal_style), 
+                    Paragraph(row['room_type'], normal_style), 
+                    str(row['total_bookings']), 
+                    f"Rp {row['total_revenue']:,.0f}".replace(',', '.')
+                ])
+            col_widths = [avail_w * 0.35, avail_w * 0.25, avail_w * 0.15, avail_w * 0.25]
+            
         elif report_type == 'Audit Report':
             headers = ['Booking ID', 'Guest', 'Admin', 'Action/Status', 'Date']
             table_data = [headers]
             for row in details:
-                table_data.append([str(row['booking_id']), row['guest'], row['admin'], row['action'], row['date']])
+                table_data.append([
+                    str(row['booking_id']), 
+                    Paragraph(row['guest'], normal_style), 
+                    Paragraph(row['admin'], normal_style), 
+                    Paragraph(row['action'], normal_style), 
+                    Paragraph(row['date'], normal_style)
+                ])
+            col_widths = [avail_w * 0.15, avail_w * 0.20, avail_w * 0.15, avail_w * 0.25, avail_w * 0.25]
                 
-        t_details = Table(table_data)
+        t_details = Table(table_data, colWidths=col_widths)
         t_details.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#4F46E5')),
             ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
             ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-            ('TOPPADDING', (0,0), (-1,-1), 10),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+            ('TOPPADDING', (0,0), (-1,-1), 8),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 8),
             ('GRID', (0,0), (-1,-1), 1, colors.HexColor('#E2E8F0'))
         ]))
         elements.append(t_details)
