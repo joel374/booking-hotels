@@ -70,7 +70,7 @@
     }
 }
 .hotel-card {
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 18px;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
@@ -98,7 +98,7 @@
     transform: scale(1.03);
 }
 .hotel-card .hotel-card-image {
-    background: #F8FAFC;
+    background: var(--surface-soft);
     border: 1px solid rgba(15, 23, 42, 0.08);
     display: grid;
     place-items: center;
@@ -263,7 +263,7 @@
     display: flex;
     flex-direction: column;
     min-width: 180px;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 18px;
     box-shadow: 0 24px 48px rgba(15, 23, 42, 0.14);
@@ -331,7 +331,7 @@
     padding: 0 0.9rem;
     border: 1px solid var(--border);
     border-radius: 14px;
-    background: #fff;
+    background: var(--surface);
     color: var(--text);
     cursor: pointer;
     transition: var(--transition);
@@ -488,7 +488,7 @@
             <div class="input-group" style="margin-top: 2rem;">
                 <h3 style="margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">Initial Room Groups (Optional)</h3>
                 <div id="room-groups-container">
-                    <div class="room-group-entry" style="background: #F8FAFC; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; position: relative; border: 1px solid #e2e8f0;">
+                    <div class="room-group-entry" style="background: var(--surface-soft); padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; position: relative; border: 1px solid var(--border);">
                         <input type="hidden" name="group_index[]" value="0">
                         <button type="button" onclick="this.parentElement.remove()" style="position: absolute; right: 10px; top: 10px; color: var(--danger); background: none; border: none; cursor: pointer; font-size: 1.2rem;">&times;</button>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
@@ -879,7 +879,7 @@ function addRoomGroupField() {
     const container = document.getElementById('room-groups-container');
     const currentIdx = roomGroupCounter++;
     const html = `
-    <div class="room-group-entry" style="background: #F8FAFC; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; position: relative; border: 1px solid #e2e8f0;">
+    <div class="room-group-entry" style="background: var(--surface-soft); padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; position: relative; border: 1px solid var(--border);">
         <input type="hidden" name="group_index[]" value="${currentIdx}">
         <button type="button" onclick="this.parentElement.remove()" style="position: absolute; right: 10px; top: 10px; color: var(--danger); background: none; border: none; cursor: pointer; font-size: 1.2rem;">&times;</button>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">

@@ -57,6 +57,7 @@
 
 
         .theme-dark {
+            color-scheme: dark;
             --primary: #f8fafc;
             --secondary: #6366f1;
             --background: #0f172a;
@@ -670,7 +671,7 @@ color: var(--text);
             padding: 0.95rem 2.75rem 0.95rem 1rem;
             border-radius: 16px;
             border: 1px solid var(--border);
-            background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") no-repeat right 1.15rem center / 16px;
+            background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") no-repeat right 1.15rem center / 16px;
             appearance: none;
             color: var(--text);
             transition: var(--transition);
@@ -697,7 +698,7 @@ border-radius: 24px;
         .data-table thead th {
             position: sticky;
             top: 0;
-            background: #F8FAFC;
+            background: var(--surface-soft);
             color: var(--subtext);
             font-size: 0.82rem;
             text-transform: uppercase;
@@ -782,14 +783,14 @@ border-radius: 24px;
 
         .btn-primary {
             background: var(--primary);
-            color: #fff;
+            color: var(--surface);
             box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
         }
 
         .btn-secondary {
             background: var(--surface);
 color: var(--primary);
-            border: 1px solid rgba(15, 23, 42, 0.08);
+            border: 1px solid var(--border);
         }
 
         .btn-danger {
@@ -800,7 +801,7 @@ color: var(--primary);
         .btn-outline {
             background: transparent;
             color: var(--primary);
-            border: 1px solid rgba(15, 23, 42, 0.16);
+            border: 1px solid var(--border);
         }
 
         .btn:hover {
@@ -845,7 +846,10 @@ border-radius: 24px;
 
         .input-group input,
         .input-group textarea,
-        .input-group select {
+        .input-group select,
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
             width: 100%;
             border-radius: 16px;
             border: 1px solid var(--border);
@@ -1010,7 +1014,7 @@ box-shadow: var(--shadow-soft);
             height: 88px;
             border-radius: 18px;
             overflow: hidden;
-            background: #F8FAFC;
+            background: var(--surface-soft);
             display: grid;
             place-items: center;
         }
@@ -1054,7 +1058,7 @@ box-shadow: var(--shadow-soft);
             gap: 0.35rem;
             padding: 0.45rem 0.8rem;
             border-radius: 999px;
-            background: #f8fafc;
+            background: var(--surface-soft);
             color: var(--text);
             font-size: 0.82rem;
             font-weight: 700;
@@ -1386,6 +1390,7 @@ border-radius: 24px;
         @media (max-width: 1100px) {
     
         .theme-dark {
+            color-scheme: dark;
             --primary: #f8fafc;
             --secondary: #6366f1;
             --background: #0f172a;
@@ -1783,6 +1788,18 @@ border-radius: 12px;
 </head>
 
 <body>
+    <!-- Script to prevent FOUC (Flash of Unstyled Content) by applying theme instantly -->
+    <script>
+        (function() {
+            var theme = localStorage.getItem('admin_theme') || 'light';
+            if (theme === 'system') {
+                var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.body.className = isDark ? 'theme-dark' : 'theme-light';
+            } else {
+                document.body.className = 'theme-' + theme;
+            }
+        })();
+    </script>
     <div class="admin-shell">
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-brand">
@@ -2716,8 +2733,8 @@ border-radius: 12px;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--surface);
+    border: 1px solid var(--border);
 }
 .preview-item img {
     width: 100%;
