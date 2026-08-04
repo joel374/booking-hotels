@@ -7,7 +7,7 @@ from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from db import get_db_connection
 from extensions import oauth, limiter
-from utils import login_required, add_notification, save_file, delete_image_file
+from utils import login_required, add_notification, save_file, delete_image_file, log_admin
 
 auth_bp = Blueprint('auth', __name__)
 
