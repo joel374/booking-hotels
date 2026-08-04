@@ -42,15 +42,18 @@ def get_available_rooms(hotel_id, check_in, check_out, min_price=None, max_price
     
     for group in rooms:
         cursor.execute("""
-            SELECT i.image_url
+            SELECT MIN(i.id) as id, i.image_url
             FROM rooms r
-            LEFT JOIN room_images i ON r.id = i.room_id
+            JOIN room_images i ON r.id = i.room_id
             WHERE r.hotel_id = %s AND r.room_type = %s AND r.is_deleted = 0 AND i.image_url IS NOT NULL
-            LIMIT 1
+            GROUP BY i.image_url
+            ORDER BY MIN(i.id) ASC
         """, (hotel_id, group['room_type']))
-        img = cursor.fetchone()
-        if img and img['image_url']:
-            group['image_url'] = img['image_url']
+        imgs = cursor.fetchall()
+        group['images'] = imgs
+        
+        if imgs:
+            group['image_url'] = imgs[0]['image_url']
         else:
             group['image_url'] = None
 
