@@ -40,7 +40,11 @@ def generate_rooms(hotel_id, room_type, quantity, start_number, price, capacity,
             )
             room_id = cursor.lastrowid
             if image_url:
-                cursor.execute("INSERT INTO room_images (room_id, image_url) VALUES (%s, %s)", (room_id, image_url))
+                if isinstance(image_url, list):
+                    for img in image_url:
+                        cursor.execute("INSERT INTO room_images (room_id, image_url) VALUES (%s, %s)", (room_id, img))
+                else:
+                    cursor.execute("INSERT INTO room_images (room_id, image_url) VALUES (%s, %s)", (room_id, image_url))
         conn.commit()
         return room_numbers
     except Exception as e:
@@ -64,14 +68,15 @@ def edit_room_group(hotel_id, old_room_type, new_room_type, price, capacity, ima
         
         # 2. Update images if provided
         if image_url:
-            cursor.execute("SELECT id FROM rooms WHERE hotel_id = %s AND room_type = %s AND is_deleted = 0", (hotel_id, new_room_type))
-            rooms = cursor.fetchall()
-            for r in rooms:
-                room_id = r['id']
-                # Delete old images for this room
-                cursor.execute("DELETE FROM room_images WHERE room_id = %s", (room_id,))
-                # Insert new image
-                cursor.execute("INSERT INTO room_images (room_id, image_url) VALUES (%s, %s)", (room_id, image_url))
+            cursor.execute("SELECT id FROM rooms WHERE hotel_id = %s AND room_type = %s AND is_deleted = 0 LIMIT 1", (hotel_id, new_room_type))
+            first_room = cursor.fetchone()
+            if first_room:
+                room_id = first_room['id']
+                if isinstance(image_url, list):
+                    for img in image_url:
+                        cursor.execute("INSERT INTO room_images (room_id, image_url) VALUES (%s, %s)", (room_id, img))
+                else:
+                    cursor.execute("INSERT INTO room_images (room_id, image_url) VALUES (%s, %s)", (room_id, image_url))
                 
         conn.commit()
     except Exception as e:

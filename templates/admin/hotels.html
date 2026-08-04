@@ -489,6 +489,7 @@
                 <h3 style="margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">Initial Room Groups (Optional)</h3>
                 <div id="room-groups-container">
                     <div class="room-group-entry" style="background: #F8FAFC; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; position: relative; border: 1px solid #e2e8f0;">
+                        <input type="hidden" name="group_index[]" value="0">
                         <button type="button" onclick="this.parentElement.remove()" style="position: absolute; right: 10px; top: 10px; color: var(--danger); background: none; border: none; cursor: pointer; font-size: 1.2rem;">&times;</button>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                             <div class="input-group" style="margin-bottom:0;">
@@ -516,7 +517,8 @@
                         </div>
                         <div class="input-group" style="margin-bottom:0;">
                             <label>{{ _('Gambar Kamar') }}</label>
-                            <input type="file" name="room_image[]" accept="image/png, image/jpeg, image/webp">
+                            <input type="file" name="room_images_0[]" multiple accept="image/png, image/jpeg, image/webp" onchange="previewRoomImages(this, 0)">
+                            <div class="room-preview-grid" id="room_preview_0" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;"></div>
                         </div>
                     </div>
                 </div>
@@ -870,10 +872,15 @@ function updateShortcutEndNumber() {
         }
     }
 }
+let roomGroupCounter = 1;
+const fileStores = {};
+
 function addRoomGroupField() {
     const container = document.getElementById('room-groups-container');
+    const currentIdx = roomGroupCounter++;
     const html = `
     <div class="room-group-entry" style="background: #F8FAFC; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; position: relative; border: 1px solid #e2e8f0;">
+        <input type="hidden" name="group_index[]" value="${currentIdx}">
         <button type="button" onclick="this.parentElement.remove()" style="position: absolute; right: 10px; top: 10px; color: var(--danger); background: none; border: none; cursor: pointer; font-size: 1.2rem;">&times;</button>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
             <div class="input-group" style="margin-bottom:0;"><label>{{ _("Tipe Kamar") }}</label><input type="text" name="room_type[]" placeholder="e.g. Standard Room"></div>
@@ -884,9 +891,82 @@ function addRoomGroupField() {
             <div class="input-group" style="margin-bottom:0;"><label>Price (Rp)</label><input type="number" name="price[]" value="500000"></div>
             <div class="input-group" style="margin-bottom:0;"><label>{{ _("Kapasitas") }}</label><input type="number" name="capacity[]" value="2" min="1"></div>
         </div>
-        <div class="input-group" style="margin-bottom:0;"><label>{{ _("Gambar Kamar") }}</label><input type="file" name="room_image[]" accept="image/png, image/jpeg, image/webp"></div>
+        <div class="input-group" style="margin-bottom:0;">
+            <label>{{ _("Gambar Kamar") }}</label>
+            <input type="file" name="room_images_${currentIdx}[]" multiple accept="image/png, image/jpeg, image/webp" onchange="previewRoomImages(this, ${currentIdx})">
+            <div class="room-preview-grid" id="room_preview_${currentIdx}" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;"></div>
+        </div>
     </div>`;
     container.insertAdjacentHTML('beforeend', html);
+}
+
+function previewRoomImages(input, idx) {
+    if (!fileStores[idx]) {
+        fileStores[idx] = new DataTransfer();
+    }
+    
+    Array.from(input.files).forEach(file => {
+        fileStores[idx].items.add(file);
+    });
+    
+    input.files = fileStores[idx].files;
+    renderPreview(idx, input);
+}
+
+function renderPreview(idx, input) {
+    const preview = document.getElementById('room_preview_' + idx);
+    preview.innerHTML = '';
+    
+    Array.from(input.files).forEach((file, fileIndex) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.display = 'inline-block';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '64px';
+            img.style.height = '64px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '8px';
+            img.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.innerHTML = '&times;';
+            removeBtn.style.position = 'absolute';
+            removeBtn.style.top = '-5px';
+            removeBtn.style.right = '-5px';
+            removeBtn.style.background = '#ef4444';
+            removeBtn.style.color = 'white';
+            removeBtn.style.border = 'none';
+            removeBtn.style.borderRadius = '50%';
+            removeBtn.style.width = '20px';
+            removeBtn.style.height = '20px';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.style.display = 'flex';
+            removeBtn.style.alignItems = 'center';
+            removeBtn.style.justifyContent = 'center';
+            removeBtn.style.fontSize = '12px';
+            
+            removeBtn.onclick = function() {
+                const dt = new DataTransfer();
+                const files = input.files;
+                for (let i = 0; i < files.length; i++) {
+                    if (i !== fileIndex) dt.items.add(files[i]);
+                }
+                input.files = dt.files;
+                fileStores[idx] = dt;
+                renderPreview(idx, input);
+            };
+            
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+            preview.appendChild(wrapper);
+        };
+        reader.readAsDataURL(file);
+    });
 }
 </script>
 

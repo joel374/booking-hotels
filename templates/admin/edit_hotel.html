@@ -112,6 +112,9 @@
                 <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
                     <button type="button" class="btn btn-primary" style="flex:1; background: var(--success); border-color: var(--success);" onclick="openAddMoreRoomsModal('{{ group.room_type }}', '{{ group.max_number if group.max_number else 100 }}')">+ Add</button>
                     <button type="button" class="btn btn-secondary" style="flex:1;" onclick="openEditGroupModal('{{ group.room_type }}', '{{ group.price }}', '{{ group.capacity }}')">{{ _('Ubah') }}</button>
+                    <script id="images_data_{{ group.room_type | replace(' ', '_') | replace('-', '_') }}" type="application/json">
+                        {{ group.images | tojson | safe }}
+                    </script>
                     <button type="button" class="btn btn-outline" style="flex:1; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);" onclick="openDeleteGroupModal('{{ group.room_type }}', '{{ group.quantity }}')">{{ _('Hapus') }}</button>
                 </div>
             </div>
@@ -130,7 +133,7 @@
 <!-- Add Room Group Modal -->
 <div id="add-room-group-modal" class="modal">
     <div class="form-card">
-        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active')">&times;</button>
+        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active'); if(this.closest('#edit-room-group-modal')){ editFileStore=new DataTransfer(); document.getElementById('edit_room_preview').innerHTML=''; document.querySelector('#edit-room-group-modal input[type=file]').value=''; }">&times;</button>
         <h2 style="margin-top: 0;">Add Room Group</h2>
         <p style="margin:0 0 1.5rem; color: var(--subtext);">Create a new block of identical rooms.</p>
         <form method="POST" action="{{ url_for('admin.hotel_add_room_group', hotel_id=hotel.id) }}" enctype="multipart/form-data">
@@ -175,7 +178,7 @@
 <!-- Edit Room Group Modal -->
 <div id="edit-room-group-modal" class="modal">
     <div class="form-card">
-        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active')">&times;</button>
+        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active'); if(this.closest('#edit-room-group-modal')){ editFileStore=new DataTransfer(); document.getElementById('edit_room_preview').innerHTML=''; document.querySelector('#edit-room-group-modal input[type=file]').value=''; }">&times;</button>
         <h2 style="margin-top: 0;">Edit Room Group</h2>
         <p style="margin:0 0 1.5rem; color: var(--subtext);">{{ _('Perbarui detail untuk semua kamar di grup ini.') }}</p>
         <form method="POST" action="{{ url_for('admin.hotel_edit_room_group', hotel_id=hotel.id) }}" enctype="multipart/form-data">
@@ -196,12 +199,17 @@
                 </div>
             </div>
             <div class="input-group">
-                <label>Room Image (Leave empty to keep current)</label>
-                <div class="dropzone">
-                    <p>Drop file here, or click to choose</p>
-                    <input type="file" name="room_image" accept="image/png, image/jpeg, image/webp">
+                <label>Current Images</label>
+                <div id="edit_group_gallery" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <!-- Images will be rendered here -->
                 </div>
-                <div class="preview-grid"></div>
+                
+                <label>Upload New Images</label>
+                <div class="dropzone">
+                    <p>Drop file here, or click to choose new images</p>
+                    <input type="file" name="room_image[]" multiple accept="image/png, image/jpeg, image/webp" onchange="previewEditRoomImages(this)">
+                </div>
+                <div class="preview-grid" id="edit_room_preview" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;"></div>
             </div>
             <p style="font-size: 0.85rem; color: var(--warning); margin-bottom: 1.5rem; background: rgba(245, 158, 11, 0.1); padding: 0.75rem; border-radius: 8px;">{{ _('Catatan: Perubahan berlaku untuk SEMUA kamar di grup ini.') }}</p>
             <button type="submit" class="btn btn-primary" style="width: 100%; height: 48px;">{{ _('Simpan Perubahan') }}</button>
@@ -213,7 +221,7 @@
 <!-- Add More Rooms Modal -->
 <div id="add-more-rooms-modal" class="modal">
     <div class="form-card">
-        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active')">&times;</button>
+        <button type="button" class="btn btn-outline js-close-modal" style="position:absolute; top:1rem; right:1rem; width:42px; height:42px; padding:0; line-height:0; border-radius:14px;" onclick="this.closest('.modal').classList.remove('active'); if(this.closest('#edit-room-group-modal')){ editFileStore=new DataTransfer(); document.getElementById('edit_room_preview').innerHTML=''; document.querySelector('#edit-room-group-modal input[type=file]').value=''; }">&times;</button>
         <h2 style="margin-top: 0;">{{ _('Tambah Kamar') }}</h2>
         <p style="margin:0 0 1.5rem; color: var(--subtext);">Generate extra rooms for this room group. They will automatically inherit the price, capacity, and image.</p>
         <form method="POST" action="{{ url_for('admin.hotel_add_more_rooms', hotel_id=hotel.id) }}">
@@ -279,12 +287,138 @@ function loadCities(provinceId, citySelectId) {
         });
 }
 
+
 function openEditGroupModal(roomType, price, capacity) {
     document.getElementById('edit_old_room_type').value = roomType;
     document.getElementById('edit_room_type').value = roomType;
     document.getElementById('edit_price').value = parseInt(parseFloat(price));
     document.getElementById('edit_capacity').value = capacity;
+    
+    const sanitizedRoomType = roomType.replace(/ /g, '_').replace(/-/g, '_');
+    const imagesScript = document.getElementById('images_data_' + sanitizedRoomType);
+    let images = [];
+    if (imagesScript) {
+        images = JSON.parse(imagesScript.textContent);
+    }
+    renderEditGroupGallery(images);
+    
     document.getElementById('edit-room-group-modal').classList.add('active');
+}
+
+function renderEditGroupGallery(images) {
+    const gallery = document.getElementById('edit_group_gallery');
+    gallery.innerHTML = '';
+    if (images && images.length > 0) {
+        images.forEach(img => {
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.width = '80px';
+            wrapper.style.height = '80px';
+            wrapper.innerHTML = `
+                <img src="${img.image_url}" style="width:100%; height:100%; object-fit:cover; border-radius:8px; border: 1px solid #e2e8f0;">
+                <button type="button" onclick="deleteRoomImage(${img.id}, this)" style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px;">&times;</button>
+            `;
+            gallery.appendChild(wrapper);
+        });
+    } else {
+        gallery.innerHTML = '<p style="color:var(--subtext); font-size:0.85rem; margin:0;">No images uploaded yet.</p>';
+    }
+}
+
+let editFileStore = new DataTransfer();
+
+function previewEditRoomImages(input) {
+    Array.from(input.files).forEach(file => {
+        editFileStore.items.add(file);
+    });
+    input.files = editFileStore.files;
+    renderEditPreview(input);
+}
+
+function renderEditPreview(input) {
+    const preview = document.getElementById('edit_room_preview');
+    preview.innerHTML = '';
+    Array.from(input.files).forEach((file, fileIndex) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.display = 'inline-block';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '64px';
+            img.style.height = '64px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '8px';
+            img.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.innerHTML = '&times;';
+            removeBtn.style.position = 'absolute';
+            removeBtn.style.top = '-5px';
+            removeBtn.style.right = '-5px';
+            removeBtn.style.background = '#ef4444';
+            removeBtn.style.color = 'white';
+            removeBtn.style.border = 'none';
+            removeBtn.style.borderRadius = '50%';
+            removeBtn.style.width = '20px';
+            removeBtn.style.height = '20px';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.style.display = 'flex';
+            removeBtn.style.alignItems = 'center';
+            removeBtn.style.justifyContent = 'center';
+            removeBtn.style.fontSize = '12px';
+            
+            removeBtn.onclick = function() {
+                const dt = new DataTransfer();
+                const files = input.files;
+                for (let i = 0; i < files.length; i++) {
+                    if (i !== fileIndex) dt.items.add(files[i]);
+                }
+                input.files = dt.files;
+                editFileStore = dt;
+                renderEditPreview(input);
+            };
+            
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+            preview.appendChild(wrapper);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function deleteRoomImage(imageId, btn) {
+    if(!confirm('Delete this image permanently?')) return;
+    
+    btn.innerHTML = '...';
+    btn.disabled = true;
+    
+    const formData = new FormData();
+    formData.append('image_id', imageId);
+    formData.append('csrf_token', '{{ csrf_token() }}');
+    
+    fetch("{{ url_for('admin.hotel_delete_room_image', hotel_id=hotel.id) }}", {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            btn.parentElement.remove();
+        } else {
+            alert(data.error || 'Failed to delete image');
+            btn.innerHTML = '&times;';
+            btn.disabled = false;
+        }
+    })
+    .catch(err => {
+        alert('Network error');
+        btn.innerHTML = '&times;';
+        btn.disabled = false;
+    });
 }
 
 function openDeleteGroupModal(roomType, roomCount) {

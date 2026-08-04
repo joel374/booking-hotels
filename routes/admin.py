@@ -142,7 +142,7 @@ def hotels():
             start_numbers = request.form.getlist('start_number[]')
             prices = request.form.getlist('price[]')
             capacities = request.form.getlist('capacity[]')
-            room_images = request.files.getlist('room_image[]')
+            group_indices = request.form.getlist('group_index[]')
             
             for i in range(len(room_types)):
                 r_type = room_types[i].strip()
@@ -152,11 +152,16 @@ def hotels():
                 price = float(prices[i]) if prices[i] else 0
                 cap = int(capacities[i]) if capacities[i] else 2
                 
-                r_img_url = None
-                if i < len(room_images) and room_images[i] and room_images[i].filename != '':
-                    r_img_url = save_file(room_images[i], current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
-                    
-                generate_rooms(hotel_id, r_type, qty, start_no, price, cap, r_img_url)
+                group_idx = group_indices[i] if i < len(group_indices) else i
+                room_image_files = request.files.getlist(f'room_images_{group_idx}[]')
+                
+                r_img_urls = []
+                for file in room_image_files:
+                    if file and file.filename != '':
+                        img_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
+                        r_img_urls.append(img_url)
+                        
+                generate_rooms(hotel_id, r_type, qty, start_no, price, cap, r_img_urls if r_img_urls else None)
 
             conn.commit()
             add_notification(
@@ -258,20 +263,25 @@ def edit_hotel(id):
         """, (id,))
         room_groups = cursor.fetchall()
         
-        # Get one image per room type
+        # Get all images per room type
         for group in room_groups:
             cursor.execute("""
-                SELECT i.image_url 
+                SELECT MIN(i.id) as id, i.image_url 
                 FROM rooms r
-                LEFT JOIN room_images i ON r.id = i.room_id
+                JOIN room_images i ON r.id = i.room_id
                 WHERE r.hotel_id = %s AND r.room_type = %s AND r.is_deleted = 0 AND i.image_url IS NOT NULL
-                LIMIT 1
+                GROUP BY i.image_url
+                ORDER BY MIN(i.id) ASC
             """, (id, group['room_type']))
-            img = cursor.fetchone()
-            group['image_url'] = img['image_url'] if img else None
+            imgs = cursor.fetchall()
+            group['images'] = imgs
             
-            if not group.get('image_url') and hotel.get('images'):
+            if imgs:
+                group['image_url'] = imgs[0]['image_url']
+            elif hotel.get('images'):
                 group['image_url'] = hotel['images'][0]['image_url']
+            else:
+                group['image_url'] = None
 
         cursor.close()
         conn.close()
@@ -402,18 +412,50 @@ def hotel_edit_room_group(hotel_id):
     price = float(request.form.get('price', 0))
     capacity = int(request.form.get('capacity', 2))
     
-    file = request.files.get('room_image')
-    image_url = None
-    if file and file.filename != '':
-        image_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
+    files = request.files.getlist('room_image[]')
+    image_urls = []
+    for file in files:
+        if file and file.filename != '':
+            img_url = save_file(file, current_app.config['HOTEL_UPLOAD_FOLDER'], 'uploads/hotels')
+            image_urls.append(img_url)
         
     try:
-        edit_room_group(hotel_id, old_room_type, new_room_type, price, capacity, image_url)
+        edit_room_group(hotel_id, old_room_type, new_room_type, price, capacity, image_urls if image_urls else None)
         flash(f"Berhasil mengubah grup kamar {old_room_type}!", "success")
     except Exception as e:
         flash(f"Error mengubah room group: {str(e)}", "danger")
         
     return redirect(url_for('admin.edit_hotel', id=hotel_id) + "#manage-rooms")
+
+@admin_bp.route('/hotel/edit/<int:hotel_id>/room_group/delete_image', methods=['POST'])
+@admin_required
+def hotel_delete_room_image(hotel_id):
+    image_id = request.form.get('image_id')
+    if not image_id:
+        return jsonify({'success': False, 'error': 'Image ID is required'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT i.id, i.image_url 
+            FROM room_images i
+            JOIN rooms r ON i.room_id = r.id
+            WHERE i.id = %s AND r.hotel_id = %s
+        """, (image_id, hotel_id))
+        img = cursor.fetchone()
+        
+        if img:
+            cursor.execute("DELETE FROM room_images WHERE id = %s", (image_id,))
+            conn.commit()
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Image not found or access denied'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 @admin_bp.route('/hotel/edit/<int:hotel_id>/room_group/delete', methods=['POST'])
 @admin_required
