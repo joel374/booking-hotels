@@ -163,6 +163,21 @@ CREATE TABLE IF NOT EXISTS `waiting_lists` (
   CONSTRAINT `waiting_lists_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `waiting_lists_ibfk_2` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- ------------------------------------------------------------
+-- Tabel: audit_logs
+-- Mencatat aktivitas administrator di dashboard
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `audit_logs` (
+  `id`          INT          NOT NULL AUTO_INCREMENT,
+  `admin_id`    INT          NOT NULL,
+  `module`      VARCHAR(100) NOT NULL,
+  `action`      VARCHAR(100) NOT NULL,
+  `description` TEXT,
+  `created_at`  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `admin_id` (`admin_id`),
+  CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
 -- Tabel: reviews

@@ -248,6 +248,8 @@ def login():
             cursor.close()
             conn.close()
             if role == 'admin':
+                log_admin(user['id'], 'Authentication Admin', 'Login', f"Admin logged in from IP: {user_ip}")
+                target = _safe_next_target()
                 add_notification(
                     title="Admin Login",
                     description=f"Admin {user['username']} logged in.",
@@ -563,6 +565,17 @@ def reset_password(token):
 
 @auth_bp.route('/logout')
 def logout():
+    user_id = session.get('user_id')
+    if user_id:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT role FROM users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        if user and user.get('role') == 'admin':
+            log_admin(user_id, 'Authentication Admin', 'Logout', 'Admin logged out')
+        cursor.close()
+        conn.close()
+    
     session.clear()
     flash("You have been logged out.", "info")
     return redirect(url_for('main.index'))

@@ -57,3 +57,18 @@ ALTER TABLE `users` ADD COLUMN `password_reset_expires` DATETIME DEFAULT NULL;
 ALTER TABLE `bookings` ADD COLUMN `cancel_reason` TEXT DEFAULT NULL;
 ALTER TABLE `hotels` ADD COLUMN `is_deleted` TINYINT(1) DEFAULT 0;
 ALTER TABLE `rooms` ADD COLUMN `is_deleted` TINYINT(1) DEFAULT 0;
+
+-- ------------------------------------------------------------
+-- 4. Create Tabel Audit Logs
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `audit_logs` (
+  `id`          INT          NOT NULL AUTO_INCREMENT,
+  `admin_id`    INT          NOT NULL,
+  `module`      VARCHAR(100) NOT NULL,
+  `action`      VARCHAR(100) NOT NULL,
+  `description` TEXT,
+  `created_at`  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `admin_id` (`admin_id`),
+  CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

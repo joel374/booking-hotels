@@ -1,10 +1,10 @@
 import re
 import os
 from decimal import Decimal
-from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify, session
 from db import get_db_connection
 from services.room_service import generate_rooms, edit_room_group, delete_room_group
-from utils import admin_required, delete_image_file, save_file, add_notification
+from utils import admin_required, delete_image_file, save_file, add_notification, log_admin
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import io
@@ -170,6 +170,7 @@ def hotels():
                 icon_type="hotel"
             )
             flash("Hotel and rooms added successfully!", "success")
+            log_admin(session['user_id'], 'Hotel', 'Add Hotel', f'Added hotel: {name}')
         except ValueError as e:
             for image_url in saved_image_urls:
                 delete_image_file(image_url, current_app.root_path)
@@ -336,6 +337,7 @@ def edit_hotel(id):
     cursor.close()
     conn.close()
     flash("Hotel updated successfully!", "success")
+    log_admin(session['user_id'], 'Hotel', 'Edit Hotel', f'Edited hotel ID: {id}')
     return redirect(url_for('admin.edit_hotel', id=id))
 
 @admin_bp.route('/hotel/edit/<int:hotel_id>/room_group/add', methods=['POST'])
@@ -355,6 +357,7 @@ def hotel_add_room_group(hotel_id):
     try:
         generate_rooms(hotel_id, room_type, quantity, start_number, price, capacity, image_url)
         flash(f"Berhasil menambahkan {quantity} kamar tipe {room_type}!", "success")
+        log_admin(session['user_id'], 'Room Group', 'Add Room Group', f'Added room group {room_type} to hotel {hotel_id}')
     except ValueError as ve:
         flash(str(ve), "danger")
     except Exception as e:
@@ -394,6 +397,7 @@ def hotel_add_more_rooms(hotel_id):
         
         generate_rooms(hotel_id, room_type, quantity, start_number, price, capacity, image_url)
         flash(f"Berhasil menambahkan {quantity} kamar tambahan untuk tipe {room_type}!", "success")
+        log_admin(session['user_id'], 'Room Group', 'Add More Room Group', f'Added {quantity} more rooms to {room_type} in hotel {hotel_id}')
     except ValueError as ve:
         flash(str(ve), "danger")
     except Exception as e:
@@ -422,6 +426,7 @@ def hotel_edit_room_group(hotel_id):
     try:
         edit_room_group(hotel_id, old_room_type, new_room_type, price, capacity, image_urls if image_urls else None)
         flash(f"Berhasil mengubah grup kamar {old_room_type}!", "success")
+        log_admin(session['user_id'], 'Room Group', 'Edit Room Group', f'Edited room group {old_room_type} in hotel {hotel_id}')
     except Exception as e:
         flash(f"Error mengubah room group: {str(e)}", "danger")
         
@@ -448,6 +453,7 @@ def hotel_delete_room_image(hotel_id):
         if img:
             cursor.execute("DELETE FROM room_images WHERE id = %s", (image_id,))
             conn.commit()
+            log_admin(session.get('user_id'), 'Images', 'Delete Room Image', f'Deleted room image {image_id} for hotel {hotel_id}')
             return jsonify({'success': True})
         else:
             return jsonify({'success': False, 'error': 'Image not found or access denied'}), 404
@@ -464,6 +470,7 @@ def hotel_delete_room_group(hotel_id):
     try:
         delete_room_group(hotel_id, room_type)
         flash(f"Berhasil menghapus grup kamar {room_type}!", "success")
+        log_admin(session['user_id'], 'Room Group', 'Delete Room Group', f'Deleted room group {room_type} in hotel {hotel_id}')
     except Exception as e:
         flash(f"Error menghapus room group: {str(e)}", "danger")
         
@@ -505,6 +512,7 @@ def hotel_delete_room_group(hotel_id):
     cursor.close()
     conn.close()
     flash("Hotel updated successfully!", "success")
+    log_admin(session['user_id'], 'Hotel', 'Edit Hotel', f'Edited hotel ID: {id}')
     return redirect(url_for('admin.hotels'))
 
 @admin_bp.route('/hotel/delete/<int:id>', methods=['POST'])
@@ -520,6 +528,7 @@ def delete_hotel(id):
     cursor.close()
     conn.close()
     flash('Hotel and related data deleted successfully.', 'success')
+    log_admin(session['user_id'], 'Hotel', 'Delete Hotel', f'Deleted hotel ID: {id}')
     return redirect(url_for('admin.hotels'))
 
 @admin_bp.route('/api/cities/<province_id>')
@@ -742,6 +751,7 @@ def bookings():
                 icon_type="cancel"
             )
             flash("Booking cancelled successfully.", "warning")
+            log_admin(session['user_id'], 'Bookings', 'Cancel Booking', f'Cancelled booking ID: {booking_id}')
         return redirect(url_for('admin.bookings'))
         
     cursor.execute("""
@@ -774,6 +784,7 @@ def delete_booking(id):
     cursor.close()
     conn.close()
     flash('Booking deleted successfully.', 'success')
+    log_admin(session['user_id'], 'Bookings', 'Soft Delete Booking', f'Soft deleted booking ID: {id}')
     return redirect(url_for('admin.bookings'))
 
 @admin_bp.route('/api/bookings/filter', methods=['GET'])
@@ -838,22 +849,64 @@ def api_bookings_filter():
     else: # newest
         query += " ORDER BY b.created_at DESC"
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(query, tuple(params))
-    booking_list = cursor.fetchall()
-    
-    for booking in booking_list:
-        if booking.get('total_price'):
-            booking['total_price'] = int(booking['total_price'])
+    if view == 'audit' and user_filter == 'admin':
+        # Fetch directly from audit_logs for Admin
+        audit_query = """
+            SELECT a.*, u.username, 1 as is_audit, a.created_at, 'Admin' as status
+            FROM audit_logs a
+            JOIN users u ON a.admin_id = u.id
+            WHERE 1=1
+        """
+        audit_params = []
+        
+        if search:
+            audit_query += " AND (a.module LIKE %s OR a.action LIKE %s OR a.description LIKE %s)"
+            search_term = '%' + search + '%'
+            audit_params.extend([search_term, search_term, search_term])
+            
+        if date_filter == 'today':
+            audit_query += " AND DATE(a.created_at) = CURDATE()"
+        elif date_filter == 'yesterday':
+            audit_query += " AND DATE(a.created_at) = CURDATE() - INTERVAL 1 DAY"
+        elif date_filter == 'week':
+            audit_query += " AND a.created_at >= CURDATE() - INTERVAL 7 DAY"
+        elif date_filter == 'month' or date_filter == 'this_month':
+            audit_query += " AND YEAR(a.created_at) = YEAR(CURDATE()) AND MONTH(a.created_at) = MONTH(CURDATE())"
+        elif date_filter == 'last_30':
+            audit_query += " AND a.created_at >= CURDATE() - INTERVAL 30 DAY"
+            
+        if sort_filter == 'oldest':
+            audit_query += " ORDER BY a.created_at ASC"
+        else:
+            audit_query += " ORDER BY a.created_at DESC"
+            
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(audit_query, tuple(audit_params))
+        audit_list = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        return render_template('admin/partials/timeline_rows.html', bookings=audit_list)
 
-    cursor.close()
-    conn.close()
-
-    if view == 'audit':
-        return render_template('admin/partials/timeline_rows.html', bookings=booking_list)
     else:
-        return render_template('admin/partials/booking_rows.html', bookings=booking_list)
+        # Original bookings query
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query, tuple(params))
+        booking_list = cursor.fetchall()
+        
+        for booking in booking_list:
+            if booking.get('total_price'):
+                booking['total_price'] = int(booking['total_price'])
+                
+        cursor.close()
+        conn.close()
+        
+        if view == 'audit':
+            return render_template('admin/partials/timeline_rows.html', bookings=booking_list)
+        else:
+            return render_template('admin/partials/booking_rows.html', bookings=booking_list)
 
 
 @admin_bp.route('/reports', methods=['GET'])
@@ -1895,6 +1948,7 @@ def company_settings():
         conn.commit()
         add_notification(title="Pengaturan Diperbarui", description="Profil perusahaan berhasil diperbarui.", icon_type="settings")
         flash("Pengaturan perusahaan berhasil disimpan.", "success")
+        log_admin(session['user_id'], 'Company', 'Update Company Settings', 'Updated company settings')
         return redirect(url_for('admin.company_settings'))
         
     settings = get_company_settings()

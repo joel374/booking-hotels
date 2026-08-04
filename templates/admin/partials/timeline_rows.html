@@ -1,15 +1,21 @@
 {% for booking in bookings %}
-{% set status = booking.status %}
-{% set event_label = 'Booking ' + status %}
-{% set badge_class = 'success' if status == 'Booked' else 'info' if status == 'Checked In' else 'secondary' if status == 'Checked Out' else 'danger' %}
+{% set status = booking.get('status') %}
+{% set is_audit = booking.get('is_audit') %}
+{% set event_label = booking.get('action') if is_audit else 'Booking ' + status %}
+{% set badge_class = 'primary' if is_audit else 'success' if status == 'Booked' else 'info' if status == 'Checked In' else 'secondary' if status == 'Checked Out' else 'danger' %}
 <li class="timeline-item {{ badge_class }}">
     <span class="timeline-marker"></span>
     <div class="timeline-meta">
-        <span>{{ booking.created_at.strftime('%d %b %Y, %H:%M') if booking.created_at else '-' }}</span>
-        <span class="timeline-actor">Oleh: {{ booking.username or 'Admin' }}</span>
+        <span>{{ booking.get('created_at').strftime('%d %b %Y, %H:%M') if booking.get('created_at') else '-' }}</span>
+        <span class="timeline-actor">Oleh: {{ booking.get('username') or 'Admin' }}</span>
     </div>
     <h3 class="timeline-title">{{ event_label }}</h3>
-    <p class="timeline-description">{{ booking.guest_name or 'Guest' }} - {{ booking.hotel_name }} &bull; {{
-        booking.room_type }} #{{ booking.room_number }}.</p>
+    <p class="timeline-description">
+        {% if is_audit %}
+            {{ booking.get('module') }} &bull; {{ booking.get('description') }}
+        {% else %}
+            {{ booking.get('guest_name') or 'Guest' }} - {{ booking.get('hotel_name') }} &bull; {{ booking.get('room_type') }} {% if booking.get('room_number') %}#{{ booking.get('room_number') }}{% endif %}.
+        {% endif %}
+    </p>
 </li>
 {% endfor %}

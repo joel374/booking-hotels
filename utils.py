@@ -143,3 +143,17 @@ def get_company_settings():
         'country': 'Indonesia',
         'business_hours': '08:00 - 17:00'
     }
+
+def log_admin(admin_id, module, action, description=None):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO audit_logs (admin_id, module, action, description) VALUES (%s, %s, %s, %s)",
+            (admin_id, module, action, description)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error adding audit log: {e}")
