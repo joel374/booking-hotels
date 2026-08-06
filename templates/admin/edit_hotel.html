@@ -451,33 +451,7 @@ function openDeleteGroupModal(roomType, roomCount) {
                 }
             });
 
-            fetch(form.action, {
-                method: 'POST',
-                body: new FormData(form)
-            }).then(response => response.text())
-            .then(html => {
-                if(html.includes('data-category="danger"')) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: '{{ _("Gagal!") }}',
-                        text: '{{ _("Grup kamar gagal dihapus.") }}'
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '{{ _("Berhasil!") }}',
-                        text: '{{ _("Grup kamar berhasil dihapus.") }}'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                }
-            }).catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: '{{ _("Gagal!") }}',
-                    text: '{{ _("Grup kamar gagal dihapus.") }}'
-                });
-            });
+            form.submit();
         }
     });
 }
