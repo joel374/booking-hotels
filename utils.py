@@ -9,11 +9,19 @@ from PIL import Image
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB Limit
 
+# --- GLOBAL VARIABLES ---
+TOTAL_PROCESSED_IMAGES = 0
+# ------------------------
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def save_file(file, upload_folder, relative_upload_folder):
+    # Menggunakan keyword global sesuai kriteria (Scope Variabel)
+    global TOTAL_PROCESSED_IMAGES
+    TOTAL_PROCESSED_IMAGES += 1
+
     if not file or file.filename == '':
         raise ValueError('No file selected for upload.')
 
@@ -144,16 +152,55 @@ def get_company_settings():
         'business_hours': '08:00 - 17:00'
     }
 
+class BaseLogger:
+    """
+    Base Logger Class (Parent/Superclass).
+    
+    This class defines the fundamental blueprint for all logging mechanisms 
+    within the application. It acts as an abstract base class outlining 
+    the mandatory methods that child classes must implement.
+    """
+    def __init__(self):
+        pass
+        
+    def log(self, *args, **kwargs):
+        """
+        Abstract method to record a log entry. 
+        Must be overridden by child classes.
+        """
+        raise NotImplementedError("Subclasses must implement the log() method.")
+
+
+class AuditLogger(BaseLogger):
+    """
+    Audit Logger Class (Child/Subclass).
+    
+    Inherits from BaseLogger to handle persistent database logging for 
+    administrator activities. Ensures all administrative actions are 
+    securely written to the 'audit_logs' table for security trailing.
+    """
+    def log(self, admin_id, module, action, description=None):
+        """
+        Executes the SQL query to insert an audit log record.
+        """
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO audit_logs (admin_id, module, action, description) VALUES (%s, %s, %s, %s)",
+                (admin_id, module, action, description)
+            )
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error adding audit log: {e}")
+
+
 def log_admin(admin_id, module, action, description=None):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO audit_logs (admin_id, module, action, description) VALUES (%s, %s, %s, %s)",
-            (admin_id, module, action, description)
-        )
-        conn.commit()
-        cursor.close()
-        conn.close()
-    except Exception as e:
-        print(f"Error adding audit log: {e}")
+    """
+    Wrapper function to maintain compatibility with existing route handlers.
+    Instantiates the AuditLogger object and triggers the logging process.
+    """
+    logger_instance = AuditLogger()
+    logger_instance.log(admin_id, module, action, description)

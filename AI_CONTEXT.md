@@ -4,6 +4,12 @@
 **Tech Stack:** Flask (Python), MySQL, Jinja2, Vanilla CSS/JS  
 **Architecture:** Server-Side Rendering (SSR) with AJAX for dynamic features
 
+  - **[NEW]** Optimasi Favicon: Pemotongan latar belakang transparan menjadi rasio 1:1 sempurna dan implementasi mekanisme *cache-busting* (?v=3) di ase.html.
+  - **[NEW]** Dokumentasi Arsitektur Database: Membuat ERD komprehensif (database_erd.md) dan infografis HTML resolusi tinggi.
+  - **[NEW]** Bug Fix (Admin): Memperbaiki anomali string *self-referential* pada penghapusan kamar dengan memigrasikan *fetch API* ke *native form submit* (SweetAlert2 Toasts).
+  - **[NEW]** Infrastruktur & Keamanan: Aktivasi *Universal SSL/Always Use HTTPS* via Cloudflare serta analisis log performa Gunicorn (WORKER TIMEOUT).
+  - **[NEW]** Kepatuhan Akademis (Refaktor): Menyisipkan keyword global pada fungsi _file upload_ dan memigrasikan fungsi log_admin menjadi arsitektur OOP murni (BaseLogger, AuditLogger) dengan dukungan *Inheritance* dan *Docstrings* profesional demi memenuhi kriteria bonus evaluasi dosen.
+
 ---
 
 ## 🎯 Project Overview
@@ -738,6 +744,6 @@ Proyek ini telah dikonfigurasi untuk rilis ke lingkungan *Production* (VPS) seca
 
 ---
 
-**Last Updated:** August 4, 2026  
-**Version:** 2.0  
+**Last Updated:** August 7, 2026  
+**Version:** 2.1  
 **Status:** Active Development (Distributed to 3 Team Members)
