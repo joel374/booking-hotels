@@ -190,7 +190,7 @@
     minCheckOut.setDate(minCheckOut.getDate() + 1);
 
     const checkOutPicker = flatpickr("#check_out", {
-        locale: "id",
+        locale: "{{ current_language }}",
         disableMobile: "true",
         minDate: minCheckOut,
         defaultDate: urlCheckOut ? new Date(urlCheckOut) : defaultCheckOut,
@@ -201,7 +201,7 @@
     });
 
     const checkInPicker = flatpickr("#check_in", {
-        locale: "id",
+        locale: "{{ current_language }}",
         disableMobile: "true",
         minDate: "today",
         defaultDate: baseCheckInDate,

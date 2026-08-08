@@ -1159,3 +1159,24 @@ span.flatpickr-weekday {
     padding-top: 3rem;
   }
 }
+
+/* Additional Mobile Fixes */
+@media (max-width: 768px) {
+  .horizontal-card, .hotel-card, .grid { width: 100% !important; margin: 0 auto 1rem; flex-direction: column; }
+  .hotel-card-content { padding: 1rem; }
+  .form-row, .search-group { flex-direction: column !important; }
+  .btn { width: 100%; padding: 0.8rem; }
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+}
+
+
+
+
+/* Additional Mobile Fixes */
+@media (max-width: 768px) {
+  .horizontal-card, .hotel-card, .grid { width: 100% !important; margin: 0 auto 1rem; flex-direction: column; }
+  .hotel-card-content { padding: 1rem; }
+  .form-row, .search-group { flex-direction: column !important; }
+  .btn { width: 100%; padding: 0.8rem; }
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+}

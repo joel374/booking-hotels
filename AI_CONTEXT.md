@@ -8,7 +8,9 @@
   - **[NEW]** Dokumentasi Arsitektur Database: Membuat ERD komprehensif (database_erd.md) dan infografis HTML resolusi tinggi.
   - **[NEW]** Bug Fix (Admin): Memperbaiki anomali string *self-referential* pada penghapusan kamar dengan memigrasikan *fetch API* ke *native form submit* (SweetAlert2 Toasts).
   - **[NEW]** Infrastruktur & Keamanan: Aktivasi *Universal SSL/Always Use HTTPS* via Cloudflare serta analisis log performa Gunicorn (WORKER TIMEOUT).
-  - **[NEW]** Kepatuhan Akademis (Refaktor): Menyisipkan keyword global pada fungsi _file upload_ dan memigrasikan fungsi log_admin menjadi arsitektur OOP murni (BaseLogger, AuditLogger) dengan dukungan *Inheritance* dan *Docstrings* profesional demi memenuhi kriteria bonus evaluasi dosen.
+  - **[NEW]** Kepatuhan Akademis (Refaktor): Menyisipkan keyword global pada fungsi _file upload_ dan memigrasikan fungsi log_admin menjadi arsitektur OOP murni (BaseLo
+  gger, AuditLogger) dengan dukungan *Inheritance* dan *Docstrings* profesional demi memenuhi kriteria bonus evaluasi dosen.
+  - **[NEW]** Keamanan Standar Industri (ISO 27001): Implementasi HTTP Security Headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options) dan perombakan logika _Fallback_ untuk SECRET_KEY kriptografi Flask guna mencegah _session hijacking_ di lingkungan production.
 
 ---
 

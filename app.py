@@ -1,4 +1,5 @@
 import os
+import secrets
 from flask import Flask
 from flask_session import Session
 from flask_mail import Mail
@@ -19,7 +20,11 @@ from translations import TRANSLATIONS
 from flask import session
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
+env_secret = os.getenv('SECRET_KEY')
+if os.getenv('FLASK_ENV', 'development') == 'production' and not env_secret:
+    raise RuntimeError("SECRET_KEY is required in production environment (ISO 27001 A.10)")
+app.secret_key = env_secret or secrets.token_hex(32)
+
 
 # Flask-Mail Configuration
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
@@ -166,6 +171,16 @@ def validate_session():
                 session.clear()
         except Exception:
             pass
+
+@app.after_request
+def apply_security_headers(response):
+    # ISO 27001 HTTP Security Headers
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    # Base CSP allowing essential CDNs
+    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com;"
+    return response
 
 # Register Blueprints
 app.register_blueprint(main_bp)

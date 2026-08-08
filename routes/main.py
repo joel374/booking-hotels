@@ -399,6 +399,7 @@ def set_language():
     data = request.get_json(silent=True) or {}
     language = data.get('language', 'id')
     session['language'] = language
+    session.modified = True
     if 'user_id' in session:
         conn = get_db_connection()
         cursor = conn.cursor()

@@ -361,7 +361,7 @@
     flatpickr("#check_in", {
         minDate: "today",
         dateFormat: "Y-m-d",
-        locale: "id",
+        locale: "{{ current_language }}",
         onChange: function(selectedDates, dateStr, instance) {
             const checkoutPicker = document.querySelector("#check_out")._flatpickr;
             if (checkoutPicker) {
@@ -378,7 +378,7 @@
     flatpickr("#check_out", {
         minDate: new Date().fp_incr(1),
         dateFormat: "Y-m-d",
-        locale: "id"
+        locale: "{{ current_language }}"
     });
     
     // Reviews Modal & Infinite Scroll
